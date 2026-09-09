@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0369a1">
+<title>아지트렌탈 분당점 · 렌탈 상담</title>
+
+<meta name="description" content="아지트렌탈 분당점 담당 김수현. 약정과 관리 방식별 월 렌탈료를 모두 펼쳐 보여드립니다.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="아지트렌탈 분당점">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="아지트렌탈 분당점 · 렌탈 상담">
+<meta property="og:description" content="약정과 관리 방식별 월 렌탈료를 모두 펼쳐 보여드립니다. 담당 김수현.">
+<meta property="og:image" content="/og/sa-0922-chpi-7430n.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+
+/* 렌탈아지트 총판 랜딩 — 🎨 디자인부 (교체 대상)
+ *
+ * 고객 레퍼런스가 오면 **이 파일과 layout.html 두 개만** 갈아끼운다.
+ * legal.html · core.js · contract.mjs 는 그대로 간다.
+ *
+ * 지키면서 갈아끼울 것 (SOP `shared/sop-homepage.md`):
+ *   - 라이트·다크 양쪽에 토큰을 정의한다. 한쪽만 정의하면 대비가 무너진다
+ *   - 액센트 위 글자는 --on-accent 로 쓴다. #fff 를 박으면 다크에서 2.14:1 이 된다
+ *   - 모바일 390px 에서 설계하고 min-width 로만 확장한다
+ */
+
+:root{
+  --bg:#f7fbfe; --surface:#fff; --surface-2:#eef7fd;
+  --ink:#0d1b26; --ink-2:#263a4a; --ink-3:#4c6376;
+  --line:#dbeafa; --line-2:#eaf4fc;
+  --accent:#0369a1; --accent-ink:#075985; --accent-soft:#eff8ff; --accent-line:#c2e4f8;
+  --on-accent:#fff;
+  --hero-bg:#e6f4fd;
+  --warn-bg:#fffbeb; --warn-line:#fde68a; --warn-ink:#7a3d09;
+  --danger:#b91c1c;
+  --r-s:8px; --r:14px; --r-l:20px; --r-pill:999px;
+  --shadow:0 1px 2px rgba(13,27,38,.05), 0 10px 30px -16px rgba(13,27,38,.22);
+  /* 🔴 한글을 "Noto Sans KR" 로 받아낸다 — 안 그러면 모노스페이스 CJK 로 폴백돼
+     "84 개 월" 처럼 글자마다 한 칸씩 벌어진다 (숫자만 모노로 정렬되면 된다) */
+  --mono:"IBM Plex Mono","Noto Sans KR",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --ease:cubic-bezier(.23,1,.32,1);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1520; --surface:#0f1e2c; --surface-2:#132536;
+    --ink:#eaf4fd; --ink-2:#c3d9ea; --ink-3:#9db6cb;
+    --line:#1e344a; --line-2:#182b3e;
+    --accent:#38bdf8; --accent-ink:#8ad8fc; --accent-soft:#0d2434; --accent-line:#1d4155;
+    --on-accent:#04202e;
+    --hero-bg:#0c1a27;
+    --warn-bg:#251d09; --warn-line:#4d3a10; --warn-ink:#fcd980;
+    --danger:#fca5a5;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a1520; --surface:#0f1e2c; --surface-2:#132536;
+  --ink:#eaf4fd; --ink-2:#c3d9ea; --ink-3:#9db6cb;
+  --line:#1e344a; --line-2:#182b3e;
+  --accent:#38bdf8; --accent-ink:#8ad8fc; --accent-soft:#0d2434; --accent-line:#1d4155;
+  --on-accent:#04202e;
+  --hero-bg:#0c1a27;
+  --warn-bg:#251d09; --warn-line:#4d3a10; --warn-ink:#fcd980;
+  --danger:#fca5a5;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.6;
+  word-break:keep-all; overflow-wrap:break-word;
+}
+img{max-width:100%; display:block}
+h1,h2,h3{line-height:1.2; letter-spacing:-.02em; margin:0}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:520px; margin:0 auto; padding:0 20px}
+
+.draft{background:var(--warn-bg); border-bottom:1px solid var(--warn-line);
+  color:var(--warn-ink); font-size:12.5px; line-height:1.45; padding:9px 20px; text-align:center}
+
+/* ── 히어로 ── */
+.hero{background:var(--hero-bg); padding:22px 0 26px; border-bottom:1px solid var(--line)}
+.pill{display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface); border:1px solid var(--accent-line); color:var(--accent-ink);
+  border-radius:var(--r-pill); padding:5px 12px; font-size:12.5px; font-weight:700}
+.pill svg{width:13px; height:13px; flex:none}
+.eyebrow{margin-top:15px; font-size:14px; color:var(--ink-2); font-weight:500}
+h1{margin-top:6px; font-size:clamp(26px,7.4vw,34px); font-weight:700}
+h1 em{font-style:normal; color:var(--accent-ink)}
+.sub{margin-top:9px; font-size:14.5px; color:var(--ink-2)}
+
+.agent{margin-top:16px; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r); padding:12px 14px; display:flex; gap:11px; align-items:center; box-shadow:var(--shadow)}
+.agent .av{width:40px; height:40px; flex:none; border-radius:var(--r-pill);
+  background:var(--accent-soft); border:1px solid var(--accent-line);
+  display:grid; place-items:center; color:var(--accent-ink)}
+.agent .av svg{width:20px; height:20px}
+.agent .lb{display:block; font-size:11.5px; color:var(--ink-3); letter-spacing:.02em}
+.agent .nm{display:block; font-weight:700; font-size:16px; margin-top:1px}
+.agent .mt{display:block; font-size:13px; color:var(--ink-3); margin-top:1px}
+
+.hero-cta{margin-top:16px; width:100%; min-height:52px; border-radius:var(--r);
+  background:var(--accent); color:var(--on-accent); font-size:16.5px; font-weight:700;
+  text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  transition:transform .16s var(--ease), opacity .16s var(--ease)}
+.hero-cta:hover{opacity:.92}
+.hero-cta:active{transform:scale(.985)}
+.hero-cta:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+/* ── 섹션 공통 ── */
+section{padding:30px 0}
+h2{font-size:20px; font-weight:700}
+.lead{margin-top:8px; font-size:14.5px; color:var(--ink-3)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow)}
+.shot{margin-top:14px; aspect-ratio:16/10; border-radius:var(--r);
+  background:var(--surface-2); border:1px dashed var(--line);
+  display:grid; place-items:center; color:var(--ink-3); font-size:13px; text-align:center; padding:16px}
+
+/* ── 혜택 ── */
+.perk{margin-top:14px; padding:16px; border:1px solid var(--accent-line); border-radius:var(--r); background:var(--accent-soft)}
+.perk h3{font-size:16px; font-weight:700; color:var(--accent-ink)}
+.perk .amt{margin-top:7px; font-size:15px; color:var(--ink-2)}
+.perk .cond{margin-top:11px; padding-top:11px; border-top:1px solid var(--accent-line);
+  font-size:12.5px; color:var(--ink-3); line-height:1.6}
+
+/* ── 약정별 요금표 ── */
+.terms{margin-top:14px; display:flex; flex-direction:column; gap:9px}
+.term{display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 15px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface);
+  width:100%; min-height:52px; font:inherit; color:inherit; text-align:left; cursor:pointer;
+  transition:border-color .16s var(--ease), background .16s var(--ease)}
+.term:hover{border-color:var(--accent-line)}
+.term:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.term.on{border-color:var(--accent); background:var(--accent-soft)}
+.term .l{display:flex; align-items:center; gap:8px; font-weight:500}
+.term.on .l{color:var(--accent-ink); font-weight:700}
+.term .v{font-family:var(--mono); font-weight:600; font-size:16px; white-space:nowrap}
+.term .v.todo{font-family:var(--sans); font-weight:500; font-size:12.5px;
+  color:var(--warn-ink); background:var(--warn-bg);
+  border:1px solid var(--warn-line); border-radius:var(--r-s); padding:3px 9px; white-space:nowrap}
+
+.total{margin-top:13px; padding:15px; border-radius:var(--r); background:var(--surface-2); border:1px solid var(--line)}
+.row{display:flex; justify-content:space-between; gap:12px; padding:7px 0; font-size:14.5px; align-items:baseline}
+.row+.row{border-top:1px solid var(--line-2)}
+.row dt{color:var(--ink-3); margin:0; flex:none}
+.row dd{margin:0; font-family:var(--mono); font-weight:600; text-align:right}
+.row.big dd{font-size:17px; color:var(--accent-ink)}
+.row dd.todo{font-family:var(--sans); font-weight:500; font-size:12.5px; color:var(--warn-ink)}
+
+/* ── 체크리스트 ── */
+.checks{margin:14px 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:11px}
+.checks li{display:flex; gap:10px; align-items:flex-start; font-size:15px}
+.checks svg{width:19px; height:19px; flex:none; margin-top:2px; color:var(--accent)}
+
+/* ── 법정 고지 ── */
+.notice{margin-top:15px; padding:16px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface)}
+.notice h3{font-size:15px; font-weight:700}
+.notice dl{margin:11px 0 0}
+.notice .row dd{font-family:var(--sans); font-weight:500; font-size:14px}
+.fineprint{margin-top:11px; padding-top:11px; border-top:1px solid var(--line-2);
+  font-size:12.5px; color:var(--ink-3); line-height:1.6}
+
+/* ── 폼 ── */
+.form{margin-top:14px; padding:18px 16px 20px}
+.field{margin-top:14px}
+.field:first-of-type{margin-top:0}
+label{display:block; font-size:13.5px; font-weight:500; color:var(--ink-2); margin-bottom:6px}
+.req{color:var(--accent-ink)}
+input[type=text],input[type=tel],select{
+  width:100%; min-height:48px; padding:12px 13px; font:inherit; font-size:16px;
+  color:var(--ink); background:var(--bg);
+  border:1px solid var(--line); border-radius:var(--r-s);
+  transition:border-color .18s var(--ease), box-shadow .18s var(--ease)}
+input::placeholder{color:var(--ink-3); opacity:1}
+input:hover,select:hover{border-color:var(--accent-line)}
+input:focus-visible,select:focus-visible{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+input[aria-invalid=true]{border-color:var(--danger)}
+.err{display:none; margin-top:6px; font-size:13px; color:var(--danger)}
+.err.on{display:block}
+
+.consent{margin-top:16px; display:flex; flex-direction:column; gap:9px}
+.chk{display:flex; gap:10px; align-items:flex-start; font-size:13.5px; line-height:1.5; color:var(--ink-2); min-height:24px}
+.chk input{width:20px; height:20px; margin:2px 0 0; flex:none; accent-color:var(--accent)}
+.chk b{font-weight:700; color:var(--ink)}
+details{margin-top:2px; margin-left:30px; font-size:12.5px; color:var(--ink-3); line-height:1.6}
+/* 🔴 고지 펼침은 손가락으로 누르는 자리다. 24px 로는 모바일에서 빗나간다 */
+summary{cursor:pointer; color:var(--accent-ink); font-size:13px;
+  min-height:44px; display:flex; align-items:center}
+
+.btn{margin-top:18px; width:100%; min-height:54px; border:0; border-radius:var(--r);
+  background:var(--accent); color:var(--on-accent); font:inherit; font-size:16.5px; font-weight:700;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+  transition:transform .16s var(--ease), opacity .16s var(--ease)}
+.btn:hover{opacity:.92}
+.btn:active{transform:scale(.985)}
+.btn:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.btn[disabled]{opacity:.55; cursor:not-allowed}
+.btn .sp{width:17px; height:17px; border:2px solid currentColor; opacity:.55; border-top-color:transparent;
+  border-radius:50%; animation:spin .7s linear infinite; display:none}
+.btn.loading .sp{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.sub-cta{margin-top:10px; width:100%; min-height:48px; border-radius:var(--r);
+  border:1px solid var(--line); background:var(--surface); color:var(--ink-2);
+  font-size:15px; font-weight:500; text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  transition:border-color .16s var(--ease)}
+.sub-cta:hover{border-color:var(--accent-line)}
+.sub-cta:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+.done{display:none; padding:22px 16px; text-align:center}
+.done.on{display:block}
+.done .ic{width:46px; height:46px; margin:0 auto 12px; border-radius:var(--r-pill);
+  background:var(--accent-soft); color:var(--accent-ink); display:grid; place-items:center}
+.done h3{font-size:17px; font-weight:700}
+.done p{margin-top:7px; font-size:14.5px; color:var(--ink-3)}
+
+/* ── 푸터 ── */
+footer{padding:24px 0 40px; border-top:1px solid var(--line); background:var(--surface-2)}
+footer .biz{font-size:var(--fs-legal); color:var(--ink-3); line-height:1.75}
+footer .biz b{color:var(--ink-2)}
+footer .mid{margin-top:13px; padding:12px 13px; border-radius:var(--r-s);
+  background:var(--surface); border:1px solid var(--line);
+  font-size:12.5px; color:var(--ink-3); line-height:1.65}
+
+/* ── 시안 전용 — 발행본에는 나가지 않는다 ── */
+.memo{margin-top:10px; padding:10px 12px; border-radius:var(--r-s);
+  background:var(--warn-bg); border:1px dashed var(--warn-line);
+  color:var(--warn-ink); font-size:12.5px; line-height:1.6}
+.memo::before{content:"시안 메모 · 고객 화면에는 나가지 않습니다"; display:block; font-weight:700; margin-bottom:4px}
+
+.gate{margin:0 0 14px; padding:12px 14px; border-radius:var(--r-s);
+  background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn-ink);
+  font-size:13px; line-height:1.7}
+.gate b{display:block; font-weight:700; margin-bottom:5px; font-size:13.5px}
+.gate ul{margin:0; padding-left:18px}
+[data-var][data-empty]{background:var(--warn-bg); border-bottom:2px solid var(--warn-line); padding:0 3px}
+
+/* ── 모션 ── */
+.rise{opacity:0; transform:translateY(10px)}
+.rise.in{opacity:1; transform:none; transition:opacity .34s var(--ease), transform .34s var(--ease)}
+@media (prefers-reduced-motion:reduce){
+  .rise,.rise.in{opacity:1; transform:none; transition:none}
+  .btn .sp{animation:none}
+  .hero-cta,.btn,.sub-cta{transition:none}
+}
+
+/* ── 태블릿 이상 (min-width 확장) ── */
+@media (min-width:768px){
+  .wrap{max-width:600px}
+  .hero{padding:38px 0 42px}
+  h1{font-size:40px}
+  section{padding:38px 0}
+}
+
+/* 명의구조 고지 — 전자상거래법 시행규칙 제11조의2
+   [!] .id-notice 는 .biz(당사자 고지)보다 작으면 안 된다(제11조의2 제2항).
+       그래서 크기를 따로 적지 않고 변수 하나를 둘이 나눠 쓴다 — 한쪽만 줄이는 사고를 막는다. */
+:root{ --fs-legal: 12.5px }
+.id-top{ margin:0 0 12px; padding:10px 13px; border-radius:var(--r-s);
+  background:var(--wash, rgba(0,0,0,.05)); color:var(--ink-2);
+  font-size:calc(var(--fs-legal) + 0.5px); line-height:1.7 }
+.id-notice{ margin:12px 0 0; padding:10px 12px; border-radius:var(--r-s);
+  background:var(--wash, rgba(0,0,0,.05)); color:var(--ink-2);
+  font-size:var(--fs-legal); line-height:1.7 }
+.id-top b, .id-notice b{ color:var(--ink-2) }
+
+/* ── 관리 방식 · 비교 막대 · 금액표 · 상품카드 · FAQ · 신뢰 · 고정CTA ── */
+.pick-lb{margin:16px 0 7px; font-size:12.5px; font-weight:700; color:var(--ink-3); letter-spacing:.02em}
+.cares{display:flex; gap:7px; flex-wrap:wrap}
+.care{border:1px solid var(--line); background:var(--surface); color:var(--ink-2);
+  border-radius:var(--r-pill); padding:9px 14px; font:inherit; font-size:13.5px; font-weight:500;
+  min-height:40px; cursor:pointer; transition:border-color .16s var(--ease), background .16s var(--ease)}
+.care:hover{border-color:var(--accent-line)}
+.care.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent-ink); font-weight:700}
+.care:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+.bars{margin-top:14px; display:flex; flex-direction:column; gap:8px}
+.bar{display:grid; grid-template-columns:64px 1fr auto; align-items:center; gap:10px;
+  width:100%; border:0; background:none; font:inherit; color:inherit; text-align:left;
+  padding:4px 0; cursor:pointer}
+.bar__l{font-size:13.5px; color:var(--ink-3)}
+.bar__t{height:26px; border-radius:var(--r-s); background:var(--surface-2); overflow:hidden}
+.bar__f{display:block; height:100%; border-radius:var(--r-s);
+  background:var(--accent-line); transition:width .38s var(--ease)}
+.bar__v{font-family:var(--mono); font-size:14px; font-weight:600; white-space:nowrap}
+.bar.on .bar__f{background:var(--accent)}
+.bar.on .bar__l,.bar.on .bar__v{color:var(--accent-ink); font-weight:700}
+.bar.best .bar__v::after{content:"최저"; margin-left:6px; font-family:var(--sans);
+  font-size:11px; font-weight:700; color:var(--accent-ink);
+  background:var(--accent-soft); border:1px solid var(--accent-line);
+  border-radius:var(--r-pill); padding:2px 7px}
+.bar:focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:var(--r-s)}
+.axis{margin-top:9px; font-size:12px; color:var(--ink-3); line-height:1.6}
+
+.tw{margin-top:14px; overflow-x:auto; border:1px solid var(--line); border-radius:var(--r)}
+table.fee{width:100%; border-collapse:collapse; font-size:14px; background:var(--surface)}
+table.fee th,table.fee td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line-2); white-space:nowrap}
+table.fee thead th{background:var(--surface-2); color:var(--ink-3); font-size:12.5px; font-weight:600}
+table.fee td.num{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums}
+table.fee td.sub{color:var(--ink-3); font-size:13px}
+table.fee tr.on td{background:var(--accent-soft)}
+table.fee tr:last-child td{border-bottom:0}
+
+.cards{margin-top:14px; display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+.card2{background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  padding:14px 13px; display:flex; flex-direction:column; gap:3px; box-shadow:var(--shadow)}
+.ic2{width:38px; height:38px; margin-bottom:6px; border-radius:var(--r-s);
+  background:var(--accent-soft); border:1px solid var(--accent-line); color:var(--accent-ink);
+  display:grid; place-items:center}
+.ic2 svg{width:21px; height:21px}
+.c-cat{font-size:11.5px; color:var(--ink-3)}
+.c-nm{font-size:13.5px; font-weight:600; line-height:1.4; word-break:keep-all}
+.c-fee{margin-top:5px; font-size:12.5px; color:var(--ink-3)}
+.c-fee b{font-family:var(--mono); font-size:16px; color:var(--ink); font-weight:600}
+.c-term{font-size:11.5px; color:var(--ink-3)}
+
+.faq{margin-top:14px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); overflow:hidden}
+.faq details{border-bottom:1px solid var(--line-2)}
+.faq details:last-child{border-bottom:0}
+.faq summary{margin:0; padding:14px 15px; font-size:14.5px; font-weight:600; color:var(--ink);
+  min-height:52px; display:flex; align-items:center; justify-content:space-between; gap:10px}
+.faq summary::after{content:"+"; font-size:19px; color:var(--ink-3); font-weight:400; flex:none}
+.faq details[open] summary::after{content:"−"}
+.faq p{margin:0; padding:0 15px 15px; font-size:14px; color:var(--ink-2); line-height:1.7}
+
+.trust{margin:14px 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:10px}
+.trust li{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:14px 15px}
+.trust b{display:block; font-size:14.5px; margin-bottom:5px}
+.trust span{font-size:13.5px; color:var(--ink-3); line-height:1.65}
+
+.dock{position:fixed; left:0; right:0; bottom:0; z-index:20;
+  display:flex; gap:9px; padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb, var(--surface) 92%, transparent);
+  border-top:1px solid var(--line); backdrop-filter:blur(8px)}
+.dock-tel,.dock-cta{flex:1; min-height:48px; border-radius:var(--r); text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  font-size:15px; font-weight:600}
+.dock-tel{border:1px solid var(--line); background:var(--surface); color:var(--ink-2); flex:0 0 40%}
+.dock-cta{background:var(--accent); color:var(--on-accent); font-weight:700}
+.dock-tel:focus-visible,.dock-cta:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+body{padding-bottom:74px}
+
+@media (min-width:768px){
+  .cards{grid-template-columns:repeat(3,1fr)}
+  .dock{justify-content:center}
+  .dock-tel,.dock-cta{flex:0 0 auto; min-width:190px}
+}
+
+/* 제품 사진 — 배경이 투명한 PNG/WebP 라 어떤 바탕에도 얹힌다 */
+figure.shot{margin:0 0 18px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px}
+figure.shot img{width:min(340px,74%);height:auto;object-fit:contain}
+figure.shot figcaption{font-size:12.5px;color:var(--muted,#64748b);text-align:center}
+
+</style>
+</head>
+<body>
+
+<div class="draft">
+  디자인 시안입니다. 사업자 정보와 요금, 혜택 금액은 아직 <b>확정 전</b>이라 비어 있습니다
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="gate"><b>아직 발행할 수 없습니다 — 채워야 할 항목 11개</b><ul><li>⑦ 명의구조 (A/B/C/D) — 전자상거래법 §13① 표시 주체가 갈린다. D안(중개자)이면 「첫 화면」에 고지 블록이 생긴다 (시행규칙 §11의2①)</li><li>상호</li><li>대표자 성명</li><li>주소</li><li>사업자등록번호</li><li>통신판매업 신고번호</li><li>전화번호</li><li>이메일</li><li>지급방법 — 방문판매법 §30①</li><li>해지 방법·서식 — 방문판매법 §30①</li><li>개인정보 보유기간 — 개인정보 보호법 §15②</li></ul></div>
+    
+    
+    <span class="pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      본사 정찰제 · 어디서 가입해도 같은 금액
+    </span>
+    <p class="eyebrow" data-var="PRODUCT_NAME">코웨이 음식물처리기2L WMG-2005</p>
+    
+    <h1>같은 제품인데<br>조건에 따라 월 <em data-var="HERO_SPREAD">3,000</em>원<br>차이납니다</h1>
+    <p class="sub">약정 기간과 관리 방식에 따라 월 렌탈료가 달라집니다.
+      <b data-var="HERO_COMBOS">3</b>가지 조건을 모두 펼쳐 보여드리고,
+      끝까지 내시는 <b>총액과 해지 조건</b>은 계약 전에 서면으로 드립니다.</p>
+
+    <div class="agent">
+      <span class="av" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </span>
+      <span>
+        <span class="lb">담당 컨설턴트</span>
+        <span class="nm" data-var="PARTNER_MANAGER">김수현</span>
+        <span class="mt"><span data-var="PARTNER_NAME">아지트렌탈 분당점</span><span data-var="PARTNER_REGION" data-optional> · 경기 성남 분당</span></span>
+      </span>
+    </div>
+
+    <a class="hero-cta" href="#apply">
+      상담 신청하기
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+</header>
+
+<main>
+  <section class="wrap rise">
+    <figure class="shot">  <img src="data:image/webp;base64,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" alt="코웨이 음식물처리기2L WMG-2005 제품 사진" width="440" height="440" decoding="async">  <figcaption>제조사 공식 대표이미지 · 실제 색상과 구성은 계약 전에 확인하십시오</figcaption></figure><p class="memo">🔴 제조사(코웨이) 공식몰의 <b>같은 모델</b> 대표이미지입니다 — 사진과 모델의 짝은 공식몰 원문으로 맞췄고 사람이 지어내지 않았습니다. 실서비스 전에 제조사·총판에게서 <b>판매용 이미지</b>를 받아 교체합니다.</p>
+
+    <div class="perk" data-gate="PERK_AMOUNT">
+      <h3>설치 확인 후 지급되는 혜택</h3>
+      <p class="amt"><b data-var="PERK_AMOUNT" data-empty>확정 전</b></p>
+      <p class="cond">지급 금액과 지급 시점, 받으시는 방법을 여기에 안내합니다.</p>
+    </div>
+    <p class="memo">혜택 금액은 고객사 서면 원문을 받은 뒤 채웁니다. 조건 없이 금액만 적으면 표시광고법에 걸립니다. 발행 모드에서는 이 상자가 통째로 빠집니다.</p>
+  </section>
+
+  <section class="wrap rise">
+    <h2>약정별 월 렌탈료</h2>
+    <p class="lead">아래 금액은 <b>본사 정찰제</b>입니다. 어느 담당자에게 가입해도 동일합니다.</p>
+
+    <p class="pick-lb">관리 방식</p>
+    <div class="cares" id="cares" role="radiogroup" aria-label="관리 방식 선택"></div>
+
+    <p class="pick-lb">약정 기간</p>
+    <div class="terms" id="terms" role="radiogroup" aria-label="약정 기간 선택"></div>
+
+    
+    <div class="bars" id="bars" aria-label="약정별 월 렌탈료 비교"></div>
+    <p class="axis">막대는 약정끼리 비교하려고 그린 것이라 <b>0원에서 시작하지 않습니다.</b>
+      정확한 금액은 옆의 숫자입니다.</p>
+
+    <dl class="total" id="spec"></dl>
+
+    <p class="memo"><b>약정마다 총액이 다릅니다.</b> 84개월 총액만 rentalagit.com 등록 정보에서 실측했고 나머지는 비어 있습니다. 월 렌탈료는 등록 정보에 없습니다. 총액을 기간으로 나눈 값은 선납, 면제개월, 프로모션 때문에 실제 청구액과 달라지므로 쓰지 않았습니다. 값은 본사 「상품 관리」에서 내려옵니다.</p>
+  </section>
+
+  <section class="wrap rise">
+    <h2>전체 금액표</h2>
+    <p class="lead">약정과 관리 방식을 모두 펼쳐 놓은 표입니다. 고르신 조건이 표시됩니다.</p>
+    <div class="tw">
+      <table class="fee">
+        <thead><tr><th>약정</th><th>관리 방식</th><th class="num">월 렌탈료</th><th class="num">정상가</th></tr></thead>
+        <tbody id="grid"></tbody>
+      </table>
+    </div>
+    <p class="fineprint">「정상가」는 약정 없이 쓰실 때의 금액입니다. 왼쪽 금액이 그 약정을 고르셨을 때 내시는 금액입니다.</p>
+  </section>
+
+  <section class="wrap rise">
+    <h2>많이 찾는 렌탈 상품</h2>
+    <p class="lead">품목마다 <b>가장 낮은 월 렌탈료</b>를 골라 보여드립니다. 다른 상품도 상담에서 안내해 드립니다.</p>
+    <div class="cards" id="pop"></div>
+  </section>
+
+  <section class="wrap rise">
+    <h2>가입 조건</h2>
+    <ul class="checks">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>월 렌탈료는 <b data-var="HERO_LOW">18,900</b>원부터 시작합니다</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>요금은 본사 정찰제라 어디서 가입해도 같습니다</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>설치와 A/S 모두 본사가 직접 진행합니다</span></li>
+    </ul>
+    <p class="memo">🔴 「설치비·등록비 0원」을 뺐습니다. 챗봇 응대자료에서 설치비는 <b>미확정(고객 회신 대기)</b>이라
+      랜딩만 0원이라고 단언하면 두 화면이 반대로 말합니다. 방문판매법 §30①은 「명칭 불문 대금 전액」을
+      계약 전에 설명하라고 합니다. 고객사 회신이 오면 되살립니다.</p>
+    <ul class="checks" hidden>
+    </ul>
+
+    
+<div class="notice">
+  <h3>계약 전 확인하실 사항</h3>
+  <p class="lead" style="margin-top:6px">위에서 고르신 <b id="nt-term">-</b> 기준입니다.</p>
+  <dl>
+    <div class="row"><dt>거래기간</dt><dd data-legal="term-duration" id="nt-dur">-</dd></div>
+    <div class="row"><dt>총 대금</dt><dd data-legal="term-total" id="nt-total">-</dd></div>
+    <div class="row"><dt>지급방법</dt><dd data-legal="term-pay" data-var="PAY_METHOD" data-empty>확정 전</dd></div>
+    <div class="row"><dt>중도 해지</dt><dd data-legal="term-cancel">언제든 하실 수 있습니다. 위약금 기준은 계약서에 적혀 있습니다</dd></div>
+    <div class="row"><dt>해지 방법</dt><dd data-legal="term-form" data-var="CANCEL_METHOD" data-empty>확정 전</dd></div>
+  </dl>
+  <p class="fineprint">해지 신청서 서식은 위 방법으로 요청하시면 보내드립니다.</p>
+</div>
+  </section>
+
+  <section class="wrap rise">
+    <h2>여기서 상담받으시면</h2>
+    <ul class="trust">
+      <li><b>요금이 같습니다</b><span>본사 정찰제라 어느 담당자에게 가입해도 금액이 같습니다.
+        깎아 드린다는 말을 하지 않는 이유입니다.</span></li>
+      <li><b>총액을 먼저 알려드립니다</b><span>월 얼마가 아니라 끝까지 내시는 금액과 해지 조건을
+        계약 전에 서면으로 드립니다.</span></li>
+      <li><b>설치와 A/S는 본사가 합니다</b><span>가입만 도와드리고 사라지지 않습니다.</span></li>
+    </ul>
+    <p class="fineprint">후기 수·계약 건수 같은 숫자는 적지 않았습니다. 저희가 증명할 수 있는 것만 적습니다.</p>
+  </section>
+
+  <section class="wrap rise">
+    <h2>자주 묻는 질문</h2>
+    <div class="faq"><details><summary>다른 곳이 더 싸던데요?</summary><p>저희 요금은 본사 정찰제라 어느 담당자에게 가입하셔도 같습니다. 다른 곳과 금액이 달라 보이신다면 약정 기간이나 관리 방식, 프로모션 적용 조건이 다른 경우가 많습니다. 비교하신 조건을 알려주시면 같은 조건으로 맞춰 확인해 드리겠습니다.</p></details>
+      <details><summary>중간에 해지하면 어떻게 되나요?</summary><p>중도 해지는 언제든 하실 수 있습니다. 위약금 기준은 계약서에 적혀 있고 남은 기간과 상품에 따라 달라집니다. 정확한 금액과 해지 신청서 서식은 계약 전에 서면으로 안내드립니다.</p></details>
+      <details><summary>환불도 되나요?</summary><p>청약철회와 환불 조건은 계약서와 청약철회 안내에 적혀 있습니다. 신청 기한과 방법은 계약 전에 서면으로 알려드립니다. 앞서 들으신 내용과 다르게 느껴지시면 상담사가 계약서 기준으로 다시 확인해 드리겠습니다.</p></details>
+      <details><summary>월 렌탈료에 개월을 곱하면 총액인가요?</summary><p>총 납입금액은 월 렌탈료에 약정 개월을 곱한 값과 다를 수 있습니다. 선납이나 면제 개월, 프로모션이 상품마다 다르게 붙기 때문입니다. 고르신 상품과 약정으로 상담사가 총액을 계산해 서면으로 드립니다.</p></details>
+      <details><summary>약정이 끝나면 제 것이 되나요?</summary><p>약정이 끝나면 소유권이 넘어오는 상품과 그렇지 않은 상품이 갈립니다. 고르신 상품 기준으로 상담사가 확인해 드립니다.</p></details>
+      <details><summary>남긴 연락처는 어디에 쓰이나요?</summary><p>상담에 필요한 항목만 받고, 받기 전에 무엇을 왜 받는지 먼저 알려드립니다. 동의하지 않으셔도 요금 안내는 그대로 보실 수 있습니다. 동의 철회나 삭제를 원하시면 상담 창구로 말씀해 주시면 처리해 드립니다.</p></details></div>
+  </section>
+
+  <section class="wrap rise" id="apply">
+    <h2>상담 신청</h2>
+    <p class="lead">연락처를 남겨주시면 담당 상담사가 확인 후 연락드립니다.</p>
+
+    <form class="card form" id="f" novalidate>
+      <input type="hidden" name="partner_code" value="sa-0922">
+
+      <div class="field">
+        <label for="nm">이름 <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="nm" name="name" autocomplete="name" required aria-describedby="nm-e">
+        <p class="err" id="nm-e">이름을 입력해 주세요.</p>
+      </div>
+
+      <div class="field">
+        <label for="ph">연락처 <span class="req" aria-hidden="true">*</span></label>
+        <input type="tel" id="ph" name="phone" inputmode="numeric" autocomplete="tel" placeholder="01012345678" required aria-describedby="ph-e">
+        <p class="err" id="ph-e">숫자 10~11자리로 입력해 주세요.</p>
+      </div>
+
+      <div class="field">
+        <label for="pi">관심 품목</label>
+        <select id="pi" name="product_interest">
+          <option value="">선택 안 함</option>
+          <option>정수기</option><option>공기청정기</option><option>비데</option>
+          <option>에어컨</option><option>냉장고</option><option>기타</option>
+        </select>
+      </div>
+
+      
+<div class="consent">
+  <label class="chk">
+    <input type="checkbox" name="consent_use" id="c1" required aria-describedby="c1-e">
+    <span><b>[필수]</b> 상담을 위한 개인정보 수집·이용에 동의합니다.</span>
+  </label>
+  <details>
+    <summary>어떤 정보를 왜 받는지 보기</summary>
+    <span data-legal="privacy-items">항목 = 이름·연락처·관심 품목</span> /
+    <span data-legal="privacy-purpose">목적 = 렌탈 상담 및 계약 안내</span> /
+    <span data-legal="privacy-retention">보유기간 = 상담 종료 후 <span data-var="RETENTION" data-empty>확정 전</span></span>.
+    <span data-legal="privacy-refusal">동의를 거부하실 수 있으며, 거부하시면 상담 연락을 드리기 어렵습니다.</span>
+  </details>
+  <p class="err" id="c1-e">필수 동의가 필요합니다.</p>
+</div>
+      
+      
+      
+
+      <button class="btn" type="submit" id="sb"><span class="sp" aria-hidden="true"></span><span id="sbt">상담 신청하기</span></button>
+      <a class="sub-cta" href="tel:010-0000-0000">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+        전화로 문의하기
+      </a>
+    </form>
+
+    <div class="card done" id="ok">
+      <div class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h3>신청이 접수되었습니다</h3>
+      <p>담당 상담사가 확인 후 순차적으로 연락드립니다.</p>
+    </div>
+  </section>
+</main>
+
+<div class="dock">
+  <a class="dock-tel" href="tel:010-0000-0000">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+    전화 상담
+  </a>
+  <a class="dock-cta" href="#apply">조건 확인받기</a>
+</div>
+
+<footer>
+  <div class="wrap">
+    
+<p class="biz">
+  <b data-legal="biz-name" data-var="BIZ_NAME" data-empty>확정 전</b> ·
+  대표 <span data-legal="biz-ceo" data-var="BIZ_CEO" data-empty>확정 전</span><br>
+  주소 <span data-legal="biz-addr" data-var="BIZ_ADDR" data-empty>확정 전</span><br>
+  사업자등록번호 <span data-legal="biz-no" data-var="BIZ_NO" data-empty>확정 전</span> ·
+  통신판매업 신고 <span data-legal="biz-mo" data-var="BIZ_MO" data-empty>확정 전</span><br>
+  전화 <span data-legal="biz-tel" data-var="BIZ_TEL" data-empty>확정 전</span> ·
+  이메일 <span data-legal="biz-email" data-var="BIZ_EMAIL" data-empty>확정 전</span>
+</p>
+
+  </div>
+</footer>
+
+<script>
+/* 렌탈아지트 총판 랜딩 — 🔒 동작 무관부
+ *
+ * 레퍼런스가 바뀌어도 이 파일은 그대로 간다.
+ * 화면이 무엇을 어떻게 생겼는지는 모른다 — id 와 data 속성만 안다.
+ *
+ * 🔴 여기서 금액을 만들어내지 않는다. 총액을 기간으로 나눈 값은 선납·면제개월·프로모션
+ *    때문에 실제 청구액과 다르다. 없는 값은 「확정 전」으로 둔다. (CRO §10 · §12-5)
+ */
+(function () {
+  "use strict";
+
+  var ENDPOINT = "(발행 시 본사가 넣습니다)";
+  var LIVE = /^https?:/.test(ENDPOINT);
+  var codeEl = document.querySelector('input[name=partner_code]');
+  var CODE = codeEl ? codeEl.value : "";
+
+  function post(payload) {
+    if (!LIVE) return Promise.resolve();
+    return fetch(ENDPOINT, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  /* ── 약정별 요금·명세 ──────────────────────────────────────────
+     본사 「상품 관리」가 내려준 값이 그대로 들어온다. 생성기가 치환한다.
+     m=개월 · fee=월 렌탈료 · total=총 납입금액 · own=소유권 이전 시점(개월) */
+  var TERMS = [{"m":36,"own":null,"fee":21900,"feeMax":21900,"total":null,"cares":[{"care":"자가관리","listFee":25900,"fee":21900,"note":null}]},{"m":60,"own":null,"fee":19900,"feeMax":19900,"total":null,"cares":[{"care":"자가관리","listFee":23900,"fee":19900,"note":null}]},{"m":72,"own":null,"fee":18900,"feeMax":18900,"total":null,"cares":[{"care":"자가관리","listFee":22900,"fee":18900,"note":null}]}];
+  var pick = 0;
+  for (var i = 0; i < TERMS.length; i++) if (TERMS[i].total != null) pick = i;
+
+  function won(n) { return n.toLocaleString('ko-KR') + '원'; }
+
+  /* ── 관리 방식 ────────────────────────────────────────────────
+     🔑 같은 약정이라도 자가관리냐 방문관리냐로 요금이 갈린다(혜택표 실측).
+        고르면 막대·표·명세가 전부 그 기준으로 다시 그려진다. */
+  var CARES = (function () {
+    var out = [];
+    TERMS.forEach(function (t) {
+      (t.cares || []).forEach(function (c) { if (out.indexOf(c.care) < 0) out.push(c.care); });
+    });
+    return out;
+  })();
+  var care = CARES[0] || null;
+
+  function careFee(t, name) {
+    var list = t.cares || [];
+    for (var i = 0; i < list.length; i++) if (list[i].care === name) return list[i];
+    return null;
+  }
+  /* 고른 관리방식의 요금. 그 조합이 없으면 그 약정의 최저가로 물러선다 */
+  function feeOf(t) { var c = careFee(t, care); return c ? c.fee : t.fee; }
+
+  function renderCares() {
+    var box = document.getElementById('cares');
+    if (!box || !CARES.length) return;
+    box.innerHTML = '';
+    CARES.forEach(function (name) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'care' + (name === care ? ' on' : '');
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(name === care));
+      b.textContent = name;
+      b.addEventListener('click', function () { care = name; renderAll(); });
+      box.appendChild(b);
+    });
+  }
+
+  /* ── 약정별 월 렌탈료 비교 막대 ────────────────────────────────
+     🔴 총액 막대가 아니다. 총액은 표에 없고 「월액 × 개월」은 반값 때문에 틀린다.
+        실측으로 보여줄 수 있는 것은 「약정이 길수록 월액이 내려간다」이고 그것만 보여준다. */
+  function renderBars() {
+    var box = document.getElementById('bars');
+    if (!box) return;
+    var fees = [];
+    TERMS.forEach(function (t) { var f = feeOf(t); if (f != null) fees.push(f); });
+    if (!fees.length) { box.innerHTML = '<p class="lead">요금이 확정되면 여기에 비교가 나옵니다.</p>'; return; }
+    var max = Math.max.apply(null, fees), min = Math.min.apply(null, fees);
+
+    box.innerHTML = '';
+    TERMS.forEach(function (t, i) {
+      var f = feeOf(t);
+      var el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'bar' + (i === pick ? ' on' : '') + (f === min ? ' best' : '');
+      /* 🔴 0 에서 시작하면 차이가 안 보이고, 0 이 아닌 축은 차이를 과장한다.
+            최저를 55% 로 잡아 보이게 하되 **축이 0 이 아니라는 것을 캡션에 밝힌다.** */
+      var w = f == null ? 0 : 55 + Math.round((f - min) / Math.max(1, max - min) * 45);
+      el.innerHTML =
+        '<span class="bar__l">' + t.m + '개월</span>' +
+        '<span class="bar__t"><span class="bar__f" style="width:' + w + '%"></span></span>' +
+        '<span class="bar__v">' + (f == null ? '확정 전' : won(f)) + '</span>';
+      el.addEventListener('click', function () { pick = i; renderAll(); });
+      box.appendChild(el);
+    });
+  }
+
+  /* ── 전체 금액표 — 약정 × 관리방식 전부 ─────────────────────── */
+  function renderTable() {
+    var el = document.getElementById('grid');
+    if (!el) return;
+    var rows = '';
+    TERMS.forEach(function (t) {
+      (t.cares || []).forEach(function (c) {
+        rows += '<tr' + (c.care === care ? ' class="on"' : '') + '>' +
+          '<td>' + t.m + '개월</td><td>' + c.care + '</td>' +
+          '<td class="num"><b>' + won(c.fee) + '</b></td>' +
+          '<td class="num sub">' + (c.listFee && c.listFee !== c.fee ? won(c.listFee) : '—') + '</td></tr>';
+      });
+    });
+    el.innerHTML = rows || '<tr><td colspan="4">요금이 확정되면 여기에 표가 나옵니다.</td></tr>';
+  }
+
+  function renderTerms() {
+    var box = document.getElementById('terms');
+    if (!box) return;
+    box.innerHTML = '';
+    TERMS.forEach(function (t, i) {
+      var f = feeOf(t);
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'term' + (i === pick ? ' on' : '');
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(i === pick));
+      b.innerHTML = '<span class="l">' + t.m + '개월</span>' +
+        (f != null ? '<span class="v">월 ' + won(f) + '</span>'
+                   : '<span class="v todo">확정 전</span>');
+      b.addEventListener('click', function () { pick = i; renderAll(); });
+      box.appendChild(b);
+    });
+  }
+
+  function row(dt, v) {
+    return '<div class="row"><dt>' + dt + '</dt>' +
+           '<dd' + (v == null ? ' class="todo"' : '') + '>' + (v == null ? '확정 전' : v) + '</dd></div>';
+  }
+
+  function renderSpec() {
+    var t = TERMS[pick], el = document.getElementById('spec'), f = feeOf(t);
+    if (el) {
+      el.innerHTML =
+        row('관리 방식', care) +
+        '<div class="row big"><dt>월 렌탈료</dt><dd' + (f == null ? ' class="todo"' : '') + '>' +
+          (f == null ? '확정 전' : won(f)) + '</dd></div>' +
+        row('의무사용기간', (t.own || t.m) + '개월') +
+        /* 🔴 총액은 곱해서 만들지 않는다. 반값·선납 때문에 틀린다(CRO §10·§12-5).
+              「모른다」가 아니라 **어디서 받는지**를 말한다 — 방문판매법 §30① 도 서면을 요구한다. */
+        '<div class="row"><dt>총 납입금액</dt><dd class="todo">계약 전 서면으로 안내</dd></div>';
+    }
+
+    /* 🔑 계속거래 고지가 고른 약정을 따라간다 (방문판매법 §30①).
+          약정을 바꿨는데 고지가 그대로면 고지가 거짓이 된다. */
+    set('nt-term', t.m + '개월 · ' + (care || ''));
+    set('nt-dur',  (t.own || t.m) + '개월 (의무사용기간)');
+    set('nt-total', '계약 전 서면으로 안내드립니다 (설치비·등록비 등 명칭 불문 전액 포함)');
+    set('nt-fee',  f == null ? '확정 전' : won(f) + ' / 월');
+  }
+
+  /* ── 많이 찾는 상품 ─────────────────────────────────────────
+     🔴 「인기」·「베스트」라고 쓰지 않는다 — 판매량 근거가 없다.
+        품목별 **최저 월액**을 규칙으로 뽑은 것이고 화면에도 그렇게 적는다.
+     🔑 제품 사진은 아직 없다. 웹에서 긁어 오면 제조사 저작물 침해이고,
+        모델이 다른 사진이 붙으면 표시광고법 문제가 된다. 제조사·총판에게 받을 때까지
+        품목 도식을 쓴다(우리가 그린 것이라 권리 문제가 없다).  */
+  var POPULAR = [{"cat":"정수기","brand":"교원웰스","name":"웰스 슬림원 직수 정수기 (냉온정) WS672","fee":3450,"term":72},{"cat":"공기청정기","brand":"SK매직","name":"SK매직 올클린 공기청정기 Green 242 49㎡(15평) ACL-15C1A","fee":8450,"term":84},{"cat":"비데","brand":"세스코","name":"세스코 바디케어 파워 방수비데V2 EBEB112","fee":4950,"term":72},{"cat":"안마·힐링","brand":"쿠쿠","name":"안마의자 CMS-G210NW","fee":29900,"term":72},{"cat":"건조기·세탁기","brand":"쿠쿠","name":"세탁기 CWM-AT1210B","fee":11610,"term":72},{"cat":"전기레인지","brand":"코웨이","name":"프라임 하이브리드 NHP-31KE","fee":12900,"term":84}];
+  var ICON = {
+    '정수기':      'M7 3h10l-1 6a4 4 0 0 1-8 0zM9 15h6v6H9z',
+    '공기청정기':  'M4 4h16v16H4zM8 9h8M8 13h8M8 17h4',
+    '비데':        'M5 6h14v7a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM9 21h6',
+    '안마·힐링':   'M6 5h12v6a6 6 0 0 1-12 0zM4 13h4v8H4zM16 13h4v8h-4z',
+    '건조기·세탁기':'M4 3h16v18H4zM12 8a5 5 0 1 0 0 10 5 5 0 0 0 0-10z',
+    '전기레인지':  'M3 6h18v12H3zM7 10h.01M12 10h.01M17 10h.01M7 14h10'
+  };
+
+  function renderPopular() {
+    var box = document.getElementById('pop');
+    if (!box) return;
+    box.innerHTML = '';
+    POPULAR.forEach(function (p) {
+      var d = ICON[p.cat] || ICON['정수기'];
+      var el = document.createElement('div');
+      el.className = 'card2';
+      el.innerHTML =
+        '<div class="ic2" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+          'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="' + d + '"/></svg></div>' +
+        '<span class="c-cat"></span>' +
+        '<span class="c-nm"></span>' +
+        '<span class="c-fee"><b></b> / 월</span>' +
+        '<span class="c-term"></span>';
+      el.querySelector('.c-cat').textContent = p.cat + ' · ' + p.brand;
+      el.querySelector('.c-nm').textContent = p.name;
+      el.querySelector('.c-fee b').textContent = won(p.fee);
+      el.querySelector('.c-term').textContent = p.term + '개월 약정 기준 · 품목 최저';
+      box.appendChild(el);
+    });
+  }
+
+  /* 한 번에 다시 그린다 — 관리방식이나 약정을 바꾸면 전부 따라가야 한다 */
+  function renderAll() { renderCares(); renderTerms(); renderBars(); renderTable(); renderSpec(); }
+  renderPopular();
+
+  function set(id, text) { var e = document.getElementById(id); if (e) e.textContent = text; }
+
+  renderAll();
+
+  /* ── 방문 기록 1회 ────────────────────────────────────────────── */
+  try { post({ type: "view", partner_code: CODE, ts: new Date().toISOString(), referrer: document.referrer || "" }); } catch (e) {}
+
+  /* ── 선택 변수 — 값이 비면 줄 자체를 지운다 ─────────────────────
+     🔴 생성기가 빈 문자열로 치환하면 " · " 구분자만 남는다. 40장에 그대로 나간다.
+        토큰이 아직 남아 있는 시안에서는 건드리지 않는다. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-optional]'), function (el) {
+    var t = el.textContent;
+    if (t.indexOf('{{') === -1 && !t.replace(/[·|,\s]/g, '')) el.remove();
+  });
+
+  /* ── 등장 모션 — 무엇이 움직일지는 레이아웃이 .rise 로 정한다 ──── */
+  var rs = document.querySelectorAll(".rise");
+  if (!("IntersectionObserver" in window)) {
+    Array.prototype.forEach.call(rs, function (n) { n.classList.add("in"); });
+  } else {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    Array.prototype.forEach.call(rs, function (n) { io.observe(n); });
+  }
+
+  /* ── 폼 ────────────────────────────────────────────────────────
+     🔴 선택 동의를 거부해도 제출이 통과해야 한다 (개인정보 보호법 §22⑤). */
+  var f = document.getElementById("f");
+  if (!f) return;
+  var ok = document.getElementById("ok"), sb = document.getElementById("sb"), sbt = document.getElementById("sbt");
+
+  function mark(el, bad, errId) {
+    el.setAttribute("aria-invalid", bad ? "true" : "false");
+    var e = document.getElementById(errId);
+    if (e) e.classList.toggle("on", bad);
+    return !bad;
+  }
+  function checkName() { var e = document.getElementById("nm"); return mark(e, !e.value.trim(), "nm-e"); }
+  function checkPhone() {
+    var e = document.getElementById("ph"), v = e.value.replace(/[^0-9]/g, "");
+    return mark(e, !/^0\d{9,10}$/.test(v), "ph-e");
+  }
+  function checkConsent() {
+    var c1 = document.getElementById("c1"), bad = !c1.checked;
+    var e = document.getElementById("c1-e"); if (e) e.classList.toggle("on", bad);
+    return !bad;
+  }
+  document.getElementById("nm").addEventListener("blur", checkName);
+  document.getElementById("ph").addEventListener("blur", checkPhone);
+  document.getElementById("c1").addEventListener("change", checkConsent);
+
+  f.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var a = checkName(), b = checkPhone(), c = checkConsent();
+    if (!(a && b && c)) return;
+
+    sb.classList.add("loading"); sb.disabled = true; sbt.textContent = "접수 중";
+
+    var d = new FormData(f), payload = { type: "lead", ts: new Date().toISOString(), referrer: document.referrer || "" };
+    d.forEach(function (v, k) { payload[k] = v; });
+    payload.consent_use = document.getElementById("c1").checked;
+    var c2 = document.getElementById("c2");
+    if (c2) payload.consent_3rd = c2.checked;
+
+    function done() { f.style.display = "none"; ok.classList.add("on"); ok.scrollIntoView({ block: "center" }); }
+    if (!LIVE) { setTimeout(done, 400); return; }
+    post(payload).then(done).catch(function () {
+      sb.classList.remove("loading"); sb.disabled = false; sbt.textContent = "다시 시도하기";
+    });
+  });
+})();
+
+</script>
+</body>
+</html>
