@@ -1,8 +1,8 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
 import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,asksReason} from '/ra-preview/chatbot/language.mjs';
-import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs';
+import {normalizeText,interpret,referenceAction,referenceQuestion,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-3';
+import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
 const UNKNOWN=TOPICS.map(f=>({id:f.id,match:f.match,what:f.what,fact:f}));
@@ -11,7 +11,7 @@ import { toCategory } from '/ra-preview/chatbot/taxonomy.mjs';
 import { mask } from '/ra-preview/chatbot/detect.mjs';
 
 const norm = v => String(v ?? '').replace(/\s+/g, '').toLowerCase();
-export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [] });
+export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [], recommendedCodes: [], focusCode: null, reprompt: null });
 export const filterLabels = f => [f.category, f.model && `모델 ${f.model}`, f.brand, f.brands?.join(' · '), ...(f.excludedBrands||[]).map(b=>b+' 제외'), f.excludeIce&&'얼음 제외', ...(f.excludedTerms||[]).map(n=>n+'개월 제외'), ...(f.excludedCare||[]).map(v=>(v==='visit'?'방문관리':'자가관리')+' 제외'), f.maker, f.term && `${f.term}개월`, f.feature === 'ice' && '얼음', f.care === 'visit' && '방문관리', f.care === 'self' && '자가관리', f.budget && `월 ${f.budget.toLocaleString('ko-KR')}원 이하`].filter(Boolean);
 function eligibleOptions(t, f) {
   return (t.options || [{ fee: t.fee }]).filter(o => {
@@ -49,6 +49,61 @@ export function cardsFor(catalog, f) {
     return plans.length ? [{ code: p.code, name: p.name, brand: p.brand, plans }] : [];
   }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
+function publicRecommendationValue(card){
+  let maxDiscount=0,benefitSignals=0,minFee=Number.MAX_SAFE_INTEGER;
+  for(const plan of card.plans)for(const option of plan.options){
+    minFee=Math.min(minFee,option.fee);
+    if(Number.isFinite(option.baseFee))maxDiscount=Math.max(maxDiscount,option.baseFee-option.fee);
+    if(option.promo||option.discount)benefitSignals+=1;
+  }
+  return {maxDiscount,benefitSignals,minFee};
+}
+function recommendationsByBrand(all,limit=3,excludedCodes=[]){
+  const excluded=new Set(excludedCodes);
+  const groups=new Map();
+  for(const card of all){if(excluded.has(card.code))continue;if(!groups.has(card.brand))groups.set(card.brand,[]);groups.get(card.brand).push(card);}
+  return [...groups.entries()].map(([brand,cards])=>{
+    const ranked=cards.map(card=>({card,value:publicRecommendationValue(card)})).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||a.value.minFee-b.value.minFee||a.card.name.localeCompare(b.card.name,'ko'));
+    return {brand,card:ranked[0].card,value:ranked[0].value,count:cards.length};
+  }).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||b.count-a.count||a.value.minFee-b.value.minFee||a.brand.localeCompare(b.brand,'ko')).slice(0,limit).map(item=>item.card);
+}
+const feeLabel=plan=>plan.min===plan.max?`${plan.min.toLocaleString('ko-KR')}원`:`${plan.min.toLocaleString('ko-KR')}~${plan.max.toLocaleString('ko-KR')}원`;
+function contextualProductReply(s,query,catalog){
+ const all=cardsFor(catalog,{...s.filters,term:null,excludedTerms:[]});
+ const card=all.find(item=>item.code===query.code);
+ if(!card)return {state:s,reply:'조건이 바뀌어 해당 상품 정보를 다시 찾지 못했어요. 현재 상품 목록에서 번호를 다시 말씀해 주세요.',requestSummary:'상품 다시 확인',needsReview:true,suggestions:[]};
+ s.focusCode=card.code;
+ const label=`${card.brand} · ${card.name}`;
+ const plans=query.requestedMonths?card.plans.filter(plan=>plan.months===query.requestedMonths):card.plans;
+ const evidence=card.plans.flatMap(plan=>[String(plan.months),...plan.options.flatMap(option=>[String(option.fee),option.fee.toLocaleString('ko-KR')])]).join(' ');
+ if(query.requestedMonths&&!plans.length){
+  const terms=card.plans.map(plan=>`${plan.months}개월`).join(' · ');
+  return {state:s,reply:`${label}은 현재 ${query.requestedMonths}개월 요금이 등록되어 있지 않아요. 확인 가능한 약정은 ${terms}이에요.`,requestSummary:'상품 약정 문의',needsReview:true,referenceEvidence:evidence,suggestions:[]};
+ }
+ if(query.topic==='price'||(query.topic==='term'&&query.requestedMonths)){
+  const fees=plans.map(plan=>`${plan.months}개월 월 ${feeLabel(plan)}`).join(' · ');
+  return {state:s,reply:`${label}은 등록된 요금 기준으로 ${fees}이에요. 관리 방식과 적용 조건에 따라 달라질 수 있어요.`,requestSummary:'상품 월요금 문의',evidenceIds:['catalog-product-plan'],referenceEvidence:evidence,suggestions:[]};
+ }
+ if(query.topic==='term'){
+  const terms=card.plans.map(plan=>`${plan.months}개월`).join(' · ');
+  return {state:s,reply:`${label}에서 확인 가능한 약정은 ${terms}이에요. 기간별 월요금은 상품 카드에서 함께 비교할 수 있어요.`,requestSummary:'상품 약정 문의',evidenceIds:['catalog-product-plan'],referenceEvidence:evidence,suggestions:[]};
+ }
+ if(query.topic==='care'){
+  const options=plans.flatMap(plan=>plan.options.map(option=>option.care));
+  const known=[...new Set(options.filter(value=>value!=='관리 방식 확인 필요'))];
+  const unknown=options.includes('관리 방식 확인 필요');
+  const askedVisit=/방문\s*관리/.test(query.text||'');
+  const askedSelf=/자가\s*관리|셀프\s*관리/.test(query.text||'');
+  let detail;
+  if(!known.length)detail='현재 등록 자료에는 관리 방식이 없어 확인이 필요해요.';
+  else if(askedVisit)detail=known.some(value=>/방문/.test(value))?'방문관리 옵션이 등록되어 있어요.':'현재 등록된 옵션에는 방문관리가 확인되지 않아요. '+known.join(' · ')+'만 확인돼요.';
+  else if(askedSelf)detail=known.some(value=>/자가|셀프/.test(value))?'자가관리 옵션이 등록되어 있어요.':'현재 등록된 옵션에는 자가관리가 확인되지 않아요. '+known.join(' · ')+'만 확인돼요.';
+  else detail=`등록된 관리 방식은 ${known.join(' · ')}${unknown?'이며, 일부 옵션은 관리 방식 확인이 필요해요.':'이에요.'}`;
+  return {state:s,reply:`${label}은 ${detail}`,requestSummary:'상품 관리 방식 문의',needsReview:unknown&&!known.length,evidenceIds:known.length?['catalog-product-plan']:undefined,referenceEvidence:evidence+' '+known.join(' '),suggestions:[]};
+ }
+ const benefits=[...new Set(plans.flatMap(plan=>plan.options.flatMap(option=>[option.promo,option.discount]).filter(Boolean)))];
+ return {state:s,reply:benefits.length?`${label}에 등록된 혜택은 ${benefits.slice(0,3).join(' · ')}이에요. 실제 적용 여부는 상담 시점에 확인해 주세요.`:`${label}은 현재 자료에 별도 혜택 문구가 등록되어 있지 않아요. 실제 적용 혜택은 상담 시점에 확인이 필요해요.`,requestSummary:'상품 혜택 문의',needsReview:!benefits.length,evidenceIds:benefits.length?['catalog-product-plan']:undefined,referenceEvidence:evidence+' '+benefits.join(' '),suggestions:[]};
+}
 // Structured state and presentation summaries only. Never persist raw messages.
 function guidance(s, catalog) {
   if(s.filters.model)return {question:'모델 검색 결과예요. 약정과 관리 조건을 확인해 주세요.',suggestions:['모델 검색 해제']};
@@ -69,12 +124,40 @@ function respondCatalog(previous, input, catalog) {
   const s = structuredClone(previous || initialState());
   s.preferences ||= {}; s.awaiting ??= null;
   const text = String(input.text || '').trim().slice(0, 500);
+  const repeatedQuestionRepair=/(?:왜\s*)?(?:또|자꾸).{0,12}(?:같은|똑같은|반복|물어|묻)|(?:같은|똑같은).{0,8}(?:질문|말).{0,8}(?:또|자꾸|반복)|아까\s*(?:말|답)했(?:잖|는데)/.test(text);
+  const recommendationRequested=/추천|골라(?:줘|주세요)?|뭐가\s*좋|어떤(?:게|것이)\s*좋|알아서|그냥.{0,8}(?:골라|보여|추천)|네가.{0,8}(?:골라|추천)/.test(text)||(repeatedQuestionRepair&&!!s.filters.category);
   const safety = mask(text, { profile: 'storage' });
   let requestSummary = null;
   const result = (reply, extra = {}) => ({ state:s, reply, requestSummary, ...extra });
   if (safety.kinds.length) return result('연락처는 상담 신청 화면에서 따로 받을게요.\n여기에는 찾으시는 제품이나 조건만 말씀해 주세요.');
+  if(input.action==='undo'){
+    if(!input.undoAvailable)return result('아직 되돌릴 조건 변경이 없어요. 원하시는 상품이나 조건을 말씀해 주세요.');
+    const restored=structuredClone(input.restoreState||initialState()),all=cardsFor(catalog,restored.filters);
+    const recommended=(restored.recommendedCodes||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
+    const selected=(restored.selected||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
+    let display={cards:[],suggestions:['정수기','공기청정기','비데']};
+    if(restored.view==='compare'&&selected.length>=2)display={cards:selected,comparison:true};
+    else if(recommended.length)display={cards:recommended,total:recommended.length,page:1,pages:1,start:1,end:recommended.length,previous:false,more:false,recommendation:true};
+    else if(restored.filters.category||restored.filters.model)display=pageData(all,restored);
+    return {state:restored,reply:'바로 전 조건으로 되돌렸어요. 여기서 다시 이어갈게요.',requestSummary:null,...display};
+  }
   if (input.action === 'reset' || /^(처음으로|조건 초기화)$/.test(text)) return {state:initialState(),reply:'새로 찾아볼게요. 어떤 제품이 필요하세요?',requestSummary:'조건 새로 고르기',cards:[],suggestions:['정수기','공기청정기','비데']};
-  if(input.catalogUnavailable&&(['select','compare','resume','more','previous','first','sort'].includes(input.action)||input.parsed?.changed||/추천|상품|제품|보여|찾아/.test(text)))return result('상품 자료를 확인하지 못해 지금은 상품과 요금을 안내할 수 없어요. 입력한 조건은 유지됩니다. 상품 자료 다시 불러오기를 눌러 주세요.',{catalogUnavailable:true,needsReview:true,requestSummary:filterLabels(s.filters).join(' · ')||'상품 자료 확인 필요'});
+  if(input.catalogUnavailable&&(['select','compare','resume','more','previous','first','sort'].includes(input.action)||String(input.action||'').startsWith('repair')||input.parsed?.changed||/추천|상품|제품|보여|찾아/.test(text)))return result('상품 자료를 확인하지 못해 지금은 상품과 요금을 안내할 수 없어요. 입력한 조건은 유지됩니다. 상품 자료 다시 불러오기를 눌러 주세요.',{catalogUnavailable:true,needsReview:true,requestSummary:filterLabels(s.filters).join(' · ')||'상품 자료 확인 필요'});
+  if(input.action==='repairRepeat'){
+    if(!s.filters.category&&!s.filters.model)return result('같은 질문을 반복했네요. 필요한 제품 종류만 알려주시면 그다음 선택 질문은 건너뛰고 바로 찾아볼게요.',{suggestions:['정수기','공기청정기','비데']});
+    s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;
+    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all);s.recommendedCodes=cards.map(card=>card.code);
+    return result('같은 질문은 건너뛰고 현재 조건에서 바로 골라봤어요. 마음에 드는 상품 하나만 선택해도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});
+  }
+  if(input.action==='repairMisread')return result('제가 다르게 이해했네요. 지금까지 고른 조건은 유지해 둘게요. 바꾸려는 부분만 말씀해 주세요. 예: “코웨이 말고 쿠쿠로 보여줘.”',{suggestions:['조건 초기화','브랜드 상관없어요']});
+  if(input.action==='repairInsufficient')return result('답변이 부족했네요. 궁금한 기준을 골라주시거나 한 문장으로 다시 말씀해 주세요.',{suggestions:['월요금 낮은 순','약정 상관없어요','방문관리 상품']});
+  if(input.action==='repairRecommendation'){
+    if(!s.filters.category&&!s.filters.model)return result('다른 상품을 다시 고르려면 먼저 필요한 제품 종류를 알려주세요.',{suggestions:['정수기','공기청정기','비데']});
+    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all,3,s.recommendedCodes||[]);
+    if(!cards.length)return result('현재 조건에서 새로 바꿔 보여드릴 상품이 더 없어요. 브랜드나 예산 조건을 넓혀볼까요?',{suggestions:['브랜드 상관없어요','조건 초기화']});
+    s.recommendedCodes=cards.map(card=>card.code);s.view='list';
+    return result('앞서 보여드린 상품은 제외하고 다른 후보로 바꿨어요. 이 중 하나만 선택해도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});
+  }
   if (/^(안녕|안녕하세요|반가워|하이)[.!~?\s]*$/.test(text)) {
     requestSummary = '인사'; const guide=guidance(s,catalog);
     return result('안녕하세요. 편하게 말씀해 주세요.\n'+guide.question,guide);
@@ -89,21 +172,31 @@ function respondCatalog(previous, input, catalog) {
   }
   if (input.action === 'select' || input.action === 'clearSelection') {
     const all = cardsFor(catalog,s.filters);
+    const recommended=(s.recommendedCodes||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
     const display = () => s.view==='compare'&&s.selected.length>=2
       ? {cards:s.selected.map(code=>all.find(c=>c.code===code)).filter(Boolean),comparison:true}
-      : (s.view='list',pageData(all,s));
+      : recommended.length
+        ? (s.view='list',{cards:recommended,total:recommended.length,previous:false,more:false,recommendation:true})
+        : (s.view='list',pageData(all,s));
     if(input.action==='clearSelection') {
-      s.selected=[]; requestSummary='비교 목록 비우기';
-      return result('비교 목록을 비웠어요.',display());
+      s.selected=[]; requestSummary='담은 상품 비우기';
+      return result('담은 상품을 비웠어요.',display());
     }
     const card = all.find(c=>c.code===input.code);
     if (!card) return result('조건이 바뀌어서 지금은 이 제품을 고를 수 없어요. 현재 목록에서 다시 골라주시겠어요?');
     const removing = input.selectionMode==='remove' || (input.selectionMode!=='add' && s.selected.includes(card.code));
-    requestSummary = removing ? '비교 목록에서 빼기' : '비교할 제품 담기';
+    requestSummary = removing ? '담은 상품에서 빼기' : '상담할 상품 담기';
     if(!removing&&!s.selected.includes(card.code)&&s.selected.length>=3)
-      return result('비교는 한 번에 3개까지 가능해요. 담아둔 상품 중 하나를 뺀 뒤 새 상품을 골라주세요.',{...display(),selectionLimit:true});
+      return result('상담할 상품은 한 번에 3개까지 담을 수 있어요. 상품 하나를 뺀 뒤 새 상품을 골라주세요.',{...display(),selectionLimit:true});
     s.selected = removing ? s.selected.filter(c=>c!==card.code) : [...new Set([...s.selected,card.code])];
-    return result(removing ? '비교 목록에서 뺐어요.' : s.selected.length===1 ? '담아뒀어요. 하나 더 고르시면 나란히 비교해 드릴게요.' : '좋아요. 고르신 제품들을 비교해 볼까요?',display());
+    return result(removing ? '담은 상품에서 뺐어요.' : s.selected.length===1 ? '상담할 상품으로 담았어요. 지금 바로 상담을 이어가거나 상품을 더 담아 비교할 수 있어요.' : '담았어요. 바로 상담을 이어가거나 선택한 상품을 비교할 수 있어요.',display());
+  }
+  if(input.action==='consultSelection'){
+    const all=cardsFor(catalog,s.filters),cards=s.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
+    requestSummary='담은 상품으로 상담 이어가기';s.view='list';
+    if(!cards.length)return result('상담할 상품을 하나 담아주세요.',pageData(all,s));
+    const names=cards.map(card=>card.brand+' '+card.name).join(' · ');
+    return result(names+' 기준으로 상담을 이어갈게요. 월요금, 약정, 관리 방식이나 혜택 중 궁금한 점을 편하게 말씀해 주세요.',{cards});
   }
   if (input.action === 'apply' || /상담.*(신청|연결)|사람.*상담/.test(text)) {
     requestSummary = '상담 신청 안내';
@@ -124,7 +217,7 @@ function respondCatalog(previous, input, catalog) {
     return result('상담을 신청하실 때 어떤 정보를 왜 받는지, 얼마나 보관하는지 먼저 안내해 드려요.\n동의하지 않으셔도 상품은 계속 둘러보실 수 있어요.');
   }
   const pending=UNKNOWN.find(u=>matchingTopics(text).some(t=>t.id===u.id));
-  if (pending) {
+  if (pending&&!(recommendationRequested&&s.filters.category)) {
     requestSummary = pending.fact.title;
     s.unresolved=[...new Set([...s.unresolved,pending.fact.title])];
     return result(withParticle(pending.what,'은','는')+' 지금 자료로는 확정할 수 없어요. 상담할 때 확인이 필요한 부분이에요.\n보시던 조건으로 상품 탐색을 이어갈 수 있어요.',{resume:true});
@@ -134,14 +227,28 @@ function respondCatalog(previous, input, catalog) {
     return result('그 부분은 상품별 계약 조건을 확인해야 정확히 안내할 수 있어요.\n아까 보시던 제품은 그대로 두었어요.',{resume:true});
   }
   const {patch:next={},changed=false,anyBrand=false,anyTerm=false}=input.parsed||{};
-  const wantsResults=changed || ['resume','more','previous','first','sort'].includes(input.action) || /추천|상품|다시 보기|보여|얼마|비교/.test(text);
+  if(recommendationRequested&&s.filters.category&&!s.filters.brand&&!s.filters.brands?.length&&!s.filters.maker){s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;}
+  const wantsResults=changed || ['resume','more','previous','first','sort'].includes(input.action) || /추천|상품|다시 보기|보여|얼마|비교/.test(text) || repeatedQuestionRepair;
   if(!wantsResults) {
-    const guide=guidance(s,catalog);
-    return result('조금만 더 알려주시겠어요?\n'+guide.question,guide);
+    const waiting=s.awaiting,guide=guidance(s,catalog);
+    if(waiting&&waiting===s.awaiting){
+      const count=s.reprompt?.key===waiting?s.reprompt.count+1:1;s.reprompt={key:waiting,count};
+      if(waiting==='brand'){
+        if(count>=2){s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all);s.recommendedCodes=cards.map(card=>card.code);return result('선호 브랜드는 선택 사항이라 건너뛰고, 서로 다른 브랜드에서 바로 골라봤어요.\n마음에 드는 상품 하나만 담아도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});}
+        return result('선호 브랜드가 없거나 잘 모르셔도 괜찮아요. 제가 서로 다른 세 브랜드에서 바로 골라드릴 수도 있어요.',{...guide,suggestions:['추천해주세요','브랜드 상관없어요']});
+      }
+      if(waiting==='term'){
+        if(count>=2){s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;const all=cardsFor(catalog,s.filters),page=pageData(all,s);return result('약정 기간은 선택 사항이라 건너뛰고 현재 조건의 상품부터 보여드릴게요. 상품 카드에서 기간별 월요금을 비교할 수 있어요.',page);}
+        return result('약정 기간을 아직 정하지 않으셨다면 전체 기간을 함께 볼 수 있어요.',{...guide,suggestions:['약정 상관없어요']});
+      }
+    }
+    s.reprompt=null;
+    return result('말씀하신 내용을 상품 조건으로 연결하지 못했어요. 제품 종류나 원하는 조건을 편하게 말씀해 주세요.',{...guide,suggestions:guide.suggestions||[]});
   }
+  s.reprompt=null;
   requestSummary = ['previous','first','sort'].includes(input.action) ? ({previous:'이전 상품 보기',first:'첫 상품 보기',sort:SORTS[validSort(input.sort)]})[input.action] : input.action==='resume' ? '보던 상품 이어 보기' : input.action==='more' ? '다른 상품도 보기' :
     anyBrand ? '브랜드는 상관없어요' : anyTerm ? '약정은 상관없어요' : filterLabels(next).join(' · ') || '조건 변경';
-  if(!s.filters.category&&!s.filters.model) return result('먼저 어떤 제품이 필요한지 알려주시겠어요?',{...guidance(s,catalog),needsReview:true});
+  if(!s.filters.category&&!s.filters.model) return result(repeatedQuestionRepair?'같은 질문을 반복했다면 죄송해요. 먼저 필요한 제품 종류만 알려주시면, 이미 답한 내용을 다시 묻지 않고 이어갈게요.':'먼저 어떤 제품이 필요한지 알려주시겠어요?',{...guidance(s,catalog),needsReview:true});
   const all=cardsFor(catalog,s.filters);
   s.selected=s.selected.filter(code=>all.some(c=>c.code===code));
   s.view='list';
@@ -149,7 +256,10 @@ function respondCatalog(previous, input, catalog) {
   if(input.action==='more')s.offset+=PAGE_SIZE;
   if(input.action==='previous')s.offset-=PAGE_SIZE;
   if(input.action==='first')s.offset=0;
-  const page=pageData(all,s);
+  const recommendations=recommendationRequested?recommendationsByBrand(all):null;
+  if(recommendations){s.offset=0;s.recommendedCodes=recommendations.map(card=>card.code);}
+  else s.recommendedCodes=[];
+  const page=recommendations?{cards:recommendations,total:recommendations.length,page:1,pages:1,start:1,end:recommendations.length,previous:false,more:false}:pageData(all,s);
   if(s.filters.care||s.filters.excludedCare?.length){
     const unknown=cardsFor(catalog,{...s.filters,care:null,excludedCare:[]}).filter(c=>c.plans.some(p=>p.options.some(o=>o.care==='관리 방식 확인 필요')));
     if(!all.length&&unknown.length)return result('다른 조건에 맞는 상품은 있지만 관리 방식이 등록되지 않은 상품이 있어요. 방문·자가관리 가능 여부는 확인이 필요합니다. 관리 방식 확인을 보류하고 상품부터 보실까요?',{cards:[],total:0,more:false,needsReview:true,suggestions:['관리 방식 확인 보류'],requestSummary:'관리 방식 자료 확인 필요'});
@@ -158,7 +268,8 @@ function respondCatalog(previous, input, catalog) {
   if(!all.length) return result('말씀하신 조건으로는 맞는 상품을 찾지 못했어요.\n브랜드나 약정 기간을 조금 넓혀볼까요?',{cards:[],total:0,more:false});
   const guide=guidance(s,catalog);
   let lead;
-  if(input.action==='more') lead=s.offset===previous.offset?'마지막 페이지예요. 이전 상품으로 돌아가거나 조건을 바꿔보세요.':'다음 상품을 가져왔어요.';
+  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n');lead=(repeatedQuestionRepair?'같은 질문을 반복했네요. 이미 확인한 조건은 그대로 두고 추가 질문은 건너뛸게요.\n':'')+(s.filters.category||'해당 카테고리')+'에서 서로 다른 브랜드 상품을 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.\n마음에 드는 상품 하나만 담아도 바로 상담을 이어갈 수 있어요.';}
+  else if(input.action==='more') lead=s.offset===previous.offset?'마지막 페이지예요. 이전 상품으로 돌아가거나 조건을 바꿔보세요.':'다음 상품을 가져왔어요.';
   else if(input.action==='previous')lead=s.offset===previous.offset?'첫 페이지예요.':'이전 상품으로 돌아왔어요.';
   else if(input.action==='first')lead='첫 페이지로 돌아왔어요.';
   else if(input.action==='sort'||input.parsed?.sortChanged)lead=SORTS[validSort(s.sort)]+'으로 다시 보여드릴게요.';
@@ -171,7 +282,7 @@ function respondCatalog(previous, input, catalog) {
   else if(next.term) lead=next.term+'개월 약정으로 찾아봤어요.';
   else if(next.category) lead=next.category+' 알아보고 계시는군요. 조건에 맞는 상품을 찾아봤어요.';
   else lead=changed?'확인된 검색 조건으로 다시 찾아봤어요.':'현재 설정된 조건의 상품을 보여드릴게요.';
-  return result(lead+'\n'+guide.question,{...guide,...page});
+  return result(recommendationRequested?lead:lead+'\n'+guide.question,{...guide,...page,recommendation:recommendationRequested});
 }
 
 // Preserve the entry controller and structured product state; do not call
@@ -191,15 +302,17 @@ export function respond(previous, input, catalog, context = {}) {
   }
   if(/정수기|공기청정기|비데|냉장고|세탁기|매트리스|에어컨/.test(raw)&&previous?.siteInternet){previous=structuredClone(previous);delete previous.siteInternet;}
   text=normalizeText(raw);
-  const faqQuestion=!input.action?rentalFaqReply(text):null;
-  const parsed=(input.action||faqQuestion)?{state:structuredClone(previous||initialState()),patch:{},changed:false}:interpret(text,previous||initialState());
+  const referenceQuestionResult=!input.action?referenceQuestion(text,{visibleCodes:previous?.visibleCodes||[],focusCode:previous?.focusCode||null,selectedCodes:previous?.selected||[]}):null;
+  if(referenceQuestionResult)referenceQuestionResult.text=text;
+  const faqQuestion=!input.action&&!referenceQuestionResult?rentalFaqReply(text):null;
+  const parsed=(input.action||faqQuestion||referenceQuestionResult)?{state:structuredClone(previous||initialState()),patch:{},changed:false}:interpret(text,previous||initialState());
   const s=parsed.state;
   const browsing=input.action?{}:browseRequest(text);
   if(browsing.clarification)parsed.clarification=browsing.clarification;
   if(browsing.sort&&!parsed.clarification){s.sort=browsing.sort;s.offset=0;parsed.changed=true;parsed.sortChanged=true;}
   if(parsed.changed)s.view='list';
   if(browsing.action)input={...input,action:browsing.action};
-  const ref=input.action?null:referenceAction(text,previous?.visibleCodes||[]);
+  const ref=input.action||referenceQuestionResult?null:referenceAction(text,previous?.visibleCodes||[]);
   const referenceConflict=ref?.action&&(parsed.sortChanged||JSON.stringify(s.filters)!==JSON.stringify((previous||initialState()).filters));
   if(referenceConflict)parsed.clarification='상품 조건·순서 변경과 번호 선택은 나누어 진행해 주세요. 먼저 바꿀 조건을 확인할까요?';
   if(parsed.clarification){Object.assign(s,structuredClone(previous||initialState()));parsed.changed=false;}
@@ -209,9 +322,11 @@ export function respond(previous, input, catalog, context = {}) {
 
   let out;
   const base = (reply, summary, extra={}) => ({state:s,reply,requestSummary:summary,...extra});
-  if(parsed.clarification||ref?.clarification) {
-    out=base(parsed.clarification||ref.clarification,'입력 조건 확인',{needsReview:true,suggestions:[]});
+  if(parsed.clarification||ref?.clarification||referenceQuestionResult?.clarification) {
+    out=base(parsed.clarification||ref?.clarification||referenceQuestionResult.clarification,'입력 조건 확인',{needsReview:true,suggestions:[]});
     out.requestSummary='입력 조건 확인';
+  } else if(referenceQuestionResult?.code) {
+    out=contextualProductReply(s,referenceQuestionResult,catalog);
   } else if(intent==='schedule'&&!faqQuestion&&!parsed.changed&&!isInstallationTiming(text)) {
     out=base('상담 연락을 받을 시점이 궁금하신가요, 아니면 제품 설치 날짜가 궁금하신가요?','일정 문의 확인',{needsReview:true,suggestions:[]});
   } else if(asksReason(text)&&!['human','complaint','cancel'].includes(intent)) {
@@ -263,14 +378,14 @@ export function respond(previous, input, catalog, context = {}) {
     if(out.resume)out.reply='말씀하신 상품 조건을 반영했어요.\n'+out.reply;
     Object.assign(out,pageData(current,out.state));
   }
-  if(parsed.changed&&selectedBefore.some(code=>!out.state.selected.includes(code)))out.reply+='\n바뀐 조건에 맞지 않는 상품은 비교 목록에서 뺐어요.';
+  if(parsed.changed&&selectedBefore.some(code=>!out.state.selected.includes(code)))out.reply+='\n바뀐 조건에 맞지 않는 상품은 담은 목록에서 뺐어요.';
   const unanswered = !!out.needsReview || (!!out.resume && !out.evidenceIds) || (!input.action && !out.requestSummary) || out.total===0;
   out = trackOutcome(out,intent,unanswered,context);
   if(out.handoff){delete out.sources;delete out.knowledgeEvidence;}
   // Price evidence is scoped to the current filters, never the entire catalog.
   const valid = cardsFor(catalog,out.state.filters);
   const evidence = valid.flatMap(c=>c.plans.flatMap(p=>[String(p.months),...p.options.flatMap(o=>[String(o.fee),o.fee.toLocaleString('ko-KR')])])).join(' ');
-  const violations = inspectReply(out.reply,{intent,evidence:evidence+' '+(out.knowledgeEvidence||''),candidateCount:valid.length});
+  const violations = inspectReply(out.reply,{intent,evidence:evidence+' '+(out.referenceEvidence||'')+' '+(out.knowledgeEvidence||''),candidateCount:valid.length});
   const invalidCards = out.cards?.some(c=>!valid.some(v=>v.code===c.code && JSON.stringify(v)===JSON.stringify(c)));
   if (violations.length || invalidCards) {
     if (out.outcome==='responded') out.state.quality.responded--;
@@ -278,7 +393,8 @@ export function respond(previous, input, catalog, context = {}) {
     delete out.cards;delete out.sources;delete out.knowledgeEvidence;
     out.state.quality.blocked++;
   }
+  if(context.catalogAvailable!==false&&out.state.focusCode&&!valid.some(card=>card.code===out.state.focusCode))out.state.focusCode=null;
   if(out.cards)out.state.visibleCodes=out.cards.map(c=>c.code);
+  delete out.referenceEvidence;
   return out;
 }
-

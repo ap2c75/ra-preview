@@ -4,7 +4,9 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-5';
+import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
+import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
 
 let siteData=null;
 fetch('/ra-preview/chatbot/site-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1')siteData=d;}).catch(()=>{siteData=null;});
@@ -17,9 +19,12 @@ let SAMPLE_PRODUCTS=[],catalogMetadata={status:'idle'};
 const $ = q => document.querySelector(q);
 const el = (tag, text, className) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (className) n.className = className; return n; };
 let state = initialState(), busy = false, dialogEpoch = 0, offer = null, receipt = null;
+const qualityRecorder=createQualityRecorder();
+const turnHistory=createTurnHistory();
+let latestUserText='';
 const money = n => Number(n).toLocaleString('ko-KR') + '원';
 const emptyContent = $('#results').cloneNode(true);
-let visibleCards = 0;
+let visibleCards = 0, recommendationView = false;
 
 let entryMode = 'waiting', serviceMode='preview';
 let nextCatalogRetry=0;
@@ -36,7 +41,7 @@ function catalogChanged(value){
  if(entryMode==='waiting')return;
  if(value.status!=='ready'){showCatalogUnavailable();return;}
  const all=cardsFor(SAMPLE_PRODUCTS,state.filters),before=state.selected.length;state.selected=state.selected.filter(code=>all.some(c=>c.code===code));
- if(before!==state.selected.length)say('갱신된 자료에 없는 비교 상품을 목록에서 뺐어요.');
+ if(before!==state.selected.length)say('갱신된 자료에 없는 담은 상품을 목록에서 뺐어요.');
  if(!state.filters.category&&!state.filters.model){showEmpty();return;}
  const comparison=state.view==='compare'&&state.selected.length>=2;if(!comparison)state.view='list';
  const cards=comparison?state.selected.map(code=>all.find(c=>c.code===code)):pageData(all,state).cards;state.visibleCodes=cards.map(c=>c.code);renderCards(cards,comparison);renderBrowse();renderActions();
@@ -81,7 +86,7 @@ function setEntryStep(step) {
   });
 }
 function initializeEntry() {
-  entryMode = 'waiting'; renderReceiptState(); state = initialState(); visibleCards = 0; renderBrowse(); $('#product-feedback').hidden=true;
+  entryMode = 'waiting'; renderReceiptState(); state = initialState(); turnHistory.clear(); visibleCards = 0; renderBrowse(); $('#product-feedback').hidden=true;
   $('.workspace').dataset.entry = 'waiting';
   $('.page-heading h1').textContent = '고객정보 확인부터 시작하겠습니다.';
   $('.page-note').lastChild.textContent = ' 고지·동의 후 고객정보를 입력합니다';
@@ -201,12 +206,29 @@ function showEmpty() {
 function button(label, action, className = '') {
   const b = el('button', label, className); b.type = 'button'; b.addEventListener('click', action); return b;
 }
+function qualityContext(){return {filters:filterLabels(state.filters),awaiting:state.awaiting,selectedCount:state.selected.length};}
+function appendMessageFeedback(row,assistantText,userText){
+  if(!userText||entryMode==='waiting')return;
+  const details=el('details',null,'message-feedback'),summary=el('summary','답변 개선');details.append(summary);
+  const choices=el('div',null,'message-feedback-choices');
+  for(const [reason,label] of QUALITY_REASONS){
+    choices.append(button(label,()=>{
+      qualityRecorder.add({reason:label,userText,assistantText,context:qualityContext()});
+      details.replaceChildren(el('span','개선 항목에 담았습니다.','message-feedback-done'));
+      run({action:{repeat:'repairRepeat',misread:'repairMisread',insufficient:'repairInsufficient',recommendation:'repairRecommendation'}[reason]});
+    }));
+  }
+  details.append(choices);row.append(details);
+}
 function say(text, speaker = 'assistant') {
   const log = $('#messages'), row = el('div', null, speaker === 'user' ? 'message user-message' : 'message');
   row.append(el('span', speaker === 'user' ? '나' : '소문 상담', 'message-meta'), el('div', text, 'message-text'));
+  if(speaker==='user')latestUserText=text;
+  else{appendMessageFeedback(row,text,latestUserText);latestUserText='';}
   log.append(row);
   while (log.childElementCount > 24) log.firstElementChild.remove();
   log.scrollTop = log.scrollHeight;
+  return row;
 }
 function renderFilters() {
   const box = $('#filters'); box.replaceChildren();
@@ -218,21 +240,21 @@ function renderBrowse() {
   if(!catalogReady()){$('#browse-toolbar').hidden=true;$('#product-pagination').hidden=true;$('#selection-tray').hidden=true;return;}
   const all=cardsFor(SAMPLE_PRODUCTS,state.filters),page=pageData(all,state),comparison=state.view==='compare';
   const active=entryMode!=='waiting'&&visibleCards>0;
-  $('#browse-toolbar').hidden=!active;
+  $('#browse-toolbar').hidden=!active||recommendationView;
   $('#product-sort').value=validSort(state.sort); $('#product-sort').disabled=comparison;
   $('#back-to-list').hidden=!comparison;
-  $('#product-pagination').hidden=!active||comparison;
+  $('#product-pagination').hidden=!active||comparison||recommendationView;
   $('#first-products').disabled=!page.previous; $('#previous-products').disabled=!page.previous; $('#next-products').disabled=!page.more;
   $('#product-page').textContent=page.page+' / '+page.pages;
   $('#product-page').setAttribute('aria-label',page.pages+'페이지 중 '+page.page+'페이지');
-  if(active&&!comparison)$('#result-count').textContent=page.total+'개 중 '+page.start+'–'+page.end;
+  if(active&&!comparison)$('#result-count').textContent=recommendationView?visibleCards+'개 추천':page.total+'개 중 '+page.start+'–'+page.end;
   const selected=state.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
   $('#selection-tray').hidden=entryMode==='waiting'||!selected.length;
   $('#selection-summary').textContent='담은 상품 '+selected.length+' / 3';
-  $('#compare-selection').disabled=selected.length<2; $('#compare-selection').textContent=selected.length<2?'하나 더 담아주세요':'비교하기';
+  $('#continue-selection').hidden=!selected.length; $('#compare-selection').hidden=selected.length<2;
   const list=$('#selected-products'),focused=document.activeElement?.dataset?.removeCode;list.replaceChildren();
   for(const card of selected){const row=el('div',null,'selected-product'),name=el('span',card.name);name.title=card.name;
-    const remove=button('빼기',()=>run({action:'select',code:card.code,selectionMode:'remove'}),'text-button');remove.dataset.removeCode=card.code;remove.setAttribute('aria-label',card.name+' 비교 목록에서 빼기');row.append(name,remove);list.append(row);}
+    const remove=button('빼기',()=>run({action:'select',code:card.code,selectionMode:'remove'}),'text-button');remove.dataset.removeCode=card.code;remove.setAttribute('aria-label',card.name+' 담은 상품에서 빼기');row.append(name,remove);list.append(row);}
   if(focused)($('#selected-products button')||$('#selection-summary')).focus();
 }
 function renderCards(cards, comparison = false) {
@@ -272,8 +294,8 @@ function renderCards(cards, comparison = false) {
     }
     card.append(details);
     const chosen = state.selected.includes(p.code);
-    const pick = button(chosen ? '비교 선택됨 ✓' : '비교에 담기', () => run({action:'select', code:p.code}), 'pick');
-    pick.setAttribute('aria-pressed', String(chosen)); pick.setAttribute('aria-label', p.name + ' 비교 선택');
+    const pick = button(chosen ? '상담 상품으로 담음 ✓' : '상담 상품으로 담기', () => run({action:'select', code:p.code}), 'pick');
+    pick.setAttribute('aria-pressed', String(chosen)); pick.setAttribute('aria-label', p.name + ' 상담 상품 선택');
     card.append(pick); grid.append(card);
   }
   result.append(grid, el('p', (comparison ? '고른 순서대로 비교합니다. ' : orderDescription(state)+' ') + (catalogMetadata.mode==='reviewed'?'검토한 상품 자료입니다. 표시 요금의 약정·관리·혜택 조건을 함께 확인해 주세요.':catalogMetadata.mode==='test'?'기능 검증용 상품 자료입니다. 실제 판매 요금·혜택은 확인이 필요합니다.':'표본 자료입니다. 프로모션·제휴카드 적용 여부와 현재 유효성은 별도 확인이 필요합니다.'), 'result-note'));
@@ -299,13 +321,26 @@ function renderActions(out = {}) {
   if (out.more) actions.append(button('다음 상품', () => run({action:'more'})));
   if (state.filters.category && !state.preferences?.brandAny && !promptChoices.includes('브랜드 상관없어요')) actions.append(button('브랜드 전체', () => run({text:'모든 브랜드'})));
   if (state.filters.budget) actions.append(button('예산 해제', () => run({text:'예산 해제'})));
-  if (state.selected.length) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
+  if (state.selected.length) actions.append(button('담은 상품으로 상담 이어가기', () => {run({action:'consultSelection'});setPanel('chat');}, 'primary'));
+  if (state.selected.length>=2) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
+  if(turnHistory.count())actions.append(button('방금 조건 되돌리기',()=>run({action:'undo'}),'undo-action'));
+  const qualityCount=qualityRecorder.all().length;
+  if(qualityCount)actions.append(button('개선 기록 복사 ('+qualityCount+')',copyQualityRecords,'quality-export'));
   // Receipt management lives in the status bar; do not repeat intake in every turn.
+}
+async function copyQualityRecords(){
+  const text=qualityRecorder.exportText();
+  try{await navigator.clipboard.writeText(text);say('개선 기록을 복사했습니다. 담당자에게 전달하면 회귀검사에 반영할 수 있어요.');}
+  catch{say('브라우저가 복사를 허용하지 않았어요. 주소창의 사이트 권한에서 클립보드를 허용한 뒤 다시 시도해 주세요.');}
+  renderActions();
 }
 function run(input) {
   if(entryMode==='waiting'){openConsent();return;}
   const available=catalogReady();
+  const before=structuredClone(state),undoRequested=input.action==='undo'||isUndoRequest(input.text);
+  if(undoRequested){const restored=turnHistory.undo(state);input={...input,action:'undo',restoreState:restored.state,undoAvailable:restored.restored};}
   const out = respond(state, input, SAMPLE_PRODUCTS, {entryMode,catalogAvailable:available, internalOnly:serviceMode==='internal', knowledgeEntries, siteData, hasReceipt:receipt?.status==='stored',receiptFreshness:receiptCheck.phase,delivery:receipt?.delivery});
+  if(!undoRequested)turnHistory.checkpoint(before,out.state);
   // Echo the customer's words only in the current DOM; intent labels stay internal.
   if (typeof input.text==='string' && input.text.trim()) say(input.text, 'user');
   else if (out.requestSummary) say(out.requestSummary, 'user');
@@ -313,12 +348,12 @@ function run(input) {
   if(out.siteSources?.length){const box=el('div',null,'answer-sources');for(const source of out.siteSources){const a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';const row=el('p');row.append(a);box.append(row);}$('#messages').lastElementChild.append(box);}
   if(out.sources?.length){const box=el('details',null,'answer-sources');box.append(el('summary','확인한 안내 근거'));for(const source of out.sources){const row=el('p'),a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';row.append(a,el('small',source.topic+' · '+source.scope+' · 적용 종료 '+new Date(source.validUntil).toLocaleDateString('ko-KR')));box.append(row);}$('#messages').lastElementChild.append(box);}
   // Customer messages remain in this page only, not storage, analytics or external/model APIs.
-  if ('cards' in out) {const scroll=$('#results').scrollTop;renderCards(out.cards, out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
+  if ('cards' in out) {const scroll=$('#results').scrollTop;recommendationView=!!out.recommendation;renderCards(out.cards, out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
   if(!available)showCatalogUnavailable();
   renderBrowse(); renderActions(out);
-  $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'최대 3개입니다. 담은 상품을 하나 빼주세요.':'';
+  $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'상담할 상품은 최대 3개까지 담을 수 있어요. 상품 하나를 빼고 다시 선택해 주세요.':'';
   if (out.comparison || ['sort','previous','first','more'].includes(input.action)) setPanel('products');
-  if (input.action === 'reset') setPanel('chat');
+  if (input.action === 'reset' || input.action === 'consultSelection') setPanel('chat');
   if (out.consent) openConsent();
 }
 async function api(path,body){
@@ -425,7 +460,7 @@ function renderLead(choices) {
   body.append(form); form.querySelector('input').focus();
 }
 $('#product-sort').addEventListener('change',event=>run({action:'sort',sort:event.target.value}));
-for(const [id,action]of [['first-products','first'],['previous-products','previous'],['next-products','more'],['back-to-list','resume'],['compare-selection','compare'],['clear-selection','clearSelection']])$("#"+id).addEventListener('click',()=>run({action}));
+for(const [id,action]of [['first-products','first'],['previous-products','previous'],['next-products','more'],['back-to-list','resume'],['continue-selection','consultSelection'],['compare-selection','compare'],['clear-selection','clearSelection']])$("#"+id).addEventListener('click',()=>run({action}));
 $('#manage-receipt').addEventListener('click',showReceipt);
 $('#retry-receipt').addEventListener('click',refreshReceipt);
 if(widgetMode){$('#close-widget').hidden=false;const closeWidget=()=>{if(window.parent!==window)window.parent.postMessage({type:'somun:close'},location.origin);};$('#close-widget').addEventListener('click',closeWidget);document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('#consent-dialog').open){event.preventDefault();closeWidget();}});}
@@ -444,7 +479,7 @@ $('#reset').addEventListener('click', () => {
 });
 $('#close-consent').addEventListener('click', closeConsent);
 $('#consent-dialog').addEventListener('cancel', event => { event.preventDefault(); closeConsent(); });
-window.addEventListener('pagehide', () => { ++dialogEpoch; $('#consent-body').replaceChildren(); $('#query').value = ''; state = initialState(); offer = null; });
+window.addEventListener('pagehide', () => { ++dialogEpoch; $('#consent-body').replaceChildren(); $('#query').value = ''; state = initialState(); turnHistory.clear(); offer = null; });
 matchMedia('(min-width:761px)').addEventListener('change',()=>{$('#messages').scrollTop=$('#messages').scrollHeight;});
 initializeEntry();
 async function resumeSession(){const epoch=dialogEpoch;try{const data=await api('resume',{});if(epoch!==dialogEpoch||entryMode!=='waiting'||receipt)return;if(data.receipt?.status==='stored'){setReceipt(data.receipt);$('#messages').replaceChildren();finishEntry('saved',null,true);}}catch{/* Unknown or unavailable sessions keep the consent-first entry. */}}
