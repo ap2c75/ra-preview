@@ -4,7 +4,7 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=selection-20260910-1';
 
 let siteData=null;
 fetch('/ra-preview/chatbot/site-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1')siteData=d;}).catch(()=>{siteData=null;});
@@ -36,7 +36,7 @@ function catalogChanged(value){
  if(entryMode==='waiting')return;
  if(value.status!=='ready'){showCatalogUnavailable();return;}
  const all=cardsFor(SAMPLE_PRODUCTS,state.filters),before=state.selected.length;state.selected=state.selected.filter(code=>all.some(c=>c.code===code));
- if(before!==state.selected.length)say('갱신된 자료에 없는 비교 상품을 목록에서 뺐어요.');
+ if(before!==state.selected.length)say('갱신된 자료에 없는 담은 상품을 목록에서 뺐어요.');
  if(!state.filters.category&&!state.filters.model){showEmpty();return;}
  const comparison=state.view==='compare'&&state.selected.length>=2;if(!comparison)state.view='list';
  const cards=comparison?state.selected.map(code=>all.find(c=>c.code===code)):pageData(all,state).cards;state.visibleCodes=cards.map(c=>c.code);renderCards(cards,comparison);renderBrowse();renderActions();
@@ -229,10 +229,10 @@ function renderBrowse() {
   const selected=state.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
   $('#selection-tray').hidden=entryMode==='waiting'||!selected.length;
   $('#selection-summary').textContent='담은 상품 '+selected.length+' / 3';
-  $('#compare-selection').disabled=selected.length<2; $('#compare-selection').textContent=selected.length<2?'하나 더 담아주세요':'비교하기';
+  $('#continue-selection').hidden=!selected.length; $('#compare-selection').hidden=selected.length<2;
   const list=$('#selected-products'),focused=document.activeElement?.dataset?.removeCode;list.replaceChildren();
   for(const card of selected){const row=el('div',null,'selected-product'),name=el('span',card.name);name.title=card.name;
-    const remove=button('빼기',()=>run({action:'select',code:card.code,selectionMode:'remove'}),'text-button');remove.dataset.removeCode=card.code;remove.setAttribute('aria-label',card.name+' 비교 목록에서 빼기');row.append(name,remove);list.append(row);}
+    const remove=button('빼기',()=>run({action:'select',code:card.code,selectionMode:'remove'}),'text-button');remove.dataset.removeCode=card.code;remove.setAttribute('aria-label',card.name+' 담은 상품에서 빼기');row.append(name,remove);list.append(row);}
   if(focused)($('#selected-products button')||$('#selection-summary')).focus();
 }
 function renderCards(cards, comparison = false) {
@@ -272,8 +272,8 @@ function renderCards(cards, comparison = false) {
     }
     card.append(details);
     const chosen = state.selected.includes(p.code);
-    const pick = button(chosen ? '비교 선택됨 ✓' : '비교에 담기', () => run({action:'select', code:p.code}), 'pick');
-    pick.setAttribute('aria-pressed', String(chosen)); pick.setAttribute('aria-label', p.name + ' 비교 선택');
+    const pick = button(chosen ? '상담 상품으로 담음 ✓' : '상담 상품으로 담기', () => run({action:'select', code:p.code}), 'pick');
+    pick.setAttribute('aria-pressed', String(chosen)); pick.setAttribute('aria-label', p.name + ' 상담 상품 선택');
     card.append(pick); grid.append(card);
   }
   result.append(grid, el('p', (comparison ? '고른 순서대로 비교합니다. ' : orderDescription(state)+' ') + (catalogMetadata.mode==='reviewed'?'검토한 상품 자료입니다. 표시 요금의 약정·관리·혜택 조건을 함께 확인해 주세요.':catalogMetadata.mode==='test'?'기능 검증용 상품 자료입니다. 실제 판매 요금·혜택은 확인이 필요합니다.':'표본 자료입니다. 프로모션·제휴카드 적용 여부와 현재 유효성은 별도 확인이 필요합니다.'), 'result-note'));
@@ -299,7 +299,8 @@ function renderActions(out = {}) {
   if (out.more) actions.append(button('다음 상품', () => run({action:'more'})));
   if (state.filters.category && !state.preferences?.brandAny && !promptChoices.includes('브랜드 상관없어요')) actions.append(button('브랜드 전체', () => run({text:'모든 브랜드'})));
   if (state.filters.budget) actions.append(button('예산 해제', () => run({text:'예산 해제'})));
-  if (state.selected.length) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
+  if (state.selected.length) actions.append(button('담은 상품으로 상담 이어가기', () => {run({action:'consultSelection'});setPanel('chat');}, 'primary'));
+  if (state.selected.length>=2) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
   // Receipt management lives in the status bar; do not repeat intake in every turn.
 }
 function run(input) {
@@ -316,9 +317,9 @@ function run(input) {
   if ('cards' in out) {const scroll=$('#results').scrollTop;renderCards(out.cards, out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
   if(!available)showCatalogUnavailable();
   renderBrowse(); renderActions(out);
-  $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'최대 3개입니다. 담은 상품을 하나 빼주세요.':'';
+  $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'상담할 상품은 최대 3개까지 담을 수 있어요. 상품 하나를 빼고 다시 선택해 주세요.':'';
   if (out.comparison || ['sort','previous','first','more'].includes(input.action)) setPanel('products');
-  if (input.action === 'reset') setPanel('chat');
+  if (input.action === 'reset' || input.action === 'consultSelection') setPanel('chat');
   if (out.consent) openConsent();
 }
 async function api(path,body){
@@ -425,7 +426,7 @@ function renderLead(choices) {
   body.append(form); form.querySelector('input').focus();
 }
 $('#product-sort').addEventListener('change',event=>run({action:'sort',sort:event.target.value}));
-for(const [id,action]of [['first-products','first'],['previous-products','previous'],['next-products','more'],['back-to-list','resume'],['compare-selection','compare'],['clear-selection','clearSelection']])$("#"+id).addEventListener('click',()=>run({action}));
+for(const [id,action]of [['first-products','first'],['previous-products','previous'],['next-products','more'],['back-to-list','resume'],['continue-selection','consultSelection'],['compare-selection','compare'],['clear-selection','clearSelection']])$("#"+id).addEventListener('click',()=>run({action}));
 $('#manage-receipt').addEventListener('click',showReceipt);
 $('#retry-receipt').addEventListener('click',refreshReceipt);
 if(widgetMode){$('#close-widget').hidden=false;const closeWidget=()=>{if(window.parent!==window)window.parent.postMessage({type:'somun:close'},location.origin);};$('#close-widget').addEventListener('click',closeWidget);document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('#consent-dialog').open){event.preventDefault();closeWidget();}});}

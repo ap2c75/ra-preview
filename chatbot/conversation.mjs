@@ -93,17 +93,24 @@ function respondCatalog(previous, input, catalog) {
       ? {cards:s.selected.map(code=>all.find(c=>c.code===code)).filter(Boolean),comparison:true}
       : (s.view='list',pageData(all,s));
     if(input.action==='clearSelection') {
-      s.selected=[]; requestSummary='비교 목록 비우기';
-      return result('비교 목록을 비웠어요.',display());
+      s.selected=[]; requestSummary='담은 상품 비우기';
+      return result('담은 상품을 비웠어요.',display());
     }
     const card = all.find(c=>c.code===input.code);
     if (!card) return result('조건이 바뀌어서 지금은 이 제품을 고를 수 없어요. 현재 목록에서 다시 골라주시겠어요?');
     const removing = input.selectionMode==='remove' || (input.selectionMode!=='add' && s.selected.includes(card.code));
-    requestSummary = removing ? '비교 목록에서 빼기' : '비교할 제품 담기';
+    requestSummary = removing ? '담은 상품에서 빼기' : '상담할 상품 담기';
     if(!removing&&!s.selected.includes(card.code)&&s.selected.length>=3)
-      return result('비교는 한 번에 3개까지 가능해요. 담아둔 상품 중 하나를 뺀 뒤 새 상품을 골라주세요.',{...display(),selectionLimit:true});
+      return result('상담할 상품은 한 번에 3개까지 담을 수 있어요. 상품 하나를 뺀 뒤 새 상품을 골라주세요.',{...display(),selectionLimit:true});
     s.selected = removing ? s.selected.filter(c=>c!==card.code) : [...new Set([...s.selected,card.code])];
-    return result(removing ? '비교 목록에서 뺐어요.' : s.selected.length===1 ? '담아뒀어요. 하나 더 고르시면 나란히 비교해 드릴게요.' : '좋아요. 고르신 제품들을 비교해 볼까요?',display());
+    return result(removing ? '담은 상품에서 뺐어요.' : s.selected.length===1 ? '상담할 상품으로 담았어요. 지금 바로 상담을 이어가거나 상품을 더 담아 비교할 수 있어요.' : '담았어요. 바로 상담을 이어가거나 선택한 상품을 비교할 수 있어요.',display());
+  }
+  if(input.action==='consultSelection'){
+    const all=cardsFor(catalog,s.filters),cards=s.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
+    requestSummary='담은 상품으로 상담 이어가기';s.view='list';
+    if(!cards.length)return result('상담할 상품을 하나 담아주세요.',pageData(all,s));
+    const names=cards.map(card=>card.brand+' '+card.name).join(' · ');
+    return result(names+' 기준으로 상담을 이어갈게요. 월요금, 약정, 관리 방식이나 혜택 중 궁금한 점을 편하게 말씀해 주세요.',{cards});
   }
   if (input.action === 'apply' || /상담.*(신청|연결)|사람.*상담/.test(text)) {
     requestSummary = '상담 신청 안내';
@@ -263,7 +270,7 @@ export function respond(previous, input, catalog, context = {}) {
     if(out.resume)out.reply='말씀하신 상품 조건을 반영했어요.\n'+out.reply;
     Object.assign(out,pageData(current,out.state));
   }
-  if(parsed.changed&&selectedBefore.some(code=>!out.state.selected.includes(code)))out.reply+='\n바뀐 조건에 맞지 않는 상품은 비교 목록에서 뺐어요.';
+  if(parsed.changed&&selectedBefore.some(code=>!out.state.selected.includes(code)))out.reply+='\n바뀐 조건에 맞지 않는 상품은 담은 목록에서 뺐어요.';
   const unanswered = !!out.needsReview || (!!out.resume && !out.evidenceIds) || (!input.action && !out.requestSummary) || out.total===0;
   out = trackOutcome(out,intent,unanswered,context);
   if(out.handoff){delete out.sources;delete out.knowledgeEvidence;}

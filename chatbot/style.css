@@ -61,11 +61,11 @@ body:has(.workspace[data-entry=waiting]) .mobile-tabs{display:none}
 .product-pagination button{min-width:44px}.product-pagination span{min-width:60px;text-align:center;font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted)}
 .selection-tray{background:#edf1f6;border-bottom:1px solid #dce3ec;padding:10px 24px;flex-shrink:0}
 .selection-heading{display:flex;align-items:flex-start;gap:12px}.selection-heading details{flex:1;min-width:0}.selection-heading summary{min-height:44px;align-content:center;cursor:pointer;font-size:12px;font-weight:600}
-.selection-heading>.primary{min-height:44px;padding:8px 12px;font-size:11px;white-space:nowrap}
+.selection-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}.selection-actions>button{min-height:44px;padding:8px 12px;font-size:11px;white-space:nowrap}
 #selected-products{max-height:150px;overflow:auto}.selected-product{display:flex;align-items:center;gap:8px;border-top:1px solid #d8e0eb}.selected-product>span{font-size:11px;line-height:1.7;overflow-wrap:anywhere;flex:1}.selected-product button{flex-shrink:0}
 .price-basis{background:#f0f3f7;border-radius:8px;padding:12px;margin:0 0 16px}.price-basis small,.price-basis strong,.price-basis span{display:block}.price-basis strong{font-size:22px;line-height:1.5;font-variant-numeric:tabular-nums}.price-basis small{font-size:10px;color:var(--muted)}.price-basis span{font-size:11px;margin:3px 0;color:#46505e}
 @media(max-width:1099px){.browse-toolbar,.selection-tray{padding-left:16px;padding-right:16px}.browse-toolbar{gap:8px}.browse-toolbar label{display:none}}
-@media(max-width:760px){.discovery{overflow-y:auto}.discovery>#results{min-height:160px}.discovery-heading,.discovery-footer{flex-shrink:0}.browse-toolbar select{font-size:16px;max-width:100%}.product-pagination{padding:10px}.selection-heading{gap:8px}.selection-heading>.primary{padding:8px 10px}}
+@media(max-width:760px){.discovery{overflow-y:auto}.discovery>#results{min-height:160px}.discovery-heading,.discovery-footer{flex-shrink:0}.browse-toolbar select{font-size:16px;max-width:100%}.product-pagination{padding:10px}.selection-heading{gap:8px}.selection-actions>button{padding:8px 10px}}
 
 .product-feedback{font-size:12px;color:#594923;background:#faf4e6;border-bottom:1px solid #e8dec4;padding:12px 18px;margin:0;flex-shrink:0}
 
