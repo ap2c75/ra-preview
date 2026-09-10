@@ -417,14 +417,43 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
         </tbody>
       </table></div>
       <div class="pager"><button type="button">이전</button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button">다음</button></div>
+
+      <div class="tablehead" style="margin-top:26px">
+        <div><h2>플랫폼 게시</h2>
+        <p>수강생 계정이 어느 채널에 이어져 있고 마지막으로 언제 성공했는지입니다.</p></div>
+      </div>
+      <div class="sample">🔴 <b>커뮤니티 두 곳이 섞여 있습니다</b> — 디시인사이드·뽐뿌. 계정 비밀번호를 저장해 자동 로그인·게시를 시도했고 둘 다 실패했습니다.</div>
+      <div class="tscroll"><table>
+        <thead><tr><th>플랫폼</th><th>계정</th><th>저장 확인값</th><th>상태</th><th>최근 성공</th><th>최근 실패·오류</th></tr></thead>
+        <tbody>
+        <tr><td><b>페이스북</b></td><td>소문컨설팅</td><td class="num">Upload-Post · @소문컨설팅</td><td>사용 중</td><td class="num">2026. 09. 10. 11:22</td><td class="num" class="none">—</td></tr>
+        <tr><td><b>인스타그램</b></td><td>baeksomun</td><td class="num">Upload-Post · @baeksomun</td><td>사용 중</td><td class="num">2026. 09. 10. 11:21</td><td class="num" class="none">—</td></tr>
+        <tr><td><b>쓰레드</b></td><td>baeksomun</td><td class="num">@baeksomun</td><td>사용 중</td><td class="num">2026. 09. 10. 11:21</td><td class="num" class="none">—</td></tr>
+        <tr style="background:#fff5f2"><td><b>디시인사이드</b> <span class="pill s3">커뮤니티</span></td><td>디씨인사이드</td><td class="num">comme••••3745</td><td style="color:#9a3412;font-weight:600">login_failed</td><td class="num">2026. 08. 13. 12:42</td><td class="num" class="none">—</td></tr>
+        <tr style="background:#fff5f2"><td><b>뽐뿌</b> <span class="pill s3">커뮤니티</span></td><td>뽐뿌 자유게시판</td><td class="num">•••••••</td><td>사용 중</td><td class="num">2026. 08. 01. 15:35</td><td class="num" style="color:#9a3412">2026. 08. 12. 21:57 · ppomppu_level_required</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="tablehead" style="margin-top:22px">
+        <div><h2>뉴스 기록</h2>
+        <p>다뿌려가 어느 기사에서 무엇을 뽑아 만들었는지의 기록입니다.</p></div>
+      </div>
+      <div class="tscroll"><table>
+        <thead><tr><th>생성일</th><th>수강생</th><th>제공사·모델</th><th>검색·생성 기록</th></tr></thead>
+        <tbody><tr><td colspan="4" style="text-align:center;padding:26px;color:#9a3412">🔴 원본은 여기가 비어 있었습니다 — 「뉴스 검색·생성 기록이 없습니다.」<br><span style="color:var(--muted);font-size:12px">그런데 변경 기록에는 다뿌려 초안 생성이 여러 건 있고 배포까지 성공했습니다. 무엇을 소재로 썼는지가 남지 않습니다.</span></td></tr></tbody>
+      </table></div>
       <div class="fixbar">
         <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
-          고친 곳 · 짚은 곳 (4)</button>
+          고친 곳 · 짚은 곳 (8)</button>
         <span>⏳ 표시는 <b>고치지 않고 짚어만 둔 것</b>입니다 — 원본 그대로 뒀습니다.</span>
       </div>
       <div class="fixes" id="fixlist" hidden>
       <div class="fix"><h3>로딩 문구</h3><dl><dt>원본</dt><dd class="was">「정보를 불러오는 중입니다.」가 사라지지 않는다</dd><dt>카피본</dt><dd>걷어냈다 — 화면이 처음부터 보인다</dd><dt>이유</dt><dd class="why">실제 화면은 그 아래 이미 다 그려져 있었다. 덮개만 안 걷힌 것이다. 8화면 전부 같은 증상이고, 브라우저가 두 번 멎었다.</dd></dl></div>
       <div class="fix"><h3>🔴 「다뿌려」가 여기서 돌고 있다</h3><dl><dt>원본</dt><dd class="was">감사기록에 「다뿌려 초안 생성」·「dapuryeo auto start」가 오늘 찍혀 있다 (09-10 18:12~18:13)</dd><dt>카피본</dt><dd>그대로 옮겼다</dd><dt>이유</dt><dd class="why">🔴 감사 메뉴에 **「뉴스 기록」·「플랫폼 게시」** 탭도 있다. 우리가 새로 만들고 있던 다뿌려가 **이 시스템 안에 이미 구현돼 돌고 있다.** 무엇을 다시 만들 것인지 먼저 정해야 한다.</dd></dl></div>
+      <div class="fix"><h3>🔴 뉴스 기록 탭이 비어 있다</h3><dl><dt>원본</dt><dd class="was">「뉴스 검색·생성 기록이 없습니다.」 — 칸은 생성일 · 수강생 · **제공사·모델** · 검색·생성 기록</dd><dt>카피본</dt><dd>표본으로 그렸다 — 무엇이 남아야 하는지의 그림</dd><dt>이유</dt><dd class="why">🔴 변경 기록에는 「다뿌려 초안 생성」이 여러 건 찍혀 있고 배포까지 성공했다. 그런데 **어느 기사에서 무엇을 뽑아 만들었는지는 아무 데도 없다.** 나중에 「이 카드 어디서 나온 겁니까」를 물으면 답할 근거가 없다.</dd></dl></div>
+      <div class="fix"><h3>🔴 커뮤니티에 자동 게시를 시도했다</h3><dl><dt>원본</dt><dd class="was">플랫폼 게시에 **디시인사이드**(login_failed) · **뽐뿌 자유게시판**(ppomppu_level_required)이 있다. 계정 비밀번호를 저장해 두고 있다</dd><dt>카피본</dt><dd>그대로 옮겼다 — 실패 사유까지</dd><dt>이유</dt><dd class="why">🔴 커뮤니티 자동 게시는 대부분 이용약관 위반이고, 뽐뿌·디시는 특히 강하게 막는다. 계정 정지·법적 다툼의 씨앗이다. 그리고 **남의 사이트 비밀번호를 우리 시스템에 저장**하고 있다. 우리 다뿌려 규칙(공개 RSS만 · robots 준수 · 회원 계약 금지)과 정면으로 어긋난다.</dd></dl></div>
+      <div class="fix"><h3>🔴 「보기」가 아무것도 열지 않는다</h3><dl><dt>원본</dt><dd class="was">모든 행의 「보기」를 눌러도 상세가 뜨지 않는다. 「사유/메모」 칸도 전부 「-」</dd><dt>카피본</dt><dd>상세가 실제로 열린다</dd><dt>이유</dt><dd class="why">🔴 **들여다볼 수 없는 감사기록은 감사기록이 아니다.** 개인정보 사고가 났을 때 「무엇을 했는지」를 못 꺼내면 기록이 있어도 소용이 없다.</dd></dl></div>
+      <div class="fix"><h3>구분이 어긋난다</h3><dl><dt>원본</dt><dd class="was">「다뿌려 초안 생성」은 구분이 **다뿌려**인데, 같은 사이클의 「dapuryeo auto start」는 **일반**</dd><dt>카피본</dt><dd>같은 사이클은 같은 구분으로 묶는다</dd><dt>이유</dt><dd class="why">구분으로 걸러 보면 자동 실행이 빠진다. 다뿌려가 언제 몇 번 돌았는지 셀 수 없다.</dd></dl></div>
       <div class="fix"><h3>다운로드 기록 · 개인정보 요청</h3><dl><dt>원본</dt><dd class="was">타일 숫자가 비어 있다</dd><dt>카피본</dt><dd>「—」로 적는다</dd><dt>이유</dt><dd class="why">고객 DB 반출 건수가 빈칸이면 「반출이 없었다」인지 「안 셌다」인지 모른다. 개인정보 사고가 났을 때 가장 먼저 보는 숫자다.</dd></dl></div>
       <div class="fix"><h3>수행자</h3><dl><dt>원본</dt><dd class="was">관리자가 「관리자 · 31f81583…」처럼 아이디 조각으로만 나온다</dd><dt>카피본</dt><dd>이름을 함께 적는 자리를 뒀다</dd><dt>이유</dt><dd class="why">누가 했는지 알 수 없는 감사기록은 감사기록이 아니다. 관리자 계정이 둘 이상 보인다(31f81583…, 52161050…).</dd></dl></div>
       </div>
@@ -436,7 +465,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
   t.addEventListener("click", function () {
     var open = l.hidden; l.hidden = !open;
     t.setAttribute("aria-expanded", String(open));
-    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (4)";
+    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (8)";
   });
   document.querySelectorAll("[data-reveal]").forEach(function (b) {
     b.addEventListener("click", function () {

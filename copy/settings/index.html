@@ -440,10 +440,62 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
           <tr><td class="num">note</td><td>추가로 전달할 내용이 있나요?</td><td>여러 줄 입력</td><td><span class="none">—</span></td><td><span class="pill s2">보존됨</span></td></tr>
             </tbody></table></div>
         </div>
+
+        <div class="box sbox full">
+          <h3>기능·한도 <span style="color:var(--accent)">15종</span></h3>
+          <p>기능을 선택하면 제공사, 사용 여부, 한도와 비용 기준을 수정할 수 있습니다. 🔴 <b>다뿌려 것은 4개</b>입니다 — 나머지는 랜딩 생성과 후킹자판기입니다.</p>
+          <div class="tscroll"><table>
+            <thead><tr><th>기능</th><th>제공사</th><th>모델</th><th>기본 한도</th></tr></thead>
+            <tbody>
+            <tr><td><b>배너 문구</b></td><td>OpenAI</td><td class="num">gpt-5.6-luna</td><td>20회</td></tr>
+            <tr><td><b>Studio 채널 문구</b></td><td>OpenAI</td><td class="num">gpt-5.6-luna</td><td>20회</td></tr>
+            <tr style="background:#fff8e6"><td><b>다뿌려 기사 이미지</b> <span class="pill s3">다뿌려</span></td><td>Gemini</td><td class="num">gemini-3.6-flash</td><td style="color:#9a3412;font-weight:700">무제한</td></tr>
+            <tr style="background:#fff8e6"><td><b>다뿌려 AI 재생성</b> <span class="pill s3">다뿌려</span></td><td>OpenAI</td><td class="num">gpt-5.6-terra</td><td>10회</td></tr>
+            <tr><td><b>후킹·홍보문구</b></td><td>OpenAI</td><td class="num">gpt-5.6-luna</td><td>5회</td></tr>
+            <tr><td><b>후킹자판기</b></td><td>OpenAI</td><td class="num">gpt-5.6-luna</td><td style="color:#9a3412;font-weight:700">무제한</td></tr>
+            <tr><td><b>후킹자판기 이미지</b></td><td>Gemini</td><td class="num">gemini-3-pro-image</td><td style="color:#9a3412;font-weight:700">무제한</td></tr>
+            <tr><td><b>이미지 생성·편집 통합</b></td><td>Gemini</td><td class="num">gemini-3-pro-image</td><td>3회</td></tr>
+            <tr><td><b>랜딩 전체 생성</b></td><td>OpenAI</td><td class="num">gpt-5.6-terra</td><td>1회</td></tr>
+            <tr><td><b>랜딩 대표이미지</b></td><td>Gemini</td><td class="num">gemini-3-pro-image</td><td>6회</td></tr>
+            <tr><td><b>랜딩 포트폴리오 이미지</b></td><td>Gemini</td><td class="num">gemini-3-pro-image</td><td>6회</td></tr>
+            <tr><td><b>랜딩 핵심 문구</b></td><td>OpenAI</td><td class="num">gpt-5.6-terra</td><td>10회</td></tr>
+            <tr style="background:#fff8e6"><td><b>최신뉴스 검색·재가공</b> <span class="pill s3">다뿌려</span></td><td>OpenAI</td><td class="num">gpt-5.6-terra</td><td>10회</td></tr>
+            <tr style="background:#fff8e6"><td><b>기사주소 재가공</b> <span class="pill s3">다뿌려</span></td><td>Gemini</td><td class="num">gemini-3.6-flash</td><td>3회</td></tr>
+            <tr><td><b>랜딩 제목 추천</b></td><td>OpenAI</td><td class="num">gpt-5.6-luna</td><td>5회</td></tr>
+            </tbody></table></div>
+          <div class="sample" style="margin-top:12px">🔴 <b>한도가 「무제한」인 것이 3개</b>입니다 — 다뿌려 기사 이미지 · 후킹자판기 · 후킹자판기 이미지. 이미지 생성이 비용의 95%인데 그중 둘이 상한이 없습니다.</div>
+        </div>
+
+        <div class="box sbox full">
+          <h3>사용 기록</h3>
+          <p>실제로 호출된 AI 사용량과 예상 비용입니다.</p>
+          <div class="tiles" style="margin-top:12px">
+            <div class="tile"><div class="k">요청</div><div class="v">881건</div><div class="s"></div></div>
+            <div class="tile"><div class="k">완료</div><div class="v">598건</div><div class="s"></div></div>
+            <div class="tile"><div class="k">실패</div><div class="v" style="color:#9a3412">175건</div><div class="s">전체의 19.9%</div></div>
+            <div class="tile"><div class="k">예상 비용</div><div class="v">US$103.01</div><div class="s">이미지가 95%</div></div>
+          </div>
+          <div class="tscroll" style="margin-top:12px"><table>
+            <thead><tr><th>기능</th><th>모델</th><th>요청</th><th>완료</th><th>실패</th><th>예상 비용</th></tr></thead>
+            <tbody>
+            <tr style="background:#fff8e6"><td><b>dapuryeo_article_image</b> <span class="pill s3">다뿌려</span></td><td class="num">gemini · gemini-3-pro-image</td><td class="num">20</td><td class="num">17</td><td class="num">3</td><td class="num">US$2.546000</td></tr>
+            <tr style="background:#fff8e6"><td><b>다뿌려 AI 재생성</b> <span class="pill s3">다뿌려</span></td><td class="num">openai · gpt-5.6-terra</td><td class="num">38</td><td class="num">31</td><td class="num">7</td><td class="num">US$1.426043</td></tr>
+            <tr><td><b>후킹자판기</b></td><td class="num">openai · gpt-5.6-luna</td><td class="num">77</td><td class="num">28</td><td class="num" style="color:#9a3412;font-weight:700">26 (34%)</td><td class="num">US$0.428430</td></tr>
+            <tr><td><b>후킹자판기 이미지</b></td><td class="num">gemini · gemini-3-pro-image</td><td class="num">58</td><td class="num">33</td><td class="num">6</td><td class="num">US$20.695322</td></tr>
+            <tr><td><b>후킹자판기 이미지</b></td><td class="num">openai · gpt-image-2</td><td class="num">7</td><td class="num">0</td><td class="num" style="color:#9a3412;font-weight:700">7 (100%)</td><td class="num">US$9.814474</td></tr>
+            <tr><td><b>랜딩 전체 생성</b></td><td class="num">openai · gpt-5.6-terra</td><td class="num">100</td><td class="num">86</td><td class="num">8</td><td class="num">US$2.760445</td></tr>
+            <tr><td><b>랜딩 대표이미지</b></td><td class="num">gemini · gemini-3-pro-image</td><td class="num">305</td><td class="num">229</td><td class="num">71</td><td class="num">US$39.542806</td></tr>
+            <tr><td><b>랜딩 포트폴리오 이미지</b></td><td class="num">gemini · gemini-3-pro-image</td><td class="num">212</td><td class="num">119</td><td class="num" style="color:#9a3412;font-weight:700">93 (44%)</td><td class="num">US$25.348895</td></tr>
+            <tr><td><b>랜딩 포트폴리오 이미지</b></td><td class="num">gemini · gemini-3.1-flash-image</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">US$0.268000</td></tr>
+            <tr><td><b>랜딩 제목 추천</b></td><td class="num">openai · gpt-5.6-luna</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">US$0.168981</td></tr>
+            <tr><td><b>랜딩 제목 추천</b></td><td class="num">openai · gpt-5.6-terra</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">US$0.009114</td></tr>
+            </tbody></table></div>
+          <div class="sample" style="margin-top:12px">🔴 <b>실패에도 돈이 나갑니다.</b> <code>gpt-image-2</code> 는 7건 요청에 <b>완료 0건</b>인데 <b>US$9.81</b>이 붙었습니다. 설정의 「다뿌려 기사 이미지」는 <code>gemini-3.6-flash</code> 인데 실제 호출은 <code>gemini-3-pro-image</code> 였습니다 — <b>설정과 실제가 다릅니다.</b></div>
+        </div>
       </div>
       <div class="fixbar">
         <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
-          고친 곳 · 짚은 곳 (5)</button>
+          고친 곳 · 짚은 곳 (9)</button>
         <span>⏳ 표시는 <b>고치지 않고 짚어만 둔 것</b>입니다 — 원본 그대로 뒀습니다.</span>
       </div>
       <div class="fixes" id="fixlist" hidden>
@@ -451,6 +503,10 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
       <div class="fix"><h3>🔴 API 키가 이미 돌고 있다</h3><dl><dt>원본</dt><dd class="was">Gemini 3개 · OpenAI 2개가 등록돼 있고 오늘도 썼다 (09-10 18:13, 18:14)</dd><dt>카피본</dt><dd>그대로 옮겼다 — 키 값은 마스킹된 상태만</dd><dt>이유</dt><dd class="why">🔴 우리가 다뿌려의 **P0 블로커**로 잡아 둔 「LLM 키(계약 필요)」가 **고객사에 이미 있다.** 새로 계약할 필요가 없을 수 있다.</dd></dl></div>
       <div class="fix"><h3>🔴 Meta 앱도 이미 있다</h3><dl><dt>원본</dt><dd class="was">Facebook 앱 ID · Threads 앱 ID가 등록돼 있다</dd><dt>카피본</dt><dd>그대로 옮겼다 — 마스킹된 상태만</dd><dt>이유</dt><dd class="why">🔴 다뿌려 P0 「Meta 앱·온보딩」도 이미 있다.</dd></dl></div>
       <div class="fix"><h3>⏳ 키를 눈 아이콘으로 원문 노출한다</h3><dl><dt>원본</dt><dd class="was">「보기」를 누르면 API 키·앱 시크릿 원문이 화면에 뜬다 — 원본 그대로 뒀다</dd><dt>카피본</dt><dd>카피본에서는 열리지 않는다</dd><dt>이유</dt><dd class="why">🔴 그 열람이 감사기록에 남는지 확인되지 않았다. 남지 않는다면 키가 언제 누구에게 보였는지 아무도 모른다.</dd></dl></div>
+      <div class="fix"><h3>🔴 AI 기능이 15종인데 다뿌려는 4개뿐이다</h3><dl><dt>원본</dt><dd class="was">배너문구 · Studio채널문구 · **다뿌려 기사 이미지** · **다뿌려 AI 재생성** · 후킹·홍보문구 · 후킹자판기 · 후킹자판기 이미지 · 이미지 생성편집 통합 · 랜딩 전체 생성 · 랜딩 대표이미지 · 랜딩 포트폴리오 이미지 · 랜딩 핵심문구 · **최신뉴스 검색·재가공** · **기사주소 재가공** · 랜딩 제목 추천</dd><dt>카피본</dt><dd>그대로 옮겼다 — 다뿌려 것 4개에 표시를 뒀다</dd><dt>이유</dt><dd class="why">🔴 비용으로 보면 **다뿌려는 전체의 3.9%**(US$3.97 / US$103.01)다. 나머지는 랜딩 자동생성(US$68.1)과 후킹자판기(US$30.9)다. **이 시스템의 주력은 다뿌려가 아니라 랜딩 생성이다.**</dd></dl></div>
+      <div class="fix"><h3>🔴 실패에도 돈이 나간다</h3><dl><dt>원본</dt><dd class="was">요청 881 · 완료 598 · **실패 175(19.9%)** · 예상 비용 US$103.01</dd><dt>카피본</dt><dd>실패 건수와 비용을 나란히 적는다</dd><dt>이유</dt><dd class="why">🔴 `gpt-image-2`는 **7건 요청 · 완료 0건**인데 **US$9.81**이 붙었다. 랜딩 포트폴리오 이미지는 212건 중 93건(44%), 랜딩 대표이미지는 305건 중 71건(23%) 실패. **비용의 95%가 이미지 생성**($98.2/$103.0)인데 실패율이 가장 높은 것도 이미지다.</dd></dl></div>
+      <div class="fix"><h3>🔴 한도가 「무제한」인 기능이 3개</h3><dl><dt>원본</dt><dd class="was">다뿌려 기사 이미지 · 후킹자판기 · 후킹자판기 이미지 = 무제한</dd><dt>카피본</dt><dd>무제한을 붉게 표시했다</dd><dt>이유</dt><dd class="why">🔴 이미지 생성이 비용의 95%인데 이미지 기능 둘이 **무제한**이다. 수강생 32명이 쓰는 구조에서 상한이 없으면 비용이 어디까지 갈지 아무도 모른다.</dd></dl></div>
+      <div class="fix"><h3>🔴 설정한 모델과 실제 호출 모델이 다르다</h3><dl><dt>원본</dt><dd class="was">기능·한도: 「다뿌려 기사 이미지 = gemini-3.6-flash」 / 사용 기록: 「dapuryeo_article_image = gemini-3-pro-image」</dd><dt>카피본</dt><dd>둘을 나란히 적어 어긋난 것이 보이게 했다</dd><dt>이유</dt><dd class="why">🔴 설정에서 싼 모델을 골라 뒀는데 실제로는 비싼 모델로 나갔다. 설정 화면이 실제 동작을 반영하지 않으면 **비용을 줄이려고 설정을 바꿔도 소용이 없다.**</dd></dl></div>
       <div class="fix"><h3>⏳ 상품이 3종이다</h3><dl><dt>원본</dt><dd class="was">인터넷 · CCTV · 포스+테이블오더 — 원본 그대로 뒀다</dd><dt>카피본</dt><dd>고치지 않았다. 짚어만 둔다</dd><dt>이유</dt><dd class="why">🔴 우리가 만든 랜딩 카탈로그는 렌탈 상품 1,706종(정수기·매트리스…)이다. **이 시스템과 상품 축이 다르다.** 어느 쪽이 이 건의 범위인지 확인이 필요하다.</dd></dl></div>
       </div>
       <p class="subnote">원본: <code>/admin/settings.php</code></p>
@@ -461,7 +517,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
   t.addEventListener("click", function () {
     var open = l.hidden; l.hidden = !open;
     t.setAttribute("aria-expanded", String(open));
-    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (5)";
+    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (9)";
   });
   document.querySelectorAll("[data-reveal]").forEach(function (b) {
     b.addEventListener("click", function () {
