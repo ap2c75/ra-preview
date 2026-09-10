@@ -311,6 +311,159 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
 <script>
 (function(){
   "use strict";
+/* 상품 고르기 — 대분류 → 소분류 → 상품 (총판 화면에 끼워 넣는 코드)
+   🔴 예전엔 상품 10종을 한 화면에 다 뿌렸다. 1,458종은 그렇게 못 한다.
+      총판이 「내 손님이 찾는 것」에 3번 안에 닿아야 한다. */
+(function () {
+  "use strict";
+  /* 🔴 여기서 window.__CATALOG 를 바로 붙잡으면 안 된다 —
+        이 파일이 카탈로그 데이터보다 **먼저** 실행되면 undefined 를 쥔 채로 굳는다.
+        실제로 그렇게 화면이 통째로 비었다(2026-09-10). 초기화 때 읽는다. */
+  var CAT = null;   /* { groups:[{slug,name,subs:[{name,count}]}], items:[...] } */
+  var state = { group: null, sub: null, q: '', page: 0, chosen: null };
+  var PAGE = 24;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var won = function (n) { return Number(n).toLocaleString('ko-KR'); };
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* 🔴 검색은 이름·브랜드·모델을 다 본다. 총판은 모델명으로 찾는 일이 많다. */
+  function match(it, q) {
+    if (!q) return true;
+    var hay = (it.name + ' ' + it.brand + ' ' + (it.model || '') + ' ' + it.sub).toLowerCase();
+    return q.toLowerCase().split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
+  }
+
+  function filtered() {
+    return CAT.items.filter(function (it) {
+      if (state.group && it.group !== state.group) return false;
+      if (state.sub && it.sub !== state.sub) return false;
+      return match(it, state.q);
+    });
+  }
+
+  function madeAlready(id) {
+    return (window.MINE || []).some(function (m) { return m.id === id; });
+  }
+
+  /* ── 대분류 줄 ── */
+  function renderGroups() {
+    var box = $('cat-groups'); if (!box) return;
+    var html = '<button type="button" class="chip' + (state.group ? '' : ' on') + '" data-g="">전체 '
+      + '<b>' + CAT.items.length + '</b></button>';
+    CAT.groups.forEach(function (g) {
+      html += '<button type="button" class="chip' + (state.group === g.slug ? ' on' : '') +
+        '" data-g="' + esc(g.slug) + '">' + esc(g.name) + ' <b>' + g.count + '</b></button>';
+    });
+    box.innerHTML = html;
+    [].forEach.call(box.querySelectorAll('.chip'), function (b) {
+      b.addEventListener('click', function () {
+        state.group = b.getAttribute('data-g') || null;
+        state.sub = null; state.page = 0;
+        renderAll();
+      });
+    });
+  }
+
+  /* ── 소분류 줄 (대분류를 골랐을 때만) ── */
+  function renderSubs() {
+    var box = $('cat-subs'); if (!box) return;
+    var g = CAT.groups.filter(function (x) { return x.slug === state.group; })[0];
+    if (!g) { box.innerHTML = ''; box.hidden = true; return; }
+    box.hidden = false;
+    var html = '<button type="button" class="chip sm' + (state.sub ? '' : ' on') + '" data-s="">'
+      + esc(g.name) + ' 전체 <b>' + g.count + '</b></button>';
+    g.subs.forEach(function (s) {
+      html += '<button type="button" class="chip sm' + (state.sub === s.name ? ' on' : '') +
+        '" data-s="' + esc(s.name) + '">' + esc(s.name) + ' <b>' + s.count + '</b></button>';
+    });
+    box.innerHTML = html;
+    [].forEach.call(box.querySelectorAll('.chip'), function (b) {
+      b.addEventListener('click', function () {
+        state.sub = b.getAttribute('data-s') || null;
+        state.page = 0;
+        renderAll();
+      });
+    });
+  }
+
+  /* ── 상품 카드 ── */
+  function renderPicks() {
+    var box = $('picks'); if (!box) return;
+    var list = filtered();
+    var total = list.length;
+    var shown = list.slice(0, (state.page + 1) * PAGE);
+
+    var note = $('pick-count');
+    if (note) {
+      note.textContent = total
+        ? total.toLocaleString('ko-KR') + '종 중 ' + shown.length.toLocaleString('ko-KR') + '종 보는 중'
+        : '조건에 맞는 상품이 없습니다';
+    }
+
+    box.innerHTML = shown.map(function (p) {
+      var made = madeAlready(p.id);
+      return '<button type="button" class="pick' + (state.chosen === p.id ? ' on' : '') + '"' +
+        (made ? ' disabled' : '') + ' data-id="' + esc(p.id) + '"' +
+        ' aria-pressed="' + (state.chosen === p.id) + '">' +
+        '<span class="rd" aria-hidden="true"></span>' +
+        (p.img ? '<span class="ph"><img src="' + esc(p.img) + '" alt="" loading="lazy" decoding="async"></span>'
+               : '<span class="ph none" aria-hidden="true">' + esc(p.sub.slice(0, 2)) + '</span>') +
+        '<span class="bd">' +
+          '<span class="nm">' + esc(p.name) + '</span>' +
+          '<span class="cat">' + esc(p.brand) + ' · ' + esc(p.sub) + '</span>' +
+          '<span class="fee">월 <b>' + won(p.low) + '원</b>부터' +
+            (p.high > p.low ? ' <i>~ ' + won(p.high) + '원</i>' : '') + '</span>' +
+          '<span class="promo">조건 ' + p.combos + '가지</span>' +
+          (made ? '<span class="cat">이미 만드셨습니다</span>' : '') +
+        '</span></button>';
+    }).join('');
+
+    [].forEach.call(box.querySelectorAll('.pick'), function (b) {
+      b.addEventListener('click', function () {
+        state.chosen = b.getAttribute('data-id');
+        window.__chosen = state.chosen;
+        var nx = $('pick-next'); if (nx) nx.disabled = false;
+        renderPicks();
+      });
+    });
+
+    var more = $('pick-more');
+    if (more) {
+      var rest = total - shown.length;
+      more.hidden = rest <= 0;
+      more.textContent = rest > 0 ? '더 보기 (' + Math.min(PAGE, rest) + '종)' : '';
+    }
+  }
+
+  function renderAll() { renderGroups(); renderSubs(); renderPicks(); }
+
+  window.__pickerInit = function () {
+    CAT = window.__CATALOG;
+    if (!CAT || !CAT.items) { console.error('상품 목록이 없습니다'); return; }
+    var s = $('pick-q');
+    if (s) {
+      s.addEventListener('input', function () {
+        state.q = s.value.trim(); state.page = 0; renderPicks();
+      });
+    }
+    var more = $('pick-more');
+    if (more) more.addEventListener('click', function () { state.page++; renderPicks(); });
+    renderAll();
+  };
+  window.__pickerReset = function () {
+    state.chosen = null; window.__chosen = null; renderAll();
+  };
+  window.__pickerFind = function (id) {
+    return CAT.items.filter(function (x) { return x.id === id; })[0] || null;
+  };
+  window.__pickerRefresh = renderAll;
+})();
+
 
   /* ── 생성 (자동 생성 — make-generator.mjs) ────────────────────
      🔑 인계면 그대로다: **완성된 1장에 문자열 치환 1패스.** 빌드 툴이 없다.
@@ -580,154 +733,6 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
   window.MINE = MINE;              /* picker 가 「이미 만든 것」을 알아야 한다 */
   window.__pickerInit();
   renderMine();
-/* 상품 고르기 — 대분류 → 소분류 → 상품 (총판 화면에 끼워 넣는 코드)
-   🔴 예전엔 상품 10종을 한 화면에 다 뿌렸다. 1,458종은 그렇게 못 한다.
-      총판이 「내 손님이 찾는 것」에 3번 안에 닿아야 한다. */
-(function () {
-  "use strict";
-  var CAT = window.__CATALOG;          /* { groups:[{slug,name,subs:[{name,count}]}], items:[...] } */
-  var state = { group: null, sub: null, q: '', page: 0, chosen: null };
-  var PAGE = 24;
-
-  var $ = function (id) { return document.getElementById(id); };
-  var won = function (n) { return Number(n).toLocaleString('ko-KR'); };
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  /* 🔴 검색은 이름·브랜드·모델을 다 본다. 총판은 모델명으로 찾는 일이 많다. */
-  function match(it, q) {
-    if (!q) return true;
-    var hay = (it.name + ' ' + it.brand + ' ' + (it.model || '') + ' ' + it.sub).toLowerCase();
-    return q.toLowerCase().split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
-  }
-
-  function filtered() {
-    return CAT.items.filter(function (it) {
-      if (state.group && it.group !== state.group) return false;
-      if (state.sub && it.sub !== state.sub) return false;
-      return match(it, state.q);
-    });
-  }
-
-  function madeAlready(id) {
-    return (window.MINE || []).some(function (m) { return m.id === id; });
-  }
-
-  /* ── 대분류 줄 ── */
-  function renderGroups() {
-    var box = $('cat-groups'); if (!box) return;
-    var html = '<button type="button" class="chip' + (state.group ? '' : ' on') + '" data-g="">전체 '
-      + '<b>' + CAT.items.length + '</b></button>';
-    CAT.groups.forEach(function (g) {
-      html += '<button type="button" class="chip' + (state.group === g.slug ? ' on' : '') +
-        '" data-g="' + esc(g.slug) + '">' + esc(g.name) + ' <b>' + g.count + '</b></button>';
-    });
-    box.innerHTML = html;
-    [].forEach.call(box.querySelectorAll('.chip'), function (b) {
-      b.addEventListener('click', function () {
-        state.group = b.getAttribute('data-g') || null;
-        state.sub = null; state.page = 0;
-        renderAll();
-      });
-    });
-  }
-
-  /* ── 소분류 줄 (대분류를 골랐을 때만) ── */
-  function renderSubs() {
-    var box = $('cat-subs'); if (!box) return;
-    var g = CAT.groups.filter(function (x) { return x.slug === state.group; })[0];
-    if (!g) { box.innerHTML = ''; box.hidden = true; return; }
-    box.hidden = false;
-    var html = '<button type="button" class="chip sm' + (state.sub ? '' : ' on') + '" data-s="">'
-      + esc(g.name) + ' 전체 <b>' + g.count + '</b></button>';
-    g.subs.forEach(function (s) {
-      html += '<button type="button" class="chip sm' + (state.sub === s.name ? ' on' : '') +
-        '" data-s="' + esc(s.name) + '">' + esc(s.name) + ' <b>' + s.count + '</b></button>';
-    });
-    box.innerHTML = html;
-    [].forEach.call(box.querySelectorAll('.chip'), function (b) {
-      b.addEventListener('click', function () {
-        state.sub = b.getAttribute('data-s') || null;
-        state.page = 0;
-        renderAll();
-      });
-    });
-  }
-
-  /* ── 상품 카드 ── */
-  function renderPicks() {
-    var box = $('picks'); if (!box) return;
-    var list = filtered();
-    var total = list.length;
-    var shown = list.slice(0, (state.page + 1) * PAGE);
-
-    var note = $('pick-count');
-    if (note) {
-      note.textContent = total
-        ? total.toLocaleString('ko-KR') + '종 중 ' + shown.length.toLocaleString('ko-KR') + '종 보는 중'
-        : '조건에 맞는 상품이 없습니다';
-    }
-
-    box.innerHTML = shown.map(function (p) {
-      var made = madeAlready(p.id);
-      return '<button type="button" class="pick' + (state.chosen === p.id ? ' on' : '') + '"' +
-        (made ? ' disabled' : '') + ' data-id="' + esc(p.id) + '"' +
-        ' aria-pressed="' + (state.chosen === p.id) + '">' +
-        '<span class="rd" aria-hidden="true"></span>' +
-        (p.img ? '<span class="ph"><img src="' + esc(p.img) + '" alt="" loading="lazy" decoding="async"></span>'
-               : '<span class="ph none" aria-hidden="true">' + esc(p.sub.slice(0, 2)) + '</span>') +
-        '<span class="bd">' +
-          '<span class="nm">' + esc(p.name) + '</span>' +
-          '<span class="cat">' + esc(p.brand) + ' · ' + esc(p.sub) + '</span>' +
-          '<span class="fee">월 <b>' + won(p.low) + '원</b>부터' +
-            (p.high > p.low ? ' <i>~ ' + won(p.high) + '원</i>' : '') + '</span>' +
-          '<span class="promo">조건 ' + p.combos + '가지</span>' +
-          (made ? '<span class="cat">이미 만드셨습니다</span>' : '') +
-        '</span></button>';
-    }).join('');
-
-    [].forEach.call(box.querySelectorAll('.pick'), function (b) {
-      b.addEventListener('click', function () {
-        state.chosen = b.getAttribute('data-id');
-        window.__chosen = state.chosen;
-        var nx = $('pick-next'); if (nx) nx.disabled = false;
-        renderPicks();
-      });
-    });
-
-    var more = $('pick-more');
-    if (more) {
-      var rest = total - shown.length;
-      more.hidden = rest <= 0;
-      more.textContent = rest > 0 ? '더 보기 (' + Math.min(PAGE, rest) + '종)' : '';
-    }
-  }
-
-  function renderAll() { renderGroups(); renderSubs(); renderPicks(); }
-
-  window.__pickerInit = function () {
-    var s = $('pick-q');
-    if (s) {
-      s.addEventListener('input', function () {
-        state.q = s.value.trim(); state.page = 0; renderPicks();
-      });
-    }
-    var more = $('pick-more');
-    if (more) more.addEventListener('click', function () { state.page++; renderPicks(); });
-    renderAll();
-  };
-  window.__pickerReset = function () {
-    state.chosen = null; window.__chosen = null; renderAll();
-  };
-  window.__pickerFind = function (id) {
-    return CAT.items.filter(function (x) { return x.id === id; })[0] || null;
-  };
-  window.__pickerRefresh = renderAll;
-})();
-
 })();
 </script>
 </body>
