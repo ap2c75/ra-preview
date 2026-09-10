@@ -59,6 +59,24 @@ const recoveredBudget=send(noResultRecovery.state,'예산 해제');
 assert.ok(recoveredBudget.cards.length>0);
 assert.ok(recoveredBudget.cards.every(card=>card.brand==='쿠쿠'));
 
+const alternateByText=send(direct.state,'다른 거 보여줘');
+assert.equal(alternateByText.recommendation,true);
+assert.equal(alternateByText.cards.length,3);
+assert.ok(alternateByText.cards.every(card=>!direct.cards.some(previous=>previous.code===card.code)));
+assert.equal(new Set(alternateByText.cards.map(card=>card.brand)).size,3);
+
+const cheaperByText=send(direct.state,'좀 더 싼 걸로 보여줘');
+assert.equal(cheaperByText.state.sort,'priceAsc');
+assert.equal(cheaperByText.cards.length,3);
+assert.ok(cheaperByText.cards.every(card=>!/조리수기/.test(card.name)));
+
+const iceRecommendation=send(initialState(),'얼음정수기 추천해줘');
+const withoutIce=send(iceRecommendation.state,'얼음 없는 걸로 바꿔줘');
+assert.equal(withoutIce.state.filters.feature,null);
+assert.equal(withoutIce.state.filters.excludeIce,true);
+assert.ok(withoutIce.cards.length>0);
+assert.ok(withoutIce.cards.every(card=>!/얼음|아이스/i.test(card.name)));
+
 const repaired=send(category.state,'왜 자꾸 같은 걸 물어봐?');
 assert.equal(repaired.cards.length,3);
 assert.match(repaired.reply,/같은 질문을 반복했네요/);
@@ -156,6 +174,7 @@ assert.match(careComparison.reply,/등록된 관리 방식/);
 const ambiguousComparison=send(recommended.state,'둘 중 싼 건?');
 assert.equal(ambiguousComparison.needsReview,true);
 assert.match(ambiguousComparison.reply,/비교할 상품 두 개를 번호로/);
+assert.equal(ambiguousComparison.state.sort,'default');
 const unavailableComparison=respond(recommended.state,{text:'1번이랑 2번 비교해줘'},catalog,{catalogAvailable:false});
 assert.equal(unavailableComparison.catalogUnavailable,true);
 assert.match(unavailableComparison.reply,/상품 자료를 확인하지 못해/);
@@ -236,5 +255,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 52 scenarios / 139 assertions passed');
+console.log('conversation regression: 55 scenarios / 151 assertions passed');
 

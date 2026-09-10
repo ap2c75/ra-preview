@@ -1,7 +1,7 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
-import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-7';
+import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs?v=conversation-repair-20260910-1';
+import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-8';
 import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
@@ -328,7 +328,8 @@ function respondCatalog(previous, input, catalog) {
   const recommendations=recommendationRequested?recommendationsByBrand(all,3,[],s.filters.category):null;
   if(recommendations){s.offset=0;s.recommendedCodes=recommendations.map(card=>card.code);}
   else s.recommendedCodes=[];
-  const page=recommendations?{cards:recommendations,total:recommendations.length,page:1,pages:1,start:1,end:recommendations.length,previous:false,more:false}:pageData(all,s);
+  const categoryExact=s.filters.category&&['priceAsc','priceDesc'].includes(s.sort)?all.filter(card=>categoryNameMatch(card,s.filters.category)):[],displayAll=categoryExact.length?categoryExact:all;
+  const page=recommendations?{cards:recommendations,total:recommendations.length,page:1,pages:1,start:1,end:recommendations.length,previous:false,more:false}:pageData(displayAll,s);
   if(s.filters.care||s.filters.excludedCare?.length){
     const unknown=cardsFor(catalog,{...s.filters,care:null,excludedCare:[]}).filter(c=>c.plans.some(p=>p.options.some(o=>o.care==='관리 방식 확인 필요')));
     if(!all.length&&unknown.length)return result('다른 조건에 맞는 상품은 있지만 관리 방식이 등록되지 않은 상품이 있어요. 방문·자가관리 가능 여부는 확인이 필요합니다. 관리 방식 확인을 보류하고 상품부터 보실까요?',{cards:[],total:0,more:false,needsReview:true,suggestions:['관리 방식 확인 보류'],requestSummary:'관리 방식 자료 확인 필요'});
@@ -382,7 +383,7 @@ export function respond(previous, input, catalog, context = {}) {
   if(browsing.clarification)parsed.clarification=browsing.clarification;
   if(browsing.sort&&!parsed.clarification){s.sort=browsing.sort;s.offset=0;parsed.changed=true;parsed.sortChanged=true;}
   if(parsed.changed)s.view='list';
-  if(browsing.action)input={...input,action:browsing.action};
+  if(browsing.action)input={...input,action:browsing.action==='alternateRecommendation'?(previous?.recommendedCodes?.length?'repairRecommendation':'more'):browsing.action};
   const ref=input.action||referenceQuestionResult||comparisonResult||decisionResult?null:referenceAction(text,previous?.visibleCodes||[]);
   const referenceConflict=ref?.action&&(parsed.sortChanged||JSON.stringify(s.filters)!==JSON.stringify((previous||initialState()).filters));
   if(referenceConflict)parsed.clarification='상품 조건·순서 변경과 번호 선택은 나누어 진행해 주세요. 먼저 바꿀 조건을 확인할까요?';

@@ -57,7 +57,8 @@ export function interpret(text,previous) {
  if(anyTerm){patch.term=null;patch.excludedTerms=[];s.preferences.termAny=true;}
  const ice=mentions(text,/얼음|아이스/g,()=>true);
  if(ice.length){const last=ice.at(-1);patch.feature=last.negative?null:'ice';patch.excludeIce=last.negative;}
- if(/얼음.*없이|일반\s*정수기/.test(text)){patch.feature=null;patch.excludeIce=true;}
+  if(/얼음.*없이|일반\s*정수기/.test(text)){patch.feature=null;patch.excludeIce=true;}
+  if(/얼음.*(?:없는|빼고|제외)/.test(text)){patch.feature=null;patch.excludeIce=true;}
  if(/관리\s*방식\s*(?:확인\s*보류|상관없|해제)/.test(text)){patch.care=null;patch.excludedCare=[];}
  const careHits=mentions(text,/방문\s*관리|자가\s*관리|자가|셀프/g,v=>/방문/.test(v)?'visit':'self');
  if(careHits.length){
@@ -108,6 +109,7 @@ export function referenceDecision(text,{visibleCodes=[],selectedCodes=[],view='l
  return {criterion,requestedMonths,codes:[...pool]};
 }
 export function referenceComparison(text,{visibleCodes=[],selectedCodes=[],view='list'}={}) {
+  if(/(?:좀\s*)?더\s*(?:싼|저렴한|낮은).*(?:걸로|것으로).*(?:보여|찾아|추천)/.test(text)&&!/(?:둘|셋|두|세)\s*(?:개|가지)?\s*중/.test(text))return null;
  const cue=/비교|차이|다르|달라|(?:둘|셋)\s*중|어느\s*(?:게|것)|뭐가\s*(?:더)?\s*(?:싼|싸|저렴|낮)|더\s*(?:싼|싸|저렴|낮)/.test(text);
  if(!cue)return null;
  const references=[...text.matchAll(/(첫|한|두|둘|세|셋|네|넷|\d+)\s*(?:번째|번)(?:\s*(?:상품|제품))?/g)];

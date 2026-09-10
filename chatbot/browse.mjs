@@ -35,13 +35,15 @@ export function orderDescription(state) {
 }
 export function browseRequest(text) {
   const t=String(text).replace(/\s+/g,'').replace(/[.!?~]+$/,'');
+  if(/(?:둘|셋|두|세)(?:개|가지)?중/.test(t)&&/(?:싼|저렴|낮|가격|요금)/.test(t))return {};
+  if(/^(?:다른|새로운)(?:거|것|상품|제품)(?:로)?(?:보여줘|보여주세요|추천해줘|추천해주세요|골라줘|골라주세요)$/.test(t))return {action:'alternateRecommendation'};
   // Exact navigation phrases cannot swallow a support question or ownership transfer.
   if(/^(다음(상품|페이지)(도)?(보여줘|보여주세요|보기|볼게요|주세요)?|다른상품(보여줘|보여주세요))$/.test(t))return {action:'more'};
   if(/^이전(상품|페이지)(으?로)?(보여줘|보여주세요|보기|돌아가줘|돌아가기)?$/.test(t))return {action:'previous'};
   if(/^(첫|처음)(상품|페이지)(으?로)?(보여줘|보여주세요|보기|돌아가줘|돌아가기)?$/.test(t))return {action:'first'};
   // Non-monthly fees and benefit sizes must not be interpreted as monthly sorting.
   if(/설치비|등록비|사은품|지원금|위약금|총납입|총비용/.test(t))return {};
-  const rules=[['priceAsc',/(?:저렴한|싼|낮은)(?:것부터|거부터|순)/g],['priceDesc',/(?:비싼|높은)순/g],['name',/(?:제품명|상품명|이름)순/g],['default',/기본(?:순서|순)/g]];
+  const rules=[['priceAsc',/(?:저렴한|싼|낮은)(?:것부터|거부터|순)|(?:좀)?더(?:싼|저렴한|낮은)(?:걸로|것으로)?(?:보여줘|보여주세요|찾아줘|추천해줘)?/g],['priceDesc',/(?:비싼|높은)순/g],['name',/(?:제품명|상품명|이름)순/g],['default',/기본(?:순서|순)/g]];
   const choices=[];
   for(const [sort,re] of rules)for(const m of t.matchAll(re))if(!/^(?:으로)?(?:말고|아니고|제외)/.test(t.slice(m.index+m[0].length)))choices.push(sort);
   const unique=[...new Set(choices)];
