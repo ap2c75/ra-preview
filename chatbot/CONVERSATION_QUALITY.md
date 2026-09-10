@@ -13,6 +13,8 @@ Updated: 2026-09-10
 | Treat correction as a normal dialogue act | “왜 자꾸 같은 걸 물어봐”, “아까 답했는데” trigger repair: acknowledge once, retain known conditions, skip the repeated optional question, and show useful results. | repeated-question repair |
 | Do not repeat a failed prompt verbatim | First no-match rephrases the optional brand or term question and gives two natural exits. A second no-match skips the optional slot and advances. | first and second no-match |
 | Support one-shot and step-by-step requests | Both “정수기” followed by “추천해주세요” and “정수기 추천해주세요” lead to the same three-brand result. | sequential and direct recommendation |
+| Resolve customer brand names to catalog labels | Treat 쿠쿠/CKOO, 엘지/LG, and 삼성/삼성전자 as the same brands while showing customer-facing Korean labels in results. | Cuckoo water purifier and LG air purifier requests |
+| Explain zero-result conflicts with a useful next action | Test one-constraint relaxations against the catalog and say which budget, term, brand, or care condition can be widened and how many products would become available. | impossible budget → budget removal → recovered results |
 | Keep recommendations inside the requested product type | Within each brand, first retain products whose names fit the selected category, then rank registered benefit signals and monthly fee. This prevents adjacent items such as a 조리수기 from representing the 정수기 category. | water purifier, air purifier, and bidet three-brand recommendations |
 | Make failures testable before release | High-risk happy paths and breakdown paths are deterministic regression scenarios. | `conversation-regression.mjs` |
 

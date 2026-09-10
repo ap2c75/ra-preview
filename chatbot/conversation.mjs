@@ -1,7 +1,7 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
 import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-5';
+import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-6';
 import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
@@ -27,6 +27,7 @@ export function catalogCategory(p) {
   return toCategory(p.category) || toCategory(p.name);
 }
 const modelKey=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const catalogBrand=brand=>brand==='CKOO'?'쿠쿠':brand;
 function matchesModel(p,query){
  if(!query)return true;
  const q=modelKey(query);
@@ -34,7 +35,7 @@ function matchesModel(p,query){
 }
 export function cardsFor(catalog, f) {
   return catalog.filter(p => matchesModel(p,f.model) && !/^\d+개월\s*(반값|할인)/.test(p.name) && (!f.category || catalogCategory(p) === f.category) &&
-    (!f.brand || p.brand === f.brand) && (!f.brands?.length || f.brands.includes(p.brand)) && !f.excludedBrands?.includes(p.brand) && (!f.maker || norm(p.maker || p.name).includes(norm(f.maker))) &&
+    (!f.brand || catalogBrand(p.brand) === f.brand) && (!f.brands?.length || f.brands.includes(catalogBrand(p.brand))) && !f.excludedBrands?.includes(catalogBrand(p.brand)) && (!f.maker || norm(p.maker || p.name).includes(norm(f.maker))) &&
     (!f.feature || /얼음|아이스/i.test(p.name)) && (!f.excludeIce || !/얼음|아이스/i.test(p.name))).flatMap(p => {
     const plans = (p.terms || []).filter(t => (!f.term || t.m === f.term) && !f.excludedTerms?.includes(t.m)).flatMap(t => {
       const options = eligibleOptions(t, f);
@@ -46,7 +47,7 @@ export function cardsFor(catalog, f) {
           condition: o.condition, note: o.note, promo: o.promo, discount: o.discountText,
           totalMonths: o.totalMonths, sourceRow: o.sourceRow ?? null })) }];
     });
-    return plans.length ? [{ code: p.code, name: p.name, brand: p.brand, plans }] : [];
+    return plans.length ? [{ code: p.code, name: p.name, brand: catalogBrand(p.brand), plans }] : [];
   }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
 function categoryNameMatch(card,category){
@@ -165,6 +166,18 @@ function guidance(s, catalog) {
   }
   s.awaiting = null;
   return { question: '마음에 드는 제품을 골라 비교해 볼까요?', suggestions: [] };
+}
+function noResultRecovery(s,catalog){
+ const f=s.filters,options=[];
+ const add=(active,filters,label,suggestion)=>{if(!active)return;const count=cardsFor(catalog,filters).length;if(count)options.push({count,label,suggestion});};
+ add(f.brand||f.maker||f.brands?.length,{...f,brand:null,maker:null,brands:[],excludedBrands:[]},'브랜드 조건', '브랜드 상관없어요');
+ add(f.term||f.excludedTerms?.length,{...f,term:null,excludedTerms:[]},f.term?`${f.term}개월 약정 조건`:'약정 제외 조건','약정 상관없어요');
+ add(f.care||f.excludedCare?.length,{...f,care:null,excludedCare:[]},f.care==='visit'?'방문관리 조건':f.care==='self'?'자가관리 조건':'관리 방식 조건','관리 방식 확인 보류');
+ add(Number.isFinite(f.budget),{...f,budget:null},`월 ${f.budget?.toLocaleString('ko-KR')}원 상한`,'예산 해제');
+ const viable=options.sort((a,b)=>a.count-b.count).slice(0,2);
+ if(!viable.length)return null;
+ const detail=viable.map(item=>`${item.label}을 풀면 ${item.count.toLocaleString('ko-KR')}개`).join(', ');
+ return {reply:`현재 조건을 모두 만족하는 상품은 없어요. ${detail}를 확인할 수 있어요. 어느 조건을 넓힐까요?`,suggestions:viable.map(item=>item.suggestion)};
 }
 function respondCatalog(previous, input, catalog) {
   const s = structuredClone(previous || initialState());
@@ -311,10 +324,10 @@ function respondCatalog(previous, input, catalog) {
     if(!all.length&&unknown.length)return result('다른 조건에 맞는 상품은 있지만 관리 방식이 등록되지 않은 상품이 있어요. 방문·자가관리 가능 여부는 확인이 필요합니다. 관리 방식 확인을 보류하고 상품부터 보실까요?',{cards:[],total:0,more:false,needsReview:true,suggestions:['관리 방식 확인 보류'],requestSummary:'관리 방식 자료 확인 필요'});
   }
   if(!all.length&&s.filters.model)return result('입력하신 모델과 현재 조건에 맞는 상품을 찾지 못했어요. 모델명 철자를 확인하거나 모델 검색을 해제해 주세요.',{cards:[],total:0,more:false,suggestions:['모델 검색 해제']});
-  if(!all.length) return result('말씀하신 조건으로는 맞는 상품을 찾지 못했어요.\n브랜드나 약정 기간을 조금 넓혀볼까요?',{cards:[],total:0,more:false});
+  if(!all.length){const recovery=noResultRecovery(s,catalog);return result(recovery?.reply||'말씀하신 조건으로는 맞는 상품을 찾지 못했어요.\n브랜드나 약정 기간을 조금 넓혀볼까요?',{cards:[],total:0,more:false,suggestions:recovery?.suggestions||[]});}
   const guide=guidance(s,catalog);
   let lead;
-  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n');lead=(repeatedQuestionRepair?'같은 질문을 반복했네요. 이미 확인한 조건은 그대로 두고 추가 질문은 건너뛸게요.\n':'')+(s.filters.category||'해당 카테고리')+'에서 서로 다른 브랜드 상품을 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.\n마음에 드는 상품 하나만 담아도 바로 상담을 이어갈 수 있어요.';}
+  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n'),scope=s.filters.brand||s.filters.maker?`${s.filters.brand||s.filters.maker} ${(s.filters.category||'해당 카테고리')} 상품 중에서`:`${s.filters.category||'해당 카테고리'}에서 서로 다른 브랜드 상품을`;lead=(repeatedQuestionRepair?'같은 질문을 반복했네요. 이미 확인한 조건은 그대로 두고 추가 질문은 건너뛸게요.\n':'')+scope+' 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.\n마음에 드는 상품 하나만 담아도 바로 상담을 이어갈 수 있어요.';}
   else if(input.action==='more') lead=s.offset===previous.offset?'마지막 페이지예요. 이전 상품으로 돌아가거나 조건을 바꿔보세요.':'다음 상품을 가져왔어요.';
   else if(input.action==='previous')lead=s.offset===previous.offset?'첫 페이지예요.':'이전 상품으로 돌아왔어요.';
   else if(input.action==='first')lead='첫 페이지로 돌아왔어요.';

@@ -23,7 +23,7 @@ function mentions(text,pattern,resolve) {
  return matches.map((m,i)=>({value:resolve(m[0]),negative:denied.test(text.slice(m.index+m[0].length,matches[i+1]?.index)),index:m.index})).filter(m=>m.value);
 }
 const unique=a=>[...new Set(a)];
-const brandPattern=/코웨이|coway|쿠쿠|cuckoo|sk\s*매직|에스케이매직|skmagic|교원웰스|교원|웰스|wells|청호나이스|청호|chungho|세스코|cesco|동양매직|동양렌탈|bs렌탈|비에스렌탈|유버스|ubus|캐리어|carrier|루헨스|ruhens/gi;
+const brandPattern=/코웨이|coway|삼성(?:전자)?|엘지|lg(?:전자)?|쿠쿠|cuckoo|ckoo|sk\s*매직|에스케이매직|skmagic|교원웰스|교원|웰스|wells|청호나이스|청호|chungho|세스코|cesco|동양매직|동양렌탈|bs렌탈|비에스렌탈|유버스|ubus|캐리어|carrier|루헨스|ruhens/gi;
 export function interpret(text,previous) {
  const s=structuredClone(previous),patch={};let clarification=null;
  const modelTokens=[...text.matchAll(/(?<![a-z0-9])[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*(?![a-z0-9])/gi)].map(m=>m[0]).filter(v=>v.length>=4&&v.length<=40&&/[a-z]/i.test(v)&&/\d/.test(v));

@@ -33,6 +33,32 @@ assert.equal(bidetRecommendation.cards.length,3);
 assert.equal(new Set(bidetRecommendation.cards.map(card=>card.brand)).size,3);
 assert.ok(bidetRecommendation.cards.every(card=>/비데/.test(card.name)));
 
+const cuckooRecommendation=send(initialState(),'쿠쿠 정수기 추천해줘');
+assert.equal(cuckooRecommendation.state.filters.brand,'쿠쿠');
+assert.ok(cuckooRecommendation.cards.length>0);
+assert.ok(cuckooRecommendation.cards.every(card=>card.brand==='쿠쿠'));
+assert.doesNotMatch(cuckooRecommendation.reply,/서로 다른 브랜드/);
+
+const lgRecommendation=send(initialState(),'엘지 공기청정기 추천해줘');
+assert.equal(lgRecommendation.state.filters.brand,'엘지');
+assert.ok(lgRecommendation.cards.length>0);
+assert.ok(lgRecommendation.cards.every(card=>card.brand==='엘지'));
+
+const combinedConditions=send(initialState(),'정수기 월 2만원 안 넘고 방문관리 되는 걸로 추천해줘');
+assert.equal(combinedConditions.state.filters.category,'정수기');
+assert.equal(combinedConditions.state.filters.care,'visit');
+assert.equal(combinedConditions.state.filters.budget,20000);
+assert.equal(combinedConditions.cards.length,3);
+assert.ok(combinedConditions.cards.every(card=>card.plans.some(plan=>plan.options.some(option=>option.fee<=20000&&option.care==='방문관리'))));
+
+const noResultRecovery=send(initialState(),'쿠쿠 정수기 60개월 월 1000원 이하로 추천해줘');
+assert.equal(noResultRecovery.cards.length,0);
+assert.match(noResultRecovery.reply,/월 1,000원 상한을 풀면/);
+assert.deepEqual(noResultRecovery.suggestions,['예산 해제']);
+const recoveredBudget=send(noResultRecovery.state,'예산 해제');
+assert.ok(recoveredBudget.cards.length>0);
+assert.ok(recoveredBudget.cards.every(card=>card.brand==='쿠쿠'));
+
 const repaired=send(category.state,'왜 자꾸 같은 걸 물어봐?');
 assert.equal(repaired.cards.length,3);
 assert.match(repaired.reply,/같은 질문을 반복했네요/);
@@ -190,5 +216,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 42 scenarios / 109 assertions passed');
+console.log('conversation regression: 47 scenarios / 126 assertions passed');
 
