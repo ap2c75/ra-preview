@@ -101,7 +101,6 @@ function initializeEntry() {
   $('#actions').replaceChildren(button('고객정보 확인하기',openConsent,'primary'));
   $('.privacy-hint').textContent='개인정보 안내에 동의한 후 입력해 주세요.';
   setPanel('chat'); setEntryStep('consent');
-  openConsent();
   say('안녕하세요, 소문입니다.\n원활한 상담을 위해 고객님의 정보 확인부터 진행하겠습니다.\n\n먼저 개인정보 수집·이용 안내를 확인해 주세요.');
 }
 function finishEntry(mode, interest = null, resumed = false) {
