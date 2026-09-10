@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head><meta name="robots" content="noindex,nofollow,noarchive"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f7f9"><title>소문 · 나에게 맞는 렌탈 찾기</title><link rel="stylesheet" href="/ra-preview/chatbot/style.css"></head>
+<body>
+<div class="shell">
+<header class="site-header"><a class="logo" href="/ra-preview/chatbot/index.html" aria-label="소문 처음 화면">소문<span class="logo-dot" aria-hidden="true"></span></a><span class="brand-description">RENTAL, SIMPLY.</span><span class="preview">개발 미리보기</span><button id="close-widget" class="text-button" type="button" aria-label="상담 위젯 닫기" hidden>닫기 ×</button></header>
+<main>
+<div class="page-heading"><div><p class="eyebrow">소문 컨시어지</p><h1>고객정보 확인부터 시작하겠습니다.</h1></div><p class="page-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>고지·동의 후 고객정보를 입력합니다</p></div>
+<div class="mobile-tabs" role="group" aria-label="화면 전환"><button type="button" data-panel="chat" aria-pressed="true">대화하기</button><button type="button" data-panel="products" aria-pressed="false">상품 보기 <span id="mobile-count">0</span></button></div>
+<div class="workspace" data-panel="chat" data-entry="waiting" data-entry-step="consent">
+<section id="chat-panel" class="chat" aria-label="소문 자동 상담">
+<div class="chat-heading"><span class="avatar" aria-hidden="true">s.</span><div><strong>소문 상담</strong><small><span class="auto-label">자동 상담</span> 상품 탐색 · 조건 비교</small></div><button id="reset" class="text-button" aria-label="새로 시작"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1.5 7M4 4v6h6"/></svg><span>새로 시작</span></button></div>
+<div class="context"><span class="context-title">지금 찾는 조건</span><div id="filters">품목부터 골라볼까요?</div></div>
+<div id="catalog-status" class="receipt-status" role="status"><span id="catalog-state">상품 자료 확인 중</span><button id="retry-catalog" type="button" class="text-button">다시 불러오기</button></div>
+<div id="receipt-status" class="receipt-status" hidden><div class="receipt-copy" role="status" aria-live="polite"><span id="receipt-state"></span><small id="receipt-freshness"></small></div><button id="retry-receipt" type="button" class="text-button">다시 확인</button><button id="manage-receipt" type="button" class="text-button">접수 관리</button></div>
+<ol id="entry-progress" aria-label="상담 진행 단계"><li data-step="consent" class="current" aria-current="step"><span>1</span>고지·동의</li><li data-step="information"><span>2</span>고객정보</li><li data-step="consultation"><span>3</span>렌탈 상담</li></ol>
+<div id="messages" tabindex="0" aria-label="대화 기록" role="log" aria-live="polite" aria-relevant="additions"></div>
+<div class="chat-bottom"><div id="actions" class="actions"></div><form id="composer" class="composer"><label class="sr-only" for="query">찾는 상품이나 궁금한 점</label><input id="query" disabled maxlength="500" autocomplete="off" placeholder="궁금한 점을 편하게 남겨주세요"><button type="submit" disabled aria-label="메시지 보내기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button></form><p class="privacy-hint">이름·연락처는 상담 신청에서 입력해 주세요.</p></div>
+</section>
+<section id="products-panel" class="discovery" aria-labelledby="results-title">
+<div class="discovery-heading"><div><p class="eyebrow">FOR YOUR HOME</p><h2 id="results-title">조건에 맞는 상품</h2></div><span id="result-count" class="count-label">탐색 전</span></div>
+<div id="browse-toolbar" class="browse-toolbar" hidden><label for="product-sort">상품 정렬</label><select id="product-sort"><option value="default">기본 순서</option><option value="priceAsc">월요금 낮은 순</option><option value="priceDesc">월요금 높은 순</option><option value="name">제품명 순</option></select><button id="back-to-list" type="button" class="secondary" hidden>목록으로</button></div>
+<div id="selection-tray" class="selection-tray" hidden><div class="selection-heading"><details id="selection-details"><summary id="selection-summary">담은 상품</summary><div id="selected-products"></div><button id="clear-selection" type="button" class="text-button">전체 비우기</button></details><button id="compare-selection" type="button" class="primary">비교하기</button></div></div>
+<p id="product-feedback" class="product-feedback" role="status" hidden></p>
+<div id="results" aria-label="상품 조회 결과">
+<div class="empty-state"><div class="empty-symbol" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="28" cy="28" r="15"/><path d="m39 39 12 12M22 28h12m-6-6v12"/></svg></div><h3>어떤 렌탈을 찾으세요?</h3><p>품목을 고르면 등록된 요금과 관리 조건을<br>한곳에서 비교할 수 있어요.</p><div class="category-menu"><button data-query="정수기"><span><b>정수기</b><small>매일 마시는 물부터</small></span><span aria-hidden="true">↗</span></button><button data-query="공기청정기"><span><b>공기청정기</b><small>우리 집 공기를 위해</small></span><span aria-hidden="true">↗</span></button><button data-query="비데"><span><b>비데</b><small>욕실을 더 편안하게</small></span><span aria-hidden="true">↗</span></button></div><p class="empty-tip">왼쪽 대화창에 원하는 조건을 바로 적어도 좋아요.</p></div>
+</div>
+<nav id="product-pagination" class="product-pagination" aria-label="상품 페이지" hidden><button id="first-products" class="secondary" type="button">처음</button><button id="previous-products" class="secondary" type="button">이전</button><span id="product-page" role="status" aria-live="polite"></span><button id="next-products" class="secondary" type="button">다음</button></nav>
+<div class="discovery-footer"><span>01 고지·동의</span><span>02 고객정보 입력</span><span>03 렌탈 상담</span></div>
+</section>
+</div>
+<footer class="site-footer"><span>브로씨앤씨 · 소문</span><span>등록 자료 기준이며, 실제 적용 요금과 혜택은 상품별 조건 확인이 필요합니다.</span></footer>
+</main></div>
+<dialog id="consent-dialog" aria-labelledby="consent-title"><div class="dialog-head"><div><p class="eyebrow">상담 전 확인해 주세요</p><h2 id="consent-title">개인정보 수집·이용 안내</h2></div><button id="close-consent" class="text-button" aria-label="상담 신청 닫기">닫기 <span aria-hidden="true">×</span></button></div><div id="consent-body"></div></dialog>
+<script type="module" src="/ra-preview/chatbot/app.mjs?v=entry-20260910-3"></script>
+</body></html>
