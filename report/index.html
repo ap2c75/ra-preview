@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>폴더백선생 시스템 실사 보고</title>
+<style>
+:root{
+  --ink:#171512; --ink2:#3b3733; --muted:#6f6862; --faint:#9a938c;
+  --paper:#faf8f5; --card:#fff; --line:#e6e0d8; --line2:#f0ebe4;
+  --red:#9d2f1f; --red-bg:#fdf3f1; --red-line:#f0d6d0;
+  --amber:#8a5a12; --amber-bg:#fdf8ec; --amber-line:#ecdcbe;
+  --good:#1f5f45; --good-bg:#f0f6f3; --good-line:#cfe3d9;
+  --accent:#1f4e5f;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 96px}
+
+/* 표지 */
+.cover{border-bottom:1px solid var(--line);margin-bottom:38px;padding:52px 0 30px}
+.eyebrow{font-size:11.5px;letter-spacing:.18em;font-weight:700;color:var(--accent);
+  text-transform:uppercase}
+h1{font-size:31px;line-height:1.3;letter-spacing:-.9px;margin:14px 0 0;font-weight:800;
+  text-wrap:balance}
+.cover .sub{color:var(--muted);font-size:14.5px;margin:14px 0 0;line-height:1.7}
+.meta{display:flex;flex-wrap:wrap;gap:6px 20px;margin:22px 0 0;font-size:12.5px;color:var(--faint)}
+.meta b{color:var(--ink2);font-weight:600}
+
+/* 한 줄 요약 */
+.lede{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:3px;padding:20px 22px;margin:0 0 34px;font-size:17px;line-height:1.72;
+  font-weight:600;letter-spacing:-.2px}
+.lede small{display:block;font-size:13.5px;font-weight:400;color:var(--muted);margin-top:9px;
+  line-height:1.7}
+
+h2{font-size:20px;letter-spacing:-.5px;margin:46px 0 4px;font-weight:800;text-wrap:balance}
+h2 .n{color:var(--faint);font-weight:700;margin-right:9px;font-size:16px}
+h3{font-size:15.5px;margin:28px 0 6px;font-weight:700;letter-spacing:-.2px}
+p{margin:12px 0}
+.dek{color:var(--muted);font-size:14px;margin:6px 0 16px}
+strong,b{font-weight:700}
+code{background:var(--line2);border-radius:3px;padding:1px 5px;font-size:13.5px;
+  font-family:ui-monospace,Consolas,"Courier New",monospace}
+a{color:var(--accent)}
+
+/* 표 */
+.tw{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:4px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:440px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line2);vertical-align:top}
+th{font-size:11.5px;letter-spacing:.04em;color:var(--muted);font-weight:700;background:#fbf9f6;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+th.n{text-align:right}
+tr.hi td{background:var(--red-bg)}
+.big{font-weight:800;font-size:15px}
+
+/* 강조 상자 */
+.box{border-radius:4px;padding:16px 18px;margin:18px 0;font-size:14.5px;line-height:1.72}
+.box p{margin:8px 0}.box p:first-child{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.red{background:var(--red-bg);border:1px solid var(--red-line)}
+.box.red b{color:var(--red)}
+.box.amber{background:var(--amber-bg);border:1px solid #ecdcbe}
+.box.amber b{color:var(--amber)}
+.box.good{background:var(--good-bg);border:1px solid var(--good-line)}
+.box.good b{color:var(--good)}
+.box .lbl{font-size:11.5px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;
+  display:block;margin-bottom:7px;opacity:.75}
+
+/* 인용 — 실제로 나간 글 */
+blockquote{margin:16px 0;padding:16px 20px;background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--red);border-radius:3px;font-size:14px;line-height:1.8;
+  color:var(--ink2);white-space:pre-line}
+blockquote .src{display:block;font-size:11.5px;color:var(--faint);margin-bottom:10px;
+  letter-spacing:.03em;white-space:normal}
+blockquote em{font-style:normal;background:#fdeae5;padding:1px 3px;border-radius:2px;
+  font-weight:600;color:var(--red)}
+
+/* 목록 */
+ul,ol{margin:12px 0;padding-left:22px}
+li{margin:7px 0}
+ul.tight li{margin:4px 0}
+.check{list-style:none;padding:0}
+.check li{padding-left:26px;position:relative}
+.check li::before{content:"";position:absolute;left:6px;top:11px;width:7px;height:7px;
+  border-radius:50%;background:var(--accent)}
+.check li.r::before{background:var(--red)}
+.check li.w::before{background:var(--amber)}
+
+/* 숫자 카드 */
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0}
+.num{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:15px 16px}
+.num .k{font-size:12px;color:var(--muted)}
+.num .v{font-size:26px;font-weight:800;letter-spacing:-1px;margin-top:4px;
+  font-variant-numeric:tabular-nums}
+.num .s{font-size:12px;color:var(--faint);margin-top:4px}
+.num.r .v{color:var(--red)}
+
+/* 두 열 비교 */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.vs>div{border:1px solid var(--line);border-radius:4px;padding:15px 17px;background:var(--card)}
+.vs h4{margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+  font-weight:700;color:var(--muted)}
+.vs ul{margin:0;padding-left:19px;font-size:13.5px;line-height:1.7}
+.vs li{margin:6px 0}
+
+/* 마무리 */
+.foot{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--faint);line-height:1.8}
+.foot b{color:var(--ink2)}
+.links{display:grid;gap:8px;margin:18px 0}
+.links a{display:block;background:var(--card);border:1px solid var(--line);border-radius:4px;
+  padding:12px 15px;text-decoration:none;color:inherit;font-size:14px}
+.links a:hover{border-color:#cfc6ba}
+.links a b{display:block;font-weight:700}
+.links a span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+
+@media (max-width:640px){
+  h1{font-size:25px} .vs{grid-template-columns:1fr}
+  body{font-size:15.5px} .wrap{padding:0 16px 70px}
+}
+</style>
+</head><body>
+<div class="wrap">
+<header class="cover">
+  <div class="eyebrow">누구세오랩 · 내부 검토본</div>
+  <h1>「폴더백선생」 시스템 실사 보고</h1>
+  <p class="sub">전임 개발자가 만든 시스템 전 화면을 열람해, 무엇이 동작하고 무엇이 동작하지 않는지 실측했습니다.<br>원본을 바꾸지 않았고, 고객 데이터는 한 건도 가져오지 않았습니다.</p>
+  <div class="meta">
+    <span><b>작성</b> 2026-09-10</span>
+    <span><b>대상</b> dbpolder.com (관리자 9화면 · 수강생 8화면 · 발행 랜딩)</span>
+    <span><b>방법</b> 열람만 · 손경식 이사 계정 로그인</span>
+  </div>
+</header>
+<div class="lede">
+  이 시스템의 문제는 <b>기능이 모자란 것이 아니라, 만든 것들이 서로 이어지지 않는 것</b>입니다.
+  <small>랜딩·자동배포·후킹 광고가 다 만들어져 있는데 — 만든 랜딩의 주소를 꺼낼 수 없고, 같은 숫자를 화면마다 다르게 세고, 실패해도 「완료」라고 말합니다. 그리고 <b>사업이 돌지 않고 있습니다</b>: 수강생 35명 · 랜딩 34개 · 고객 103건인데 승인 0건 · 수익 0원입니다.</small>
+</div>
+<h2><span class="n">01</span>먼저 — 사업이 돌지 않고 있습니다</h2>
+<p class="dek">기능 이야기보다 이것이 먼저입니다.</p>
+<div class="nums">
+  <div class="num"><div class="k">수강생</div><div class="v">35명</div><div class="s">전원 활동 중</div></div>
+  <div class="num"><div class="k">개설된 랜딩</div><div class="v">34개</div><div class="s">보유율 97%</div></div>
+  <div class="num"><div class="k">접수된 고객</div><div class="v">103건</div><div class="s">폼 101 · AI 2</div></div>
+  <div class="num r"><div class="k">최종 승인</div><div class="v">0건</div><div class="s">수익 0원</div></div>
+</div>
+<div class="box red">
+  <span class="lbl">🔴 가장 무거운 사실</span>
+  <p>고객 <b>103건 중 102건이 대표 본인 계정</b>의 것입니다. <b>나머지 수강생 34명이 합쳐서 1건</b>입니다.</p>
+  <p>관리 화면의 수강생 목록에서도 고객 DB 열이 <b>전 행 0건</b>으로 나옵니다. 랜딩·자동배포·후킹 광고를 다 붙여 놨는데 <b>수강생이 고객을 모으지 못하고 있습니다.</b></p>
+  <p>그리고 접수된 102건이 <b>1단계에 쌓인 채 멈춰</b> 있습니다. 수익 화면은 「금액은 관리자가 처리한 최신 상태를 기준으로 표시됩니다」라고 안내합니다 — <b>승인 처리가 진행되지 않고 있습니다.</b></p>
+</div>
+<div class="box amber">
+  <p><b>그래서 기능을 더 만드는 것이 답이 아닙니다.</b> 이미 접수된 102건을 승인 단계로 옮기는 운영이 먼저이고, 수강생이 실제로 고객을 모을 수 있게 만드는 것이 그다음입니다.</p>
+</div>
+<h2><span class="n">02</span>문제는 기능이 아니라 연결입니다</h2>
+<p class="dek">전 화면에서 같은 여섯 가지가 반복됩니다.</p>
+<h3>1. 만든 것을 못 꺼낸다</h3>
+<p>랜딩 주소가 복사 버튼에 안 물림 · 관리자 「주소 확인」 무동작 · 랜딩관리 목록 0건 · 감사 「보기」 무동작 · Facebook 페이지 목록 빔 · 「전체 미리보기」 무동작</p>
+<h3>2. 같은 사실을 화면마다 다르게 센다</h3>
+<p>접수 105 / 103 / 102 · 랜딩 91 / 34 / 0 · 순위 1위인데 집계 없음 · 수강생별 고객 DB 합계가 0인데 총계는 103</p>
+<h3>3. 설정이 실제 동작을 지배하지 못한다</h3>
+<p>관리자가 싼 모델로 바꿔 둬도 수강생 화면이 비싼 모델로 고정 호출한다. 비용을 줄이려고 설정을 만져도 소용이 없다</p>
+<h3>4. 실패해도 「완료」라고 말한다</h3>
+<p>3줄 카피가 비었는데 「뽑기 결과」가 열린다 · 「기사 선택 0」인데 진행 표시는 완료 · 실패한 요청에도 비용이 붙는다</p>
+<h3>5. 사람이 마지막에 읽는 관문이 없다</h3>
+<p>다른 업종 문구 혼입(「스마트스토어」·「오늘의 그날」) · 오타 「지원금 신청해기」 · 내부 라벨 「상담문구」 노출 · 잘린 문장 · 플레이스홀더 그대로 게시</p>
+<h3>6. 법정 표시가 없다</h3>
+<p>발행 랜딩에 상호·대표자·주소·이메일·통신판매업 신고번호가 하나도 없다. 이름·전화번호를 받는 폼은 있다</p>
+<h2><span class="n">03</span>화면별로 확인한 것</h2>
+<div class="tw"><table>
+<thead><tr><th>화면</th><th>확인된 상태</th></tr></thead><tbody>
+<tr class="hi"><td><b>전 화면 공통</b></td><td>「정보를 불러오는 중입니다.」가 끝까지 안 걷힌다. 실제 화면은 그 아래 이미 다 있다</td></tr>
+<tr class="hi"><td><b>대시보드</b></td><td>표에 6행이 있는데 화면엔 안 나온다 · 접수 105건(고객목록은 103건) · 「실시간」인데 최근 접수가 20일 전</td></tr>
+<tr><td><b>정책공지</b></td><td>타일 4칸 숫자가 전부 비어 있다</td></tr>
+<tr class="hi"><td><b>수강생관리</b></td><td>행마다 고객 DB 0건인데 총계는 103건 · 테스트 계정이 통계에 섞임 · 「삭제」 상태가 있다</td></tr>
+<tr class="hi"><td><b>랜딩관리</b></td><td>목록이 0건. 수강생관리는 「34개 개설」, 대시보드는 「91개」라고 한다 · 「집계 중…」이 안 끝난다</td></tr>
+<tr><td><b>고객목록</b></td><td>누적 103건 · 승인율 0% — 이 화면이 맞다. 대시보드의 105건·1.9%가 틀렸다</td></tr>
+<tr class="hi"><td><b>수익현황</b></td><td>금액이 한 칸도 없다 · 기간 탭을 눌러도 표는 「전체 기간」 고정</td></tr>
+<tr class="hi"><td><b>순위현황</b></td><td>보너스 지급이 시스템 밖이다 — 화면 숫자와 실제 지급이 연결돼 있지 않다</td></tr>
+<tr class="hi"><td><b>운영·AI 설정</b></td><td>설정한 모델과 실제 호출 모델이 다르다 · 한도 「무제한」이 3개 · 키를 눈 아이콘으로 원문 노출</td></tr>
+<tr class="hi"><td><b>감사기록</b></td><td>「보기」를 눌러도 아무것도 안 열린다 · 「사유/메모」가 전 행 비어 있다 · 뉴스 기록 탭이 비어 있다</td></tr>
+<tr class="hi"><td><b>수강생 랜딩관리</b></td><td>주소가 만들어져 있는데 「복사」 버튼에 안 물려 있다 · 「전체 미리보기」 무동작</td></tr>
+<tr class="hi"><td><b>수강생 순위현황</b></td><td>「내 순위 1위 · 0건」인데 같은 화면이 「집계된 순위가 없습니다」라고 한다</td></tr>
+</tbody></table></div>
+<h2><span class="n">04</span>발행된 랜딩 — 법정 표시가 없습니다</h2>
+<p class="dek">실제로 공개돼 있는 랜딩 한 장을 열어 전문을 확인했습니다.</p>
+<div class="box red">
+  <span class="lbl">🔴 확인 사항</span>
+  <p>페이지 전문에 <b>상호 · 대표자 성명 · 주소 · 이메일 · 통신판매업 신고번호가 하나도 없습니다.</b> 그런데 <b>이름과 전화번호를 받는 폼</b>이 있습니다.</p>
+  <p>전자상거래법 §13①은 청약을 받을 목적의 표시·광고에 이 항목들을 포함하도록 정하고 있습니다 (국가법령정보센터 원문 확인분).</p>
+  <p>개인정보 동의도 <b>한 줄뿐</b>입니다 — 「상담을 위해 이름, 전화번호와 신청내용을 수집·이용하는 데 동의합니다.」 <b>보유기간 · 제3자 제공 · 국외이전이 없습니다.</b></p>
+</div>
+<h3>가격 안내에 금액이 없습니다</h3>
+<p>가격 섹션이 「가장 저렴한 구성으로 안내해 드립니다」 · 「상담 후 최저가 안내」 · 「상담 후 맞춤 견적」으로만 채워져 있습니다. 페이지 전체에서 금액 표기는 상단의 「최대 100만원??」 하나뿐입니다.</p>
+<p>고객사께서 이전에 지적하신 <b>「랜딩페이지에 상품도 가격도 약정 안내도 하나도 없다」</b>가 그대로 확인됩니다. 한편 <b>「최저가」 표현이 한 페이지에 8번</b> 나옵니다 — 최상급 표현은 입증 책임이 따릅니다.</p>
+<h3>후기가 미리 만들어져 있습니다</h3>
+<p>랜딩 생성에 쓰는 「기준자료」가 <b>57건</b>이고, 그 구성이 <b>상품 3종 × (혜택 1 + 가격 3 + 후기 15)</b>입니다. 후기 <b>45건</b>의 제목이 전부 사람 이름이고, 등록일이 <b>이틀에 몰려 있습니다</b>(2026. 08. 01. 18건 / 2026. 08. 02. 39건).</p>
+<p>그리고 이 이름들이 <b>실제 발행된 랜딩의 후기 섹션에 ★★★★★ 와 함께 그대로 실려 있습니다.</b></p>
+<div class="box amber">
+  <span class="lbl">⏳ 확인이 필요한 사항</span>
+  <p>후기가 상품마다 정확히 15개씩 떨어지고 이틀 만에 전부 등록됐습니다. <b>이 후기가 실제 고객의 것인지 확인이 필요합니다.</b> 저희가 판정할 사항이 아니라 여쭙는 것입니다.</p>
+  <p>같은 맥락으로 「20년차 전문 업체」 · 「최저가」 · 상담사 이름 표기도 근거 확인이 필요합니다.</p>
+</div>
+<h2><span class="n">05</span>자동배포 — 오늘 실제로 나간 글</h2>
+<p class="dek">네이버 랭킹뉴스에서 기사를 가져와 SNS 3채널로 내보내고 있습니다. 오늘 나간 글 두 편의 전문입니다.</p>
+<blockquote><span class="src">소재: 연명의료 판결 기사 · SNS 3채널 게시 완료</span>생전 뜻을 들었다는 사실만으로, 가족이 치료 중단을 결정할 수 있을까요.
+
+2019년 인공호흡기를 제거한 남편은 2020년 국민참여재판에서 배심원 9명 전원의 유죄 판단 뒤 징역 5년을 받았습니다.
+
+사전연명의료의향서 등록은 320만 명을 넘었지만, 제도와 현실의 간극은 남아 있습니다.
+
+<em>이 무거운 문제와 별개로, 일상의 안전 기록은 미리 동선부터 살피는 게 좋습니다. 매장·사무실·주택 CCTV도 필요한 구간만 차분히 정리해 보세요.</em></blockquote>
+<blockquote><span class="src">소재: 대미투자 관련 기사 · SNS 3채널 게시 완료</span>「수익을 모아 손실을 메우는 안전판」이 약해졌다는 보도, 그냥 먼 나라 투자 얘기만은 아니네요.
+
+미국이 기존 방식에 난색을 보인 뒤 2천억달러 대미투자는 프로젝트별 손익 정산 방향으로 의결됐습니다.
+
+<em>CCTV도 대수부터 늘리기보다 출입구·카운터·적재 구역을 먼저 나눠 봐야 해요.</em></blockquote>
+<div class="box red">
+  <span class="lbl">🔴 수법이 하나입니다</span>
+  <p>① 랭킹뉴스에서 <b>아무 기사나</b> 가져와 ② 3~4문단으로 요약하고 ③ <b>마지막 문단에서 상품으로 꺾은 뒤</b> ④ 랜딩 링크를 붙입니다.</p>
+  <p>「<b>이 무거운 문제와 별개로</b>」라는 문장 자체가 <b>다리가 놓이지 않는다는 것을 글이 스스로 말하는 것</b>입니다. 사람이 사망하고 유족이 실형을 받은 사건을 광고의 도입부로 쓰고 있습니다.</p>
+  <p>본문의 숫자들이 원문과 맞는지 <b>대조할 방법이 없습니다</b> — 어떤 기사를 소재로 썼는지 남기는 「뉴스 기록」 화면이 비어 있습니다.</p>
+</div>
+<h3>후킹자판기 — CCTV 광고를 뽑았는데 뉴스 카드가 나왔습니다</h3>
+<p>상품을 골라 「후킹 뽑기」를 하면 9:16 세로 광고와 3줄 카피가 나오는 도구입니다. 실제 결과를 불러봤더니 <b>3줄 카피가 플레이스홀더 그대로</b>였고(「시선 잡는 첫 문장」 등), 이미지는 <b>위 연명의료 기사로 만든 뉴스 카드</b>였습니다. 이미지 안에는 <b>「오늘의 그날」이라는 다른 코너 문구</b>가 들어가 잘린 채 남아 있었고, <b>상품·혜택·연락 유도가 하나도 없었습니다.</b></p>
+<h2><span class="n">06</span>AI 사용 비용 — 새는 곳이 분명합니다</h2>
+<div class="nums">
+  <div class="num"><div class="k">누적 요청</div><div class="v">881</div><div class="s">완료 598</div></div>
+  <div class="num r"><div class="k">실패</div><div class="v">175</div><div class="s">19.9%</div></div>
+  <div class="num"><div class="k">누적 비용</div><div class="v">US$103.01</div><div class="s">이미지가 95.3%</div></div>
+</div>
+<div class="tw"><table>
+<thead><tr><th>쓰임</th><th class="n">비용</th><th class="n">비중</th><th>실패</th></tr></thead><tbody>
+<tr><td><b>랜딩 자동생성</b></td><td class="n big">US$68.10</td><td class="n">66.1%</td><td>포트폴리오 이미지 44% · 대표이미지 23%</td></tr>
+<tr><td><b>후킹자판기</b></td><td class="n big">US$30.94</td><td class="n">30.0%</td><td>텍스트 34% · 일부 모델은 완료 0건</td></tr>
+<tr><td><b>자동배포(다뿌려)</b></td><td class="n big">US$3.97</td><td class="n">3.9%</td><td>—</td></tr>
+</tbody></table></div>
+<div class="box red">
+  <span class="lbl">🔴 세 가지가 겹쳐 있습니다</span>
+  <ul class="check tight">
+    <li class="r"><b>실패에도 비용이 붙습니다.</b> 한 이미지 모델은 요청 7건에 완료 0건인데 US$9.81이 청구됐습니다.</li>
+    <li class="r"><b>설정한 모델과 실제 호출 모델이 다릅니다.</b> 관리자 설정에는 저렴한 모델이 지정돼 있는데, 수강생 화면의 선택지가 비싼 모델 하나뿐이라 그쪽으로 고정 호출됩니다. <b>설정을 바꿔도 비용이 줄지 않습니다.</b></li>
+    <li class="r"><b>한도가 「무제한」인 기능이 3개</b>이고 전부 이미지 계열입니다. 「이미지 없이 만들기」 선택지가 없어 매번 새로 생성해야 합니다.</li>
+  </ul>
+</div>
+<p>바꿔 말하면 <b>여기는 손대면 바로 표가 나는 자리</b>입니다. 실패율과 모델·한도만 정리해도 지출의 상당 부분이 줄어듭니다.</p>
+<h2><span class="n">07</span>가져올 것과 지킬 것</h2>
+<p class="dek">원본이 잘 만든 부분이 분명히 있습니다. 그대로 살리는 것이 맞습니다.</p>
+<div class="vs">
+  <div><h4>원본에서 가져올 것</h4><ul>
+    <li>초보자용 4단계 안내와 <b>대기 시간 고지</b>(「15~25초, 다른 화면 다녀와도 이어서 완성」)</li>
+    <li>자판기 은유 — 수강생이 바로 이해합니다</li>
+    <li><b>하루 1회 제한</b>, 계정을 바꿔도 당일 횟수 유지</li>
+    <li>「연결 안 된 채널은 저장값을 유지하고 이번 실행만 제외」</li>
+    <li>4단계 진행 표시 · 간편/직접 두 갈래</li>
+    <li>3줄 복사 버튼 3종 · 9:16 다운로드</li>
+    <li>비밀번호 본인 변경 화면(8~72자 — 제대로 만든 기준입니다)</li>
+  </ul></div>
+  <div><h4>우리가 지킬 것</h4><ul>
+    <li><b>매체 선별</b> — robots · 약관 · 비회원 열람 가능 · 공개 RSS 넷을 다 만족해야 켭니다</li>
+    <li><b>주제 선별</b> — 취급 품목과 관련이 없으면 <b>버립니다</b>. 억지로 잇지 않습니다</li>
+    <li><b>근거 검증</b> — 사실 항목의 숫자가 원문에 없으면 버립니다</li>
+    <li><b>복제 검증</b> — 원문과 너무 닮으면 버립니다</li>
+    <li>소재 기사·매체·주소를 <b>카드마다 남깁니다</b></li>
+    <li>법정 표시와 동의 분리를 <b>템플릿에 내장</b>합니다</li>
+    <li>관리자 설정이 <b>실제 호출을 지배</b>하게 만듭니다</li>
+  </ul></div>
+</div>
+<div class="box good">
+  <p><b>결론적으로, 자동배포 파이프라인은 저희 쪽 설계가 낫습니다.</b> 원본에서 가져올 것은 <b>배포 경로와 화면 구성</b>이고, 검증 구조는 저희 것을 유지하는 것이 맞습니다.</p>
+</div>
+<h2><span class="n">08</span>결정해 주셔야 할 것</h2>
+<ol>
+  <li><b>자동배포를 어디까지 다시 만들 것인가</b> — 원본 자동배포는 AI 기능 15종 중 4종이고 비용의 3.9%입니다. 크고 비싸고 잘 깨지는 쪽은 <b>랜딩 자동생성</b>입니다.</li>
+  <li><b>글의 수위와 주제 범위</b> — 위 05의 글 두 편을 보시고, 어디까지 허용할지 정해 주십시오. 품위와 주제 적합성은 저희가 정할 사항이 아닙니다.</li>
+  <li><b>호칭</b> — 원본은 「수강생」, 저희 설계는 「총판」입니다. 같은 대상이 아닐 수 있습니다(원본에는 「기수」가 있습니다).</li>
+  <li><b>상품 축</b> — 원본은 인터넷 · CCTV · 포스+테이블오더 3종, 저희가 준비한 카탈로그는 렌탈 상품 1,706종입니다.</li>
+  <li><b>후기 45건의 출처</b> (위 04)</li>
+</ol>
+<h2><span class="n">09</span>먼저 손대면 표가 나는 세 가지</h2>
+<ul class="check">
+  <li><b>법정 표시 넣기</b> — 상호 · 대표자 · 주소 · 연락처 · 통신판매업 신고번호. 고객사에서 값만 주시면 바로 반영됩니다.</li>
+  <li><b>랜딩 주소를 꺼낼 수 있게 하기</b> — 주소는 <b>이미 만들어져 있습니다.</b> 복사 버튼과 관리 화면에 연결만 하면 됩니다.</li>
+  <li><b>이미지 모델과 한도 정리</b> — 실패 과금, 무제한 한도, 설정과 실제의 불일치를 함께 잡습니다.</li>
+</ul>
+<h2><span class="n">10</span>함께 보실 자료</h2>
+<div class="links">
+  <a href="https://ap2c75.github.io/ra-preview/copy/"><b>화면 카피본</b><span>원본 화면을 구조 그대로 다시 만든 것입니다. 화면마다 「고친 곳 · 짚은 곳」을 열어 보실 수 있습니다.</span></a>
+  <a href="https://ap2c75.github.io/ra-preview/"><b>전체 검토 자료 목차</b><span>랜딩 시안 · 총판 관리 · 자동배포 검토본 등</span></a>
+</div>
+<div class="foot">
+  <p><b>실사 방법과 지킨 선.</b> 손경식 이사 계정으로 로그인해 <b>열람만</b> 했습니다. 원본에서 설정을 바꾸거나 저장·삭제한 것이 없고(설정 창은 취소로 닫았습니다), <b>고객 데이터는 한 건도 가져오지 않았습니다.</b> 이 문서의 숫자는 원본 화면에 표시된 집계값이며, 고객·수강생 실명과 연락처는 포함하지 않았습니다.</p>
+  <p><b>판정하지 않은 것.</b> 후기의 진위, 「20년차」·「최저가」 등 표현의 근거, 외부 사이트 자동 게시의 약관 적합성은 <b>확인 전이므로 판정하지 않았습니다.</b> 필요하시면 1차 출처로 확인해 드리겠습니다.</p>
+  <p>누구세오랩 · 2026-09-10 · 내부 검토본 (고객사 전달은 대표 승인 후)</p>
+</div>
+</div>
+</body></html>
