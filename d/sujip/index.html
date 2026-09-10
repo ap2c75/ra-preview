@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0369a1">
+<title>수집 관리 · 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#f7fbfe; --surface:#fff; --surface-2:#eef7fd;
+  --ink:#0d1b26; --ink-2:#263a4a; --ink-3:#4c6376;
+  --line:#dbeafa; --line-2:#eaf4fc;
+  --accent:#0369a1; --accent-ink:#075985; --accent-soft:#eff8ff; --accent-line:#c2e4f8;
+  --on-accent:#fff;
+  --warn-bg:#fffbeb; --warn-line:#fde68a; --warn-ink:#7a3d09;
+  --ok-bg:#ecfdf5; --ok-line:#a7f3d0; --ok-ink:#065f46;
+  --danger:#b91c1c; --danger-bg:#fef2f2; --danger-line:#fecaca;
+  --r-s:8px; --r:14px; --r-pill:999px;
+  --shadow:0 1px 2px rgba(13,27,38,.05), 0 10px 30px -16px rgba(13,27,38,.22);
+  --mono:"IBM Plex Mono","Noto Sans KR",ui-monospace,monospace;
+  --sans:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --ease:cubic-bezier(.23,1,.32,1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0a1520; --surface:#0f1e2c; --surface-2:#132536;
+  --ink:#eaf4fd; --ink-2:#c3d9ea; --ink-3:#9db6cb;
+  --line:#1e344a; --line-2:#182b3e;
+  --accent:#38bdf8; --accent-ink:#8ad8fc; --accent-soft:#0d2434; --accent-line:#1d4155;
+  --on-accent:#04202e;
+  --warn-bg:#251d09; --warn-line:#4d3a10; --warn-ink:#fcd980;
+  --ok-bg:#052e22; --ok-line:#12543f; --ok-ink:#6ee7b7;
+  --danger:#fca5a5; --danger-bg:#2a1215; --danger-line:#5c2226;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -16px rgba(0,0,0,.7);
+}}
+:root[data-theme=dark]{
+  --bg:#0a1520; --surface:#0f1e2c; --surface-2:#132536;
+  --ink:#eaf4fd; --ink-2:#c3d9ea; --ink-3:#9db6cb;
+  --line:#1e344a; --line-2:#182b3e;
+  --accent:#38bdf8; --accent-ink:#8ad8fc; --accent-soft:#0d2434; --accent-line:#1d4155;
+  --on-accent:#04202e;
+  --warn-bg:#251d09; --warn-line:#4d3a10; --warn-ink:#fcd980;
+  --ok-bg:#052e22; --ok-line:#12543f; --ok-ink:#6ee7b7;
+  --danger:#fca5a5; --danger-bg:#2a1215; --danger-line:#5c2226;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;
+  word-break:keep-all;overflow-wrap:break-word}
+h1,h2,h3{line-height:1.25;letter-spacing:-.02em;margin:0}
+p{margin:0}
+.wrap{max-width:620px;margin:0 auto;padding:0 20px}
+
+.draft{background:var(--warn-bg);border-bottom:1px solid var(--warn-line);color:var(--warn-ink);
+  font-size:12.5px;line-height:1.45;padding:9px 20px;text-align:center}
+header.top{background:var(--surface);border-bottom:1px solid var(--line);padding:13px 0}
+.top .in{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.brand .mk{width:28px;height:28px;border-radius:var(--r-s);background:var(--accent);color:var(--on-accent);
+  display:grid;place-items:center;font-size:14px;font-weight:700}
+.who{font-size:13px;color:var(--ink-3);text-align:right}
+
+main{padding:22px 0 48px}
+.sec{margin-top:26px}
+.sec:first-child{margin-top:0}
+h2{font-size:19px;font-weight:700}
+.lead{margin-top:7px;font-size:14px;color:var(--ink-3)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+/* 깔때기 */
+.funnel{margin-top:13px;display:flex;gap:9px}
+.fn{flex:1;padding:14px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-align:center}
+.fn.mid{background:var(--accent-soft);border-color:var(--accent-line)}
+.fn .n{font-family:var(--mono);font-weight:600;font-size:26px;color:var(--accent-ink);line-height:1.15}
+.fn .l{margin-top:4px;font-size:12px;color:var(--ink-3)}
+.balance{margin-top:11px;padding:12px 14px;border-radius:var(--r-s);font-size:13px;line-height:1.6}
+.balance.ok{background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-ink)}
+.balance.warn{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink)}
+
+/* 소스 */
+.src{margin-top:11px;padding:14px 15px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.src .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.src .nm{display:block;font-weight:700;font-size:15px}
+.src .u{display:block;margin-top:2px;font-size:12px;color:var(--ink-3);font-family:var(--mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--r-pill)}
+.tag.on{background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-ink)}
+.tag.hold{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink)}
+.src .why{margin-top:9px;padding:9px 11px;border-radius:var(--r-s);background:var(--warn-bg);
+  border:1px solid var(--warn-line);color:var(--warn-ink);font-size:12.5px;line-height:1.55}
+
+/* 주제 사전 */
+.topic{margin-top:10px;padding:14px 15px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.topic .hd{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.topic .nm{font-weight:700;font-size:15px}
+.topic .cnt{font-family:var(--mono);font-size:13px;color:var(--accent-ink);font-weight:600}
+.topic .why{margin-top:4px;font-size:12.5px;color:var(--ink-3)}
+.kw{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.k{font-size:12.5px;padding:4px 10px;border-radius:var(--r-pill);background:var(--accent-soft);
+  border:1px solid var(--accent-line);color:var(--accent-ink)}
+.k.ex{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger);text-decoration:line-through}
+.kwlbl{font-size:11.5px;color:var(--ink-3);width:100%;margin-top:6px}
+
+/* 오늘 소재 */
+.tabs{margin-top:12px;display:flex;gap:7px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--r-pill);padding:4px}
+.tabs button{flex:1;min-height:44px;border:0;border-radius:var(--r-pill);background:transparent;color:var(--ink-3);
+  font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:background .16s var(--ease),color .16s var(--ease)}
+.tabs button[aria-pressed=true]{background:var(--surface);color:var(--accent-ink);box-shadow:var(--shadow)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.item{margin-top:9px;padding:13px 15px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.item.drop{background:var(--surface-2)}
+.item .t{font-size:14.5px;font-weight:500;line-height:1.5}
+.item .m{margin-top:5px;font-size:12px;color:var(--ink-3);font-family:var(--mono)}
+.item .r{margin-top:8px;font-size:12.5px;color:var(--ink-3)}
+.item .r b{color:var(--accent-ink)}
+.mini{margin-top:10px;min-height:44px;padding:0 16px;border-radius:var(--r-s);border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.mini:hover{border-color:var(--accent-line)}
+.mini:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.memo{margin-top:14px;padding:12px 14px;border-radius:var(--r-s);background:var(--warn-bg);
+  border:1px dashed var(--warn-line);color:var(--warn-ink);font-size:12.5px;line-height:1.6}
+.memo::before{content:"시안 메모 · 고객 화면에는 나가지 않습니다";display:block;font-weight:700;margin-bottom:4px}
+
+@media (prefers-reduced-motion:reduce){ .tabs button{transition:none} }
+</style>
+</head>
+<body>
+
+<div class="draft">본사 관리자 화면입니다 · <b>동작 시안</b>이며 실제 수집은 경로 확정 후입니다</div>
+
+<header class="top">
+  <div class="wrap in">
+    <span class="brand"><span class="mk">R</span>수집 관리</span>
+    <span class="who">렌탈아지트 본사</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="sec">
+    <h2>오늘 어떻게 걸러졌나</h2>
+    <p class="lead">수집은 자동입니다. 사람은 <b>필터가 맞는지만</b> 봅니다.</p>
+    <div class="funnel">
+      <div class="fn"><div class="n">142</div><div class="l">들어옴</div></div>
+      <div class="fn mid"><div class="n">18</div><div class="l">주제 통과</div></div>
+      <div class="fn"><div class="n">124</div><div class="l">탈락</div></div>
+    </div>
+    <p class="balance ok" id="balance"></p>
+    <p class="memo">
+      필터가 좁으면 소재가 마르고, 넓으면 렌탈과 무관한 것이 섞여 팔로워가 엉뚱하게 붙는다.
+      그래서 통과율을 눈에 보이게 두고 <b>탈락한 것을 되살릴 수 있게</b> 했다.
+      되살리면 그 키워드가 사전 후보로 올라간다 — 사람이 규칙을 고치는 게 아니라 판단만 하면 된다.
+    </p>
+  </section>
+
+  <section class="sec">
+    <h2>수집 경로</h2>
+    <p class="lead">제목과 링크, 매체명, 발행시각만 받습니다. <b>본문은 받지 않습니다.</b></p>
+    <div id="sources"></div>
+  </section>
+
+  <section class="sec">
+    <h2>주제 사전</h2>
+    <p class="lead">이 키워드에 걸리는 것만 통과합니다. 취소선은 제외어입니다.</p>
+    <div id="topics"></div>
+  </section>
+
+  <section class="sec">
+    <h2>오늘 소재</h2>
+    <div class="tabs" role="group" aria-label="소재 보기">
+      <button id="t-pass" aria-pressed="true">통과 18</button>
+      <button id="t-drop" aria-pressed="false">탈락 124</button>
+    </div>
+    <div id="items"></div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+
+  var SOURCES = [
+    { nm:'네이버 뉴스 검색 API', u:'openapi.naver.com/v1/search/news', state:'hold',
+      why:'약관을 확인하지 못했습니다. 개발자센터에 직접 로그인해 재배포 조건을 확인한 뒤 켭니다.' },
+    { nm:'한국경제 RSS', u:'hankyung.com/feed/economy', state:'hold',
+      why:'매체별 이용조건을 확인한 뒤 켭니다.' },
+    { nm:'수동 입력', u:'관리자가 주소를 직접 붙여넣습니다', state:'on', why:null },
+  ];
+
+  var TOPICS = [
+    { nm:'전기요금', cnt:6, why:'렌탈 제품 대부분이 상시 전원이라 직결된다',
+      inc:['전기요금','전기세','한국전력','한전','누진제','연료비조정'], exc:['전기차','전기공사'] },
+    { nm:'생활가전', cnt:5, why:'취급 품목 그 자체',
+      inc:['정수기','공기청정기','비데','제습기','에어컨','냉장고'], exc:['리콜 소송'] },
+    { nm:'이사·신혼', cnt:4, why:'렌탈 신규 수요가 몰리는 생애 시점',
+      inc:['이사','전입신고','혼수','신혼부부','입주'], exc:[] },
+    { nm:'관리비', cnt:2, why:'고정비 관심이 렌탈 총액 관심으로 이어진다',
+      inc:['관리비','공과금','난방비'], exc:[] },
+    { nm:'약정·계약', cnt:1, why:'우리 랜딩의 핵심 주제와 같은 축',
+      inc:['약정','위약금','중도해지','렌탈료'], exc:['통신 약정','휴대폰 위약금'] },
+  ];
+
+  var PASSED = [
+    { t:'한전, 10월부터 주택용 전기요금 4.9% 인상', m:'한국경제 · 09-06', topic:'전기요금', hit:'한전' },
+    { t:'정수기 렌탈 시장, 구독형으로 재편', m:'전자신문 · 09-06', topic:'생활가전', hit:'정수기' },
+    { t:'이사철 앞두고 가전 배송 대란 우려', m:'매일경제 · 09-05', topic:'이사·신혼', hit:'이사' },
+  ];
+  var DROPPED = [
+    { t:'프로야구 정규시즌 최종전 결과', m:'스포츠서울 · 09-06', why:'주제 밖 — 걸린 키워드 없음' },
+    { t:'전기차 충전요금 12% 인상 확정', m:'한국일보 · 09-06', why:'제외어 「전기차」에 걸림' },
+    { t:'A사 공기청정기 리콜 소송 제기', m:'뉴시스 · 09-05', why:'제외어 「리콜 소송」에 걸림' },
+    { t:'가전 구독 이용자 300만 돌파', m:'디지털타임스 · 09-06', why:'주제 밖 — 「구독」은 사전에 없음' },
+  ];
+
+  var tab = 'pass';
+
+  function renderBalance(){
+    var rate = (18 / 142 * 100).toFixed(0);
+    var el = $('balance');
+    if (rate < 8) { el.className = 'balance warn'; el.textContent = '통과율 ' + rate + '%. 필터가 좁아 소재가 마를 수 있습니다. 아래 탈락 목록을 보고 키워드를 넓혀 보세요.'; }
+    else if (rate > 30) { el.className = 'balance warn'; el.textContent = '통과율 ' + rate + '%. 필터가 넓어 렌탈과 무관한 소재가 섞일 수 있습니다.'; }
+    else { el.className = 'balance ok'; el.textContent = '통과율 ' + rate + '%. 총판 40명이 하루 쓰기에 넉넉한 양입니다.'; }
+  }
+
+  function renderSources(){
+    var box = $('sources'); box.innerHTML = '';
+    SOURCES.forEach(function(s){
+      var el = document.createElement('div');
+      el.className = 'src';
+      el.innerHTML =
+        '<div class="hd"><span><span class="nm"></span><span class="u"></span></span>' +
+        '<span class="tag ' + (s.state === 'on' ? 'on' : 'hold') + '">' + (s.state === 'on' ? '사용 중' : '대기') + '</span></div>' +
+        (s.why ? '<p class="why"></p>' : '');
+      el.querySelector('.nm').textContent = s.nm;
+      el.querySelector('.u').textContent = s.u;
+      if (s.why) el.querySelector('.why').textContent = s.why;
+      box.appendChild(el);
+    });
+  }
+
+  function renderTopics(){
+    var box = $('topics'); box.innerHTML = '';
+    TOPICS.forEach(function(t){
+      var el = document.createElement('div');
+      el.className = 'topic';
+      el.innerHTML =
+        '<div class="hd"><span class="nm"></span><span class="cnt">오늘 ' + t.cnt + '건</span></div>' +
+        '<p class="why"></p>' +
+        '<div class="kw">' +
+          t.inc.map(function(k){ return '<span class="k">' + k + '</span>'; }).join('') +
+          (t.exc.length ? '<span class="kwlbl">제외어</span>' + t.exc.map(function(k){ return '<span class="k ex">' + k + '</span>'; }).join('') : '') +
+        '</div>';
+      el.querySelector('.nm').textContent = t.nm;
+      el.querySelector('.why').textContent = t.why;
+      box.appendChild(el);
+    });
+  }
+
+  function renderItems(){
+    var box = $('items'); box.innerHTML = '';
+    var list = tab === 'pass' ? PASSED : DROPPED;
+    list.forEach(function(it){
+      var el = document.createElement('div');
+      el.className = 'item' + (tab === 'drop' ? ' drop' : '');
+      el.innerHTML =
+        '<p class="t"></p><p class="m"></p>' +
+        (tab === 'pass'
+          ? '<p class="r">주제 <b>' + it.topic + '</b> · 걸린 키워드 <b>' + it.hit + '</b></p>'
+          : '<p class="r"></p><button class="mini">이건 쓸만합니다</button>');
+      el.querySelector('.t').textContent = it.t;
+      el.querySelector('.m').textContent = it.m;
+      if (tab === 'drop') {
+        el.querySelector('.r').textContent = it.why;
+        el.querySelector('.mini').addEventListener('click', function(){
+          this.textContent = '사전 후보로 올렸습니다';
+          this.disabled = true;
+          this.style.opacity = '.6';
+        });
+      }
+      box.appendChild(el);
+    });
+  }
+
+  $('t-pass').addEventListener('click', function(){
+    tab = 'pass'; this.setAttribute('aria-pressed', 'true'); $('t-drop').setAttribute('aria-pressed', 'false'); renderItems();
+  });
+  $('t-drop').addEventListener('click', function(){
+    tab = 'drop'; this.setAttribute('aria-pressed', 'true'); $('t-pass').setAttribute('aria-pressed', 'false'); renderItems();
+  });
+
+  renderBalance(); renderSources(); renderTopics(); renderItems();
+})();
+</script>
+</body>
+</html>

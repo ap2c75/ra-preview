@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0369a1">
+<title>다뿌려 관제 · 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#f7fbfe; --surface:#fff; --surface-2:#eef7fd;
+  --ink:#0d1b26; --ink-2:#263a4a; --ink-3:#4c6376;
+  --line:#dbeafa; --line-2:#eaf4fc;
+  --accent:#0369a1; --accent-ink:#075985; --accent-soft:#eff8ff; --accent-line:#c2e4f8;
+  --on-accent:#fff;
+  --warn-bg:#fffbeb; --warn-line:#fde68a; --warn-ink:#7a3d09;
+  --ok-bg:#ecfdf5; --ok-line:#a7f3d0; --ok-ink:#065f46;
+  --danger:#b91c1c; --danger-bg:#fef2f2; --danger-line:#fecaca;
+  --r-s:8px; --r:14px; --r-pill:999px;
+  --shadow:0 1px 2px rgba(13,27,38,.05), 0 10px 30px -16px rgba(13,27,38,.22);
+  --mono:"IBM Plex Mono","Noto Sans KR",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --ease:cubic-bezier(.23,1,.32,1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0a1520; --surface:#0f1e2c; --surface-2:#132536;
+  --ink:#eaf4fd; --ink-2:#c3d9ea; --ink-3:#9db6cb;
+  --line:#1e344a; --line-2:#182b3e;
+  --accent:#38bdf8; --accent-ink:#8ad8fc; --accent-soft:#0d2434; --accent-line:#1d4155;
+  --on-accent:#04202e;
+  --warn-bg:#251d09; --warn-line:#4d3a10; --warn-ink:#fcd980;
+  --ok-bg:#052e22; --ok-line:#12543f; --ok-ink:#6ee7b7;
+  --danger:#fca5a5; --danger-bg:#2a1215; --danger-line:#5c2226;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -16px rgba(0,0,0,.7);
+}}
+:root[data-theme=dark]{
+  --bg:#0a1520; --surface:#0f1e2c; --surface-2:#132536;
+  --ink:#eaf4fd; --ink-2:#c3d9ea; --ink-3:#9db6cb;
+  --line:#1e344a; --line-2:#182b3e;
+  --accent:#38bdf8; --accent-ink:#8ad8fc; --accent-soft:#0d2434; --accent-line:#1d4155;
+  --on-accent:#04202e;
+  --warn-bg:#251d09; --warn-line:#4d3a10; --warn-ink:#fcd980;
+  --ok-bg:#052e22; --ok-line:#12543f; --ok-ink:#6ee7b7;
+  --danger:#fca5a5; --danger-bg:#2a1215; --danger-line:#5c2226;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;
+  word-break:keep-all;overflow-wrap:break-word}
+h1,h2,h3{line-height:1.25;letter-spacing:-.02em;margin:0}
+p{margin:0}
+.wrap{max-width:620px;margin:0 auto;padding:0 20px}
+
+.draft{background:var(--warn-bg);border-bottom:1px solid var(--warn-line);color:var(--warn-ink);
+  font-size:12.5px;line-height:1.45;padding:9px 20px;text-align:center}
+
+header.top{background:var(--surface);border-bottom:1px solid var(--line);padding:13px 0}
+.top .in{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.brand .mk{width:28px;height:28px;border-radius:var(--r-s);background:var(--accent);color:var(--on-accent);
+  display:grid;place-items:center;font-size:14px;font-weight:700}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ok-ink);font-weight:700}
+.live .dot{width:8px;height:8px;border-radius:50%;background:var(--ok-ink);animation:pulse 2s var(--ease) infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+main{padding:22px 0 48px}
+.sec{margin-top:24px}
+.sec:first-child{margin-top:0}
+h2{font-size:19px;font-weight:700}
+.lead{margin-top:7px;font-size:14px;color:var(--ink-3)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+/* 파이프라인 */
+.pipe{margin-top:13px;display:flex;flex-direction:column;gap:2px}
+.stage{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r)}
+.stage .ic{width:34px;height:34px;flex:none;border-radius:var(--r-s);background:var(--accent-soft);
+  border:1px solid var(--accent-line);color:var(--accent-ink);display:grid;place-items:center;font-size:13px;font-weight:700}
+.stage .bd{flex:1;min-width:0}
+.stage .nm{font-weight:700;font-size:14.5px}
+.stage .dt{font-size:12.5px;color:var(--ink-3);margin-top:1px}
+.stage .num{font-family:var(--mono);font-weight:600;font-size:21px;color:var(--accent-ink);flex:none}
+.stage .num small{font-family:var(--sans);font-size:12px;font-weight:400;color:var(--ink-3)}
+.arrow{align-self:center;color:var(--ink-3);font-size:13px;line-height:1;padding:1px 0}
+.stage.drop{border-color:var(--warn-line);background:var(--warn-bg)}
+.stage.drop .ic{background:var(--surface);border-color:var(--warn-line);color:var(--warn-ink)}
+.stage.drop .num{color:var(--warn-ink)}
+
+/* 자동/수동 배지 */
+.auto{display:inline-block;margin-left:7px;font-size:10.5px;font-weight:700;padding:2px 7px;
+  border-radius:var(--r-pill);background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-ink);
+  vertical-align:middle}
+.manual{display:inline-block;margin-left:7px;font-size:10.5px;font-weight:700;padding:2px 7px;
+  border-radius:var(--r-pill);background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);
+  vertical-align:middle}
+
+/* 검증 설정 */
+.setting{margin-top:13px;padding:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0}
+.row+.row{border-top:1px solid var(--line-2)}
+.row .lb{font-size:14px;font-weight:500}
+.row .sub{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.sw{position:relative;flex:none;width:52px;height:44px;min-height:44px;padding:0;border:0;background:none;cursor:pointer}
+.sw::before{content:"";position:absolute;left:0;top:7px;width:52px;height:30px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:var(--surface-2);transition:background .18s var(--ease),border-color .18s var(--ease)}
+.sw::after{content:"";position:absolute;top:11px;left:4px;width:22px;height:22px;border-radius:50%;
+  background:var(--ink-3);transition:transform .18s var(--ease),background .18s var(--ease)}
+.sw[aria-checked=true]::before{background:var(--accent);border-color:var(--accent)}
+.sw[aria-checked=true]::after{transform:translateX(22px);background:var(--on-accent)}
+.sw:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:var(--r-s)}
+.fixed{flex:none;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:var(--r-pill);
+  background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-ink);white-space:nowrap}
+input[type=range]{width:130px;accent-color:var(--accent);height:44px}
+.thr{font-family:var(--mono);font-weight:600;color:var(--accent-ink);min-width:44px;text-align:right}
+
+/* 대기열 */
+.queue{margin-top:13px;display:flex;flex-direction:column;gap:9px}
+.item{padding:14px 15px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.item.hold{border-color:var(--danger-line);background:var(--danger-bg)}
+.item .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.item .txt{font-size:14.5px;font-weight:500;line-height:1.5}
+.item .meta{margin-top:6px;font-size:12px;color:var(--ink-3);font-family:var(--mono)}
+.badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--r-pill)}
+.badge.ok{background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-ink)}
+.badge.no{background:var(--danger-bg);border:1px solid var(--danger-line);color:var(--danger)}
+.why{margin-top:9px;padding:9px 11px;border-radius:var(--r-s);background:var(--surface);
+  border:1px solid var(--danger-line);color:var(--danger);font-size:12.5px;line-height:1.55}
+.acts{margin-top:10px;display:flex;gap:8px}
+.mini{flex:1;min-height:44px;border-radius:var(--r-s);border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-2);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.mini:hover{border-color:var(--accent-line)}
+.mini:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mini.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+.none{padding:22px 16px;text-align:center;color:var(--ink-3);font-size:14px}
+
+.memo{margin-top:14px;padding:12px 14px;border-radius:var(--r-s);background:var(--warn-bg);
+  border:1px dashed var(--warn-line);color:var(--warn-ink);font-size:12.5px;line-height:1.6}
+.memo::before{content:"시안 메모 · 고객 화면에는 나가지 않습니다";display:block;font-weight:700;margin-bottom:4px}
+
+@media (prefers-reduced-motion:reduce){ .sw,.sw::before,.sw::after,.mini{transition:none} .live .dot{animation:none} }
+</style>
+</head>
+<body>
+
+<div class="draft">본사 관제 화면입니다 · <b>동작 시안</b>이며 실제 수집·게시는 연결 전입니다</div>
+
+<header class="top">
+  <div class="wrap in">
+    <span class="brand"><span class="mk">R</span>다뿌려 관제</span>
+    <span class="live"><span class="dot" aria-hidden="true"></span>자동 운행 중</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="sec">
+    <h2>오늘 파이프라인</h2>
+    <p class="lead">수집부터 게시까지 자동으로 돕니다. 사람은 <b>걸린 것만</b> 봅니다.</p>
+
+    <div class="pipe">
+      <div class="stage">
+        <span class="ic">1</span>
+        <span class="bd"><span class="nm">수집<span class="auto">자동</span></span>
+          <span class="dt">RSS·검색 · 렌탈 인접 주제만 · 제목과 링크만 받음</span></span>
+        <span class="num">142<small> 건</small></span>
+      </div>
+      <span class="arrow" aria-hidden="true">↓</span>
+
+      <div class="stage">
+        <span class="ic">2</span>
+        <span class="bd"><span class="nm">주제 선별<span class="auto">자동</span></span>
+          <span class="dt">키워드·중복 제거</span></span>
+        <span class="num">18<small> 건</small></span>
+      </div>
+      <span class="arrow" aria-hidden="true">↓</span>
+
+      <div class="stage">
+        <span class="ic">3</span>
+        <span class="bd"><span class="nm">사실 추출<span class="auto">자동</span></span>
+          <span class="dt">원문에서 주체·수치·시점만 뽑아 저장 · <b>원문은 즉시 폐기</b></span></span>
+        <span class="num">18<small> 건</small></span>
+      </div>
+      <span class="arrow" aria-hidden="true">↓</span>
+
+      <div class="stage drop">
+        <span class="ic">4</span>
+        <span class="bd"><span class="nm">근거 검증<span class="auto">자동</span></span>
+          <span class="dt">뽑은 숫자를 원문과 대조 · <b>원문에 없으면 폐기</b> · 대기열에 오지 않습니다</span></span>
+        <span class="num">17<small> 통과</small></span>
+      </div>
+      <span class="arrow" aria-hidden="true">↓</span>
+
+      <div class="stage">
+        <span class="ic">5</span>
+        <span class="bd"><span class="nm">문장 생성<span class="auto">자동</span></span>
+          <span class="dt">사실 필드만 보고 작성 · <b>원문을 보지 않음</b></span></span>
+        <span class="num">17<small> 건</small></span>
+      </div>
+      <span class="arrow" aria-hidden="true">↓</span>
+
+      <div class="stage drop">
+        <span class="ic">6</span>
+        <span class="bd"><span class="nm">유사도 · 금칙 검증<span class="auto">자동</span></span>
+          <span class="dt">원문과 겹치거나 단정 표현이 있으면 멈춤 · <b>3건이 아래에 있습니다</b></span></span>
+        <span class="num">14<small> 통과</small></span>
+      </div>
+      <span class="arrow" aria-hidden="true">↓</span>
+
+      <div class="stage">
+        <span class="ic">7</span>
+        <span class="bd"><span class="nm">카드 렌더 · 배포<span class="auto">자동</span></span>
+          <span class="dt">총판 40명분 · 시각 분산 · 주제 로테이션</span></span>
+        <span class="num">560<small> 장</small></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>자동 발행 기준</h2>
+    <p class="lead">여기를 넘으면 사람 손을 거치지 않고 나갑니다.</p>
+    <div class="card setting">
+      <div class="row">
+        <span><span class="lb">완전 자동 발행</span>
+          <span class="sub">끄면 전부 대기열로 보내 승인받습니다</span></span>
+        <button class="sw" id="sw-auto" role="switch" aria-checked="true" aria-label="완전 자동 발행"></button>
+      </div>
+      <div class="row">
+        <span><span class="lb">원문 겹침 상한 <span class="auto">8음절 기준</span></span>
+          <span class="sub" id="thr-sub">생성문의 8음절 조각 중 8% 이상이 원문에도 있으면 멈춥니다</span></span>
+        <span style="display:flex;align-items:center;gap:9px">
+          <input type="range" id="thr" min="3" max="25" value="8" aria-label="원문 겹침 상한">
+          <span class="thr" id="thr-v">8%</span>
+        </span>
+      </div>
+      <div class="row">
+        <span><span class="lb">최장 연속 일치 상한</span>
+          <span class="sub" id="lcs-sub">원문과 12자 이상 연달아 같으면 멈춥니다 · 위 조건과 <b>둘 중 하나만</b> 걸려도 멈춥니다</span></span>
+        <span style="display:flex;align-items:center;gap:9px">
+          <input type="range" id="lcs" min="8" max="30" value="12" aria-label="최장 연속 일치 상한">
+          <span class="thr" id="lcs-v">12자</span>
+        </span>
+      </div>
+      <div class="row">
+        <span><span class="lb">원문에 없는 숫자 차단</span>
+          <span class="sub">원문에 없는 숫자는 겹침이 0%라 위 검사를 그대로 통과합니다. 그래서 따로 봅니다</span></span>
+        <span class="fixed">끌 수 없음</span>
+      </div>
+      <div class="row">
+        <span><span class="lb">출처 없으면 발행 금지</span>
+          <span class="sub">매체명과 원문 주소가 없는 카드는 나가지 않습니다</span></span>
+        <button class="sw" id="sw-src" role="switch" aria-checked="true" aria-label="출처 없으면 발행 금지"></button>
+      </div>
+      <div class="row">
+        <span><span class="lb">기사 사진 사용</span>
+          <span class="sub">자체 제작 이미지만 씁니다</span></span>
+        <button class="sw" id="sw-img" role="switch" aria-checked="false" aria-label="기사 사진 사용"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>걸린 것 <span id="hold-n" style="color:var(--danger)">3</span>건</h2>
+    <p class="lead">검증을 통과하지 못해 멈춘 카드입니다. 나머지 14건은 이미 나갔습니다.</p>
+    <div class="queue" id="queue"></div>
+    <div class="card none" id="empty" style="display:none">걸린 것이 없습니다. 전부 자동으로 나갔습니다.</div>
+
+    <p class="memo">
+      사람이 보는 건 이 목록뿐입니다. 통과분은 화면에 오지 않고 그대로 나갑니다.
+      전체를 사람이 검수하면 자동화가 아니고, 아무도 안 보면 사고가 그대로 나갑니다.
+      그래서 <b>기계가 못 가르는 것만</b> 사람에게 올립니다.
+      <br><br>
+      4단계에서 폐기된 건은 여기 오지 않습니다. 숫자가 원문에 있는지 없는지는 기계가 확실히 가르므로
+      사람이 볼 것이 없습니다. 다만 그 숫자가 계속 늘면 추출 쪽을 봐야 하므로
+      <b>4단계 숫자는 파이프라인에 그대로 표시</b>합니다.
+    </p>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+
+  var HOLD = [
+    { id:'h1',
+      txt:'한국전력은 6일 이사회를 열고 10월 1일부터 주택용 전기요금을 4.9% 인상하기로 의결했다고 밝혔다.',
+      src:'한국경제 · 2026-09-06', badge:'겹침 68% · 연속 49자',
+      why:'두 조건 모두 넘었습니다. 사실 추출 단계에서 문장이 통째로 넘어온 것으로 보입니다. 폐기하고 다시 생성하십시오.' },
+    { id:'h2',
+      txt:'요즘 관리비 걱정 많으시죠. 마침 소식이 나왔는데요, 한국전력공사는 6일 이사회를 열고 오는 10월 1일부터 주택용 전기요금을 4.9% 인상하기로 의결했다고 밝혔다. 소비전력도 점검해 보세요.',
+      src:'한국경제 · 2026-09-06', badge:'겹침 10% · 연속 49자',
+      why:'겹침 비율은 10%로 낮지만 원문과 49자가 연달아 같습니다. 자체 문장을 길게 붙여 비율만 희석한 형태입니다.' },
+    { id:'h3',
+      txt:'10월부터 전기요금이 오릅니다. 지금 렌탈을 갈아타면 무조건 이득입니다.',
+      src:'매일경제 · 2026-09-06', badge:'겹침 0% · 연속 4자',
+      why:'유사도는 통과했으나 금칙 표현 "무조건"이 검출되었습니다. 예외가 하나라도 있으면 과장 광고가 됩니다.' }
+  ];
+
+  function render(){
+    var q = $('queue'); q.innerHTML = '';
+    HOLD.forEach(function(h){
+      var el = document.createElement('div');
+      el.className = 'item hold';
+      el.innerHTML =
+        '<div class="hd"><span class="txt"></span>' +
+        '<span class="badge no"></span></div>' +
+        '<div class="meta"></div>' +
+        '<div class="why"></div>' +
+        '<div class="acts">' +
+          '<button class="mini" data-a="drop">폐기</button>' +
+          '<button class="mini" data-a="regen">다시 생성</button>' +
+          '<button class="mini pri" data-a="pass">그대로 발행</button>' +
+        '</div>';
+      el.querySelector('.txt').textContent = h.txt;
+      el.querySelector('.badge').textContent = h.badge;
+      el.querySelector('.meta').textContent = h.src;
+      el.querySelector('.why').textContent = h.why;
+      el.querySelectorAll('.mini').forEach(function(b){
+        b.addEventListener('click', function(){
+          HOLD = HOLD.filter(function(x){ return x.id !== h.id; });
+          render();
+        });
+      });
+      q.appendChild(el);
+    });
+    $('hold-n').textContent = HOLD.length;
+    $('empty').style.display = HOLD.length ? 'none' : 'block';
+  }
+
+  ['sw-auto','sw-src','sw-img'].forEach(function(id){
+    $(id).addEventListener('click', function(){
+      var on = this.getAttribute('aria-checked') === 'true';
+      this.setAttribute('aria-checked', String(!on));
+    });
+  });
+
+  $('thr').addEventListener('input', function(){
+    $('thr-v').textContent = this.value + '%';
+    $('thr-sub').textContent = '생성문의 8음절 조각 중 ' + this.value + '% 이상이 원문에도 있으면 멈춥니다';
+  });
+  $('lcs').addEventListener('input', function(){
+    $('lcs-v').textContent = this.value + '자';
+    $('lcs-sub').innerHTML = '원문과 ' + this.value +
+      '자 이상 연달아 같으면 멈춥니다 · 위 조건과 <b>둘 중 하나만</b> 걸려도 멈춥니다';
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

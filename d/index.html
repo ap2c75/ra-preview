@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>다뿌려 · 검토용</title>
+<style>
+:root{--ink:#0f172a;--muted:#5b6b7c;--line:#e3ebf3;--bg:#f6f9fc;--card:#fff;--accent:#0d6b8a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif}
+.sian{background:#fff8e6;border-bottom:1px solid #f6e0a8;color:#7a5209;
+  font-size:12.5px;text-align:center;padding:9px 14px;line-height:1.55}
+.sian b{color:#8a3d09}
+.wrap{max-width:860px;margin:0 auto;padding:30px 18px 64px}
+h1{font-size:22px;margin:0 0 6px;letter-spacing:-.4px}
+h2{font-size:17px;margin:30px 0 4px}
+.lead{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+a.item{display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:15px 17px;margin:0 0 10px;text-decoration:none;color:inherit;
+  box-shadow:0 1px 2px rgba(15,23,42,.04)}
+a.item:hover{border-color:#c7dbe8;box-shadow:0 4px 14px rgba(13,107,138,.09)}
+a.item b{display:block;font-size:15.5px;margin:0 0 3px}
+a.item span{display:block;color:var(--muted);font-size:13px}
+.note{background:#fff8e6;border:1px solid #f6e0a8;border-radius:12px;padding:13px 15px;
+  font-size:13px;color:#7a5209;margin:0 0 20px;line-height:1.7}
+.note b{color:#8a3d09}
+.fact{background:#eef4f8;border:1px solid #d6e5ee;border-radius:12px;padding:13px 15px;
+  font-size:13px;color:#3d5464;margin:0 0 18px;line-height:1.7}
+.fact b{color:#0d6b8a}
+.cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.cards figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  overflow:hidden}
+.cards img{width:100%;display:block;background:#f2f6fa}
+.cards figcaption{font-size:11.5px;color:var(--muted);padding:8px 10px;word-break:break-all}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);background:#fafcfe;font-weight:600}
+tr:last-child td{border-bottom:0}
+.on{color:#0f7b5a;font-weight:600}
+.off{color:#9a3412}
+</style>
+</head><body>
+<p class="sian"><b>다뿌려</b> — 뉴스에서 사실만 뽑아 총판별 SNS 카드로 만드는 자동화 · 동작 시안</p>
+<div class="wrap">
+  <h1>다뿌려 — 검토용</h1>
+  <p class="lead">누구세오랩 · 2026-09-10</p>
+
+  <div class="note">
+    <b>지금 어디까지 진짜인지</b><br>
+    · <b>수집은 실물입니다.</b> 아래 카드의 소재는 우리 수집기가 전자신문에서 실제로 가져온 기사입니다.<br>
+    · <b>사실추출과 문장은 사람이 썼습니다.</b> LLM 연결(계약·키)이 아직 없습니다.<br>
+    · 저장소·Meta 앱도 아직입니다 — 카드는 파일로만 나옵니다.
+  </div>
+
+  <div class="fact">
+    🔑 <b>사람이 썼다고 마음대로 쓴 것은 아닙니다.</b> 파이프라인이 두 방향으로 잡습니다 —
+    사실 필드의 숫자가 <b>원문에 없으면</b> 지어낸 것으로 보고 버리고,
+    문장이 원문과 <b>너무 닮으면</b> 버립니다(연속 12자·8음절 조각 8%).<br>
+    처음 쓴 문장은 세 장 다 걸렸습니다(연속 20자·17자·12자). 다시 써서 통과한 것이 아래 카드입니다.
+  </div>
+
+  <h2>화면</h2>
+  <a class="item" href="gwanje/"><b>관제</b><span>하루치가 어디까지 왔는지 보는 화면입니다. 수집 → 사실추출 → 생성 → 검증 → 승인 → 배포 7단계.</span></a>
+  <a class="item" href="sujip/"><b>수집 관리</b><span>어느 매체에서 무엇을 가져오는지, 왜 켜고 껐는지를 봅니다.</span></a>
+  <a class="item" href="card/"><b>카드 작성</b><span>검증에 걸린 카드를 사람이 손보는 화면입니다.</span></a>
+  <a class="item" href="partner/"><b>총판 연동</b><span>총판 계정을 SNS 채널에 잇고, 언제 무엇이 나갈지 정합니다.</span></a>
+
+  <h2>실제로 만들어진 카드</h2>
+  <p class="lead">소재 3건 × 이용 중 총판 2곳 = 6장. 총판마다 상호와 연락처가 들어갑니다.</p>
+  <h2>sa-0417</h2>
+  <div class="cards">
+    <figure><img src="card/card_mtv0yvk0_5_sa-0417.png" alt="" loading="lazy"><figcaption>card_mtv0yvk0_5_sa-0417.png</figcaption></figure>
+    <figure><img src="card/card_mtv0yvk2_7_sa-0417.png" alt="" loading="lazy"><figcaption>card_mtv0yvk2_7_sa-0417.png</figcaption></figure>
+    <figure><img src="card/card_mtv0yvk4_9_sa-0417.png" alt="" loading="lazy"><figcaption>card_mtv0yvk4_9_sa-0417.png</figcaption></figure>
+  </div>
+  <h2>sa-0922</h2>
+  <div class="cards">
+    <figure><img src="card/card_mtv0yvk0_5_sa-0922.png" alt="" loading="lazy"><figcaption>card_mtv0yvk0_5_sa-0922.png</figcaption></figure>
+    <figure><img src="card/card_mtv0yvk2_7_sa-0922.png" alt="" loading="lazy"><figcaption>card_mtv0yvk2_7_sa-0922.png</figcaption></figure>
+    <figure><img src="card/card_mtv0yvk4_9_sa-0922.png" alt="" loading="lazy"><figcaption>card_mtv0yvk4_9_sa-0922.png</figcaption></figure>
+  </div>
+
+  <h2>소재가 된 기사</h2>
+  <table><thead><tr><th>매체</th><th>제목</th><th>카드 문구</th></tr></thead><tbody>
+  <tr><td>전자신문</td><td>롯데백화점 안산점에 &#39;코웨이갤러리&#39; 오픈…오프라인 체험 접점 확대</td><td><b>안산에 코웨이 체험 매장이 생겼습니다</b><br>리빙관 안에 있어서 매트리스와 정수기를 직접 만져 보실 수 있습니다. 눈으로 고르신 다음, 약정별로 월 얼마인지는 제가 표로 뽑아 드리겠습니다.</td></tr>
+  <tr><td>전자신문</td><td>미닉스, 브랜드 최초 미니건조기 보상판매 실시</td><td><b>미니건조기 보상판매, 500대까지만 받습니다</b><br>쓰시던 게 다른 회사 제품이어도 됩니다. 10킬로 아래면 대상이고 이달 말일까지입니다. 새로 들이실 생각이면 사는 쪽이 나은지 빌리는 쪽이 나은지 같이 따져 보시죠.</td></tr>
+  <tr><td>전자신문</td><td>삼성전자·LG전자 TV 리퍼로 역수입…반값 유통에 브랜드·AS 사각지대</td><td><b>값이 유난히 싼 TV, 수리가 되는지 먼저 보십시오</b><br>제조사 인증을 거치지 않고 들어온 물건이 온라인에서 팔리고 있습니다. 고장 났을 때 맡길 곳이 없을 수 있습니다. 정품인지, 수리는 어디서 받는지 계약 전에 글로 받아 두시는 편이 안전합니다.</td></tr>
+  </tbody></table>
+
+  <h2>어느 매체에서 가져오나</h2>
+  <p class="lead">🔴 켜는 조건 넷을 다 만족해야 합니다 — robots 허용 · 약관 확인 · 비회원 금지 아님 · 공개 RSS 존재.</p>
+  <table><thead><tr><th></th><th>매체</th><th>이유</th></tr></thead><tbody>
+  <tr><td class="on">켬</td><td><b>전자신문</b></td><td>가전·렌탈 품목을 가장 많이 다룬다</td></tr>
+  <tr><td class="on">켬</td><td><b>지디넷코리아</b></td><td>IT·가전 전문지라 생활가전 소재 밀도가 높다</td></tr>
+  <tr><td class="on">켬</td><td><b>컨슈머타임스</b></td><td>소비자 전문지 — 전자신문 단일 의존을 피하는 이중화</td></tr>
+  <tr><td class="off">끔</td><td>소비자가만드는신문</td><td>robots 가 `/rss/` 를 막는다. 기사 경로는 열려 있지만 **우리는 공개 RSS 만 읽는다**(POLICY). 기사 목록을 긁어 우회하는 것은 robo…</td></tr>
+  <tr><td class="off">끔</td><td>디지털데일리</td><td>robots 는 열려 있지만 약관이 **주어를 회원으로 한정하지 않고** 「데이터베이스를 비롯한 각종 정보서비스 등에 사용」을 금지하며 「비영리 목적이라도」라고 …</td></tr>
+  <tr><td class="off">끔</td><td>한국경제</td><td>robots 는 열려 있으나 **약관이 두 겹으로 막는다.** ① 제19조① 이 자동수집을 명시 금지하고 ② 제21조④ 는 주어가 「이용자」라 「우리는 회원이 아…</td></tr>
+  <tr><td class="off">끔</td><td>연합뉴스</td><td>**AI 크롤러 23종을 이름으로 막아 뒀다** — GPTBot·ClaudeBot·anthropic-ai 포함. 우리 파이프라인은 본문을 LLM 에 넘긴다. 이름…</td></tr>
+  <tr><td class="off">끔</td><td>매일경제</td><td>AI 크롤러 13종 차단(GPTBot·ClaudeBot·anthropic-ai 포함). POLICY.no-ai-evade.…</td></tr>
+  <tr><td class="off">끔</td><td>이데일리</td><td>⚠️ GPTBot·ClaudeBot 은 안 막았지만 **bytespider·diffbot 같은 수집형 AI 봇을 막았다.** 우리 규칙(no-ai-evade)은 …</td></tr>
+  <tr><td class="off">끔</td><td>네이버 뉴스 검색 API</td><td>API 는 **키를 발급받아야 하고 그건 회원 계약이다.** 「회원이 아니다」라는 우리 논리가 여기서는 성립하지 않는다. POLICY.dont 의 no-apike…</td></tr>
+  <tr><td class="off">끔</td><td>한국언론진흥재단 (빅카인즈)</td><td>이용계약이 전제인데 **계약하지 않기로 결정**했다(POLICY). 계약 없이 쓰지 않는다.…</td></tr>
+  </tbody></table>
+
+</div>
+</body></html>
