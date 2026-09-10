@@ -14,6 +14,9 @@
   --shadow:0 1px 2px rgba(16,24,40,.05);
 }
 *{box-sizing:border-box}
+/* 🔴 display:grid 를 준 요소는 [hidden] 이 안 먹는다 — 브라우저 기본값을 이긴다.
+      「고친 곳」 목록이 접히지 않고 처음부터 펼쳐져 있었다. */
+[hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);
   font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",sans-serif;
@@ -51,6 +54,7 @@ button{font:inherit;color:inherit}
 .nav a .todo{margin-left:auto;font-size:9.5px;color:var(--faint);border:1px solid var(--line);
   border-radius:5px;padding:1px 4px;font-weight:600}
 .out{margin:10px 14px 0}
+.out a{display:block}
 .out button{width:100%;padding:9px;border:1px solid var(--line);background:var(--card);
   border-radius:8px;font-size:12.5px;color:var(--ink2);cursor:pointer}
 .out button:hover{background:var(--line2)}
@@ -187,6 +191,56 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
 .todo-page .back{display:inline-block;margin-top:18px;font-size:12.5px;color:var(--accent);
   text-decoration:underline;text-underline-offset:3px}
 
+/* ── 로그인 (원본 /login.php) ───────────────────────────────
+   🔴 원본은 모서리가 각지고 버튼이 새까맣다. 대시보드와 결이 다르다 —
+      우리가 통일하지 않는다. 원본이 그렇다는 것이 보여야 한다. */
+.auth{display:flex;min-height:640px;height:calc(100vh - 32px)}
+.auth .art{flex:0 0 57.5%;min-width:0;background:#0b0c0f;color:#fff;
+  display:flex;flex-direction:column}
+/* 🔴 원본 사진(건물 야경)은 고객사 자산이라 가져오지 않았다.
+      같은 자리에 우리가 그린 띠를 둔다 — 멀리 보이는 창들. */
+.auth .band{height:124px;flex:0 0 124px;position:relative;overflow:hidden;
+  background:linear-gradient(105deg,#130d05 0%,#0e1016 30%,#0b0c11 58%,#1b1308 82%,#0c0d11 100%)}
+.auth .band::after{content:"";position:absolute;inset:0;opacity:.45;
+  background-image:radial-gradient(circle,rgba(214,154,68,.95) 0 1.1px,transparent 1.7px);
+  background-size:15px 19px}
+.auth .art .say{margin-top:auto;padding:0 48px 88px 64px}
+.auth .art .eyebrow{font-size:11px;letter-spacing:.18em;font-weight:700;color:#c9ccd4}
+.auth .art h2{margin:14px 0 0;font-size:54px;line-height:1.24;font-weight:800;
+  letter-spacing:-1.4px;color:#fff}
+.auth .form{flex:1;min-width:0;background:#f4f6f8;display:flex;align-items:center;
+  overflow-y:auto}
+.below{max-width:880px;margin:0 auto;padding:26px 24px 64px}
+.below .fixbar{margin-top:0}
+.auth .inner{width:100%;max-width:420px;padding:0 24px 0 64px}
+.auth .mark{border-left:3px solid #1f2937;padding-left:11px;margin:0 0 62px}
+.auth .mark .eyebrow{font-size:10px;letter-spacing:.16em;font-weight:700;color:#8b98a6}
+.auth .mark .nm{font-size:15px;font-weight:700;margin-top:3px}
+.auth .kicker{font-size:11.5px;letter-spacing:.14em;font-weight:700;color:#1a6b8a}
+.auth h1{display:block;font-size:38px;font-weight:800;letter-spacing:-1.4px;margin:12px 0 0}
+.auth .lead{color:var(--muted);font-size:13.5px;margin:12px 0 34px}
+.auth label{display:block;font-size:12.5px;font-weight:600;margin:0 0 8px}
+.auth input{width:100%;height:44px;border:1px solid #d8dee5;background:#fff;border-radius:0;
+  padding:0 13px;font:inherit;color:var(--ink)}
+.auth input:focus{outline:2px solid #1a6b8a;outline-offset:-1px}
+.auth .field{margin:0 0 22px}
+.auth .go{display:block;width:100%;height:46px;background:#15171c;color:#fff;border:0;
+  border-radius:0;font-size:14px;font-weight:700;cursor:not-allowed;margin-top:4px}
+.auth .foot{font-size:12.5px;color:var(--muted);margin:20px 0 0}
+.auth .foot a{color:var(--ink2);text-decoration:underline;text-underline-offset:3px;
+  margin:0 4px}
+.auth .why{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);
+  font-size:12px;line-height:1.65;padding:11px 13px;margin:26px 0 0}
+.auth .why b{font-weight:700}
+@media (max-width:900px){
+  .auth{flex-direction:column;min-height:0}
+  .auth .art{flex:0 0 auto}
+  .auth .art .say{padding:28px 24px 34px}
+  .auth .art h2{font-size:32px}
+  .auth .inner{padding:38px 24px 48px;max-width:none}
+  .auth .mark{margin-bottom:30px}
+}
+
 @media (max-width:1180px){
   .tiles{grid-template-columns:repeat(2,1fr)}
   .duo{grid-template-columns:1fr}
@@ -224,7 +278,7 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
       <a href="../settings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12l2-1-1-3-2 .4a7 7 0 0 0-2-1.2L15.6 5h-3.2l-.4 2.2a7 7 0 0 0-2 1.2L8 8l-1 3 2 1-2 1 1 3 2-.4a7 7 0 0 0 2 1.2l.4 2.2h3.2l.4-2.2a7 7 0 0 0 2-1.2l2 .4 1-3z"/></svg><span>운영·AI 설정</span><span class="todo">미확인</span></a>
       <a href="../audit/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>감사기록</span><span class="todo">미확인</span></a>
     </nav>
-    <div class="out"><button type="button">로그아웃</button></div>
+    <div class="out"><a href="../login/"><button type="button">로그아웃</button></a></div>
   </aside>
   <div class="main">
     <div class="panel todo-page">
