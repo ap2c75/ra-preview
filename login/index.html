@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>총판 로그인 · 시안</title>
+<style>
+:root{--ink:#0f172a;--muted:#5b6b7c;--line:#e3ebf3;--bg:#f6f9fc;--card:#fff;
+  --accent:#0d6b8a;--ok:#0f7b5a;--wait:#8a6d0d;--stop:#9a3412;--r:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif}
+.sian{background:#fff8e6;border-bottom:1px solid #f6e0a8;color:#7a5209;
+  font-size:12.5px;text-align:center;padding:9px 14px;line-height:1.55}
+.sian b{color:#8a3d09}
+header.top{background:var(--card);border-bottom:1px solid var(--line)}
+header.top .in{max-width:1040px;margin:0 auto;padding:15px 18px;
+  display:flex;align-items:center;gap:12px}
+header.top .mark{width:28px;height:28px;border-radius:9px;background:var(--accent);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+header.top h1{font-size:16px;margin:0;letter-spacing:-.3px}
+header.top .who{margin-left:auto;font-size:12.5px;color:var(--muted);text-align:right;line-height:1.4}
+header.top .who b{display:block;color:var(--ink);font-size:13.5px}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 64px}
+h2{font-size:19px;margin:0 0 5px;letter-spacing:-.3px}
+.lead{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;
+  padding:10px 17px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--accent)}
+.btn.sm{padding:6px 12px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.field{margin:0 0 14px}
+.field label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}
+.field input,.field select{width:100%;padding:11px 13px;border:1px solid var(--line);
+  border-radius:10px;font:inherit;background:#fff}
+.field input:focus,.field select:focus{outline:2px solid #0d6b8a33;border-color:#8fc0d4}
+.field input[readonly]{background:#f3f6f9;color:#8496a6;cursor:not-allowed}
+.hint{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.55}
+.err{font-size:12px;color:#9a3412;margin:6px 0 0;display:none}
+.err.on{display:block}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:600;background:#fafcfe}
+td.num{font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px}
+.tag.ok{background:#e8f6f0;color:var(--ok)}
+.tag.wait{background:#fdf6e3;color:var(--wait)}
+.tag.stop{background:#fdeee7;color:var(--stop)}
+code.id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  background:#f3f6f9;padding:2px 7px;border-radius:6px}
+.memo{background:#fff8e6;border:1px solid #f6e0a8;border-radius:11px;padding:12px 14px;
+  font-size:12.5px;color:#7a5209;margin:16px 0 0;line-height:1.65}
+.memo b{color:#8a3d09}
+.steps{counter-reset:s;margin:0;padding:0;list-style:none}
+.steps li{position:relative;padding:0 0 15px 34px;font-size:13.5px}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;
+  width:23px;height:23px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.steps li b{display:block;margin:0 0 3px}
+.steps li span{color:var(--muted);font-size:12.5px;line-height:1.6}
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:860px){.grid.two{grid-template-columns:1.25fr .9fr}}
+.pad{padding:20px}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+.sum .s{flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:13px 15px}
+.sum .s i{display:block;font-style:normal;font-size:12px;color:var(--muted)}
+.sum .s b{display:block;font-size:21px;letter-spacing:-.5px;margin:2px 0 0;
+  font-variant-numeric:tabular-nums}
+.rowbtn{display:flex;gap:6px;justify-content:flex-end}
+a.plain{color:var(--accent);font-size:13px}
+</style>
+</head><body>
+<p class="sian">총판이 <b>로그인하는 화면</b>입니다 · 동작 시안이며 <b>아무 값도 서버로 보내지 않습니다</b></p>
+<header class="top"><div class="in">
+  <span class="mark">R</span><h1>렌탈아지트 총판</h1>
+</div></header>
+<div class="wrap" style="max-width:420px">
+  <h2>총판 로그인</h2>
+  <p class="lead">본사에서 받으신 아이디로 들어오십니다.</p>
+  <div class="card pad">
+    <div class="field">
+      <label for="lid">아이디</label>
+      <input type="text" id="lid" placeholder="gangseo01" autocomplete="off" spellcheck="false">
+      <p class="hint">영문 소문자로 시작, 4~20자. 총판이 부르기 쉬운 이름 + 순번.</p>
+      <p class="err" id="lid-e"></p>
+    </div>
+    <div class="field">
+      <label for="lpw">비밀번호</label>
+      <input type="password" id="lpw" value="" readonly aria-describedby="lpw-h"
+        placeholder="시안에서는 입력하지 않습니다">
+      <p class="hint" id="lpw-h"><b>이 칸은 잠겨 있습니다.</b> 동작 시안이라 비밀번호를 받지 않습니다 —
+        실수로라도 실제 비밀번호가 들어가지 않게 막아 두었습니다.</p>
+    </div>
+    <button class="btn" id="go" style="width:100%">들어가기</button>
+    <p class="hint" style="margin-top:12px">비밀번호를 잊으셨으면 본사(1600-0000)로 연락 주십시오.
+      본사도 비밀번호를 보지 못합니다 — 새 설정 링크를 보내 드립니다.</p>
+  </div>
+  <div class="memo">
+    <b>동작 시안입니다.</b> 아무 값도 서버로 보내지 않습니다.
+    아래 표본 아이디 중 하나로 눌러 보시면 그 총판 화면으로 들어갑니다.
+    <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn ghost sm" type="button" data-demo="gangseo01">gangseo01 · 아지트렌탈 강서점</button>
+      <button class="btn ghost sm" type="button" data-demo="bundang01">bundang01 · 아지트렌탈 분당점</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  /* 🔴 진짜 인증이 아니다. 아이디가 대장에 있는지만 본다 — 시안이 하는 일은 여기까지다. */
+  var PARTNERS = [{"loginId":"gangseo01","code":"sa-0417","name":"아지트렌탈 강서점","state":"active"},{"loginId":"bundang01","code":"sa-0922","name":"아지트렌탈 분당점","state":"active"},{"loginId":"haeundae01","code":"sa-1130","name":"아지트렌탈 해운대점","state":"invited"}];
+  var RE = /^[a-z][a-z0-9]{3,19}$/;
+  var $ = function(id){ return document.getElementById(id); };
+
+  function fail(msg){ var e = $("lid-e"); e.textContent = msg; e.className = "err on"; }
+  function enter(id){
+    var p = null;
+    for (var i = 0; i < PARTNERS.length; i++) if (PARTNERS[i].loginId === id) p = PARTNERS[i];
+    if (!p) return fail("없는 아이디입니다. 본사에서 받으신 아이디를 확인해 주십시오.");
+    /* 🔴 정지된 계정은 들어갈 수 없다 — 화면이 그 이유를 말해 준다 */
+    if (p.state === "suspended") return fail("정지된 계정입니다. 본사로 연락 주십시오.");
+    if (p.state === "invited") return fail("아직 비밀번호를 정하지 않으셨습니다. 문자로 보내 드린 설정 링크를 눌러 주십시오.");
+    location.href = "../g/?p=" + encodeURIComponent(p.code);
+  }
+
+  $("go").addEventListener("click", function(){
+    var v = ($("lid").value || "").trim().toLowerCase();
+    if (!v) return fail("아이디를 입력해 주십시오.");
+    if (!RE.test(v)) return fail("아이디 형식이 아닙니다 — 영문 소문자로 시작하는 4~20자입니다.");
+    enter(v);
+  });
+  $("lid").addEventListener("keydown", function(e){ if (e.key === "Enter") $("go").click(); });
+  $("lid").addEventListener("input", function(){ $("lid-e").className = "err"; });
+
+  var demos = document.querySelectorAll("[data-demo]");
+  for (var i = 0; i < demos.length; i++) (function(b){
+    b.addEventListener("click", function(){
+      $("lid").value = b.getAttribute("data-demo");
+      enter(b.getAttribute("data-demo"));
+    });
+  })(demos[i]);
+})();
+</script>
+</body></html>

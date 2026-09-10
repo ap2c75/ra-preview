@@ -170,13 +170,33 @@ input[readonly]{background:var(--surface-2);color:var(--ink-3)}
   border-radius:11px;font:inherit;background:#fff}
 .pickbar input:focus{outline:2px solid #0d6b8a33;border-color:#8fc0d4}
 .pickbar .cnt{flex:0 0 auto;font-size:12.5px;color:#5b6b7c;white-space:nowrap}
-.chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
-.chips .chip{border:1px solid var(--line,#e3ebf3);background:#fff;border-radius:999px;
-  padding:7px 13px;font:inherit;font-size:13px;cursor:pointer;color:#334}
-.chips .chip b{font-weight:600;color:#8496a6;font-size:11.5px;margin-left:3px}
-.chips .chip.on{background:#0d6b8a;border-color:#0d6b8a;color:#fff}
-.chips .chip.on b{color:#cfe7f1}
-.chips.subs .chip{font-size:12.5px;padding:6px 11px}
+/* 🔴 상위·하위가 똑같이 생겨서 지금 어느 단계인지 안 보였다(손 이사 지적 2026-09-10).
+   🔑 세 가지로 가른다 —
+      ① 모양: 상위는 크고 각진 사각, 하위는 작고 둥근 알약
+      ② 자리: 하위 줄은 안으로 들여쓰고 왼쪽에 세로선 — 상위에 딸린 것이 눈에 보이게
+      ③ 색: 상위는 진한 청록으로 채우고, 하위는 흰 바탕에 청록 테두리 */
+.chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.chips .chip{border:1px solid var(--line,#e3ebf3);background:#fff;font:inherit;
+  cursor:pointer;color:#334;transition:background .12s,border-color .12s}
+.chips .chip b{font-weight:600;color:#8496a6;font-size:11.5px;margin-left:4px}
+
+.chips.groups{gap:8px;margin:0 0 12px;padding:0 0 13px;
+  border-bottom:1px solid var(--line,#e3ebf3)}
+.chips.groups .chip{border-radius:10px;padding:9px 15px;font-size:13.5px;
+  font-weight:600;color:#22333f}
+.chips.groups .chip:hover{border-color:#a8c8d8;background:#f7fbfd}
+.chips.groups .chip.on{background:#0d6b8a;border-color:#0d6b8a;color:#fff}
+.chips.groups .chip.on b{color:#cfe7f1}
+
+.chips.subs{margin:0 0 15px;padding:1px 0 1px 13px;border-left:3px solid #cfe3ec}
+.chips.subs .subhead{flex:0 0 100%;font-size:11.5px;font-weight:600;color:#7d93a3;
+  letter-spacing:.2px;margin:0 0 7px}
+.chips.subs .chip{font-size:12.5px;padding:5px 12px;border-radius:999px;
+  font-weight:500;color:#3d5464;background:#f7fafc}
+.chips.subs .chip:hover{background:#eef6fa;border-color:#a8c8d8}
+.chips.subs .chip.on{background:#fff;border-color:#0d6b8a;color:#0d6b8a;
+  box-shadow:inset 0 0 0 1px #0d6b8a}
+.chips.subs .chip.on b{color:#0d6b8a}
 .pick .ph{flex:0 0 62px;width:62px;height:62px;border-radius:12px;background:#f2f6fa;
   border:1px solid #e3ecf4;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .pick .ph img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
@@ -251,7 +271,7 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
       <input type="search" id="pick-q" placeholder="상품명 · 브랜드 · 모델명으로 찾기" aria-label="상품 찾기" autocomplete="off">
       <span class="cnt" id="pick-count"></span>
     </div>
-    <div class="chips" id="cat-groups"></div>
+    <div class="chips groups" id="cat-groups"></div>
     <div class="chips subs" id="cat-subs" hidden></div>
     <div class="picks" id="picks"></div>
     <div class="morerow"><button class="btn ghost sm" type="button" id="pick-more" hidden></button></div>
@@ -387,7 +407,7 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
       html += '<button type="button" class="chip sm' + (state.sub === s.name ? ' on' : '') +
         '" data-s="' + esc(s.name) + '">' + esc(s.name) + ' <b>' + s.count + '</b></button>';
     });
-    box.innerHTML = html;
+    box.innerHTML = '<span class="subhead">' + esc(g.name) + ' 안에서</span>' + html;
     [].forEach.call(box.querySelectorAll('.chip'), function (b) {
       b.addEventListener('click', function () {
         state.sub = b.getAttribute('data-s') || null;
@@ -470,6 +490,18 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
   window.__pickerRefresh = renderAll;
 })();
 
+
+  /* ── 로그인한 총판 따라가기 ────────────────────────────────
+     🔴 화면에 「아지트렌탈 강서점 / 백종화」가 박혀 있었다. 로그인 화면을 만들었으니
+        **들어온 총판**이 보여야 한다 — 안 그러면 분당점이 들어와도 강서점 이름으로 만든다.
+     🔑 로그인 화면이 ?p=<총판코드> 로 넘긴다. 대장에 있는 코드만 받는다. */
+  var REGISTRY = [{"code":"sa-0417","name":"아지트렌탈 강서점","manager":"백종화","region":"서울 강서","state":"active"},{"code":"sa-0922","name":"아지트렌탈 분당점","manager":"김수현","region":"경기 성남 분당","state":"active"},{"code":"sa-1130","name":"아지트렌탈 해운대점","manager":"이정민","region":"부산 해운대","state":"invited"}];
+  var WHOAMI = (function(){
+    var q = new URLSearchParams(location.search).get('p');
+    if (!q) return null;
+    for (var i = 0; i < REGISTRY.length; i++) if (REGISTRY[i].code === q) return REGISTRY[i];
+    return null;   /* 모르는 코드는 무시한다 — 주소를 고쳐 남의 이름을 쓰지 못하게 */
+  })();
 
   /* ── 생성 (자동 생성 — make-generator.mjs) ────────────────────
      🔑 인계면 그대로다: **완성된 1장에 문자열 치환 1패스.** 빌드 툴이 없다.
@@ -738,6 +770,21 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
     MINE.push({ id:x.id, pnm:x.pnm, partner:x.partner, url:x.url, live:x.live, left:[] });
   });
 
+  /* 🔴 화면에 「아지트렌탈 강서점 / 백종화」가 박혀 있었다. 로그인 화면을 만들었으니
+        **들어온 총판**이 보여야 한다 — 안 그러면 분당점이 들어와도 강서점 이름으로 만든다. */
+  if (WHOAMI) {
+    var who = document.querySelector(".who");
+    if (who) {
+      who.textContent = WHOAMI.name;
+      var wb = document.createElement("b");
+      wb.textContent = WHOAMI.manager + " 님";
+      who.appendChild(wb);
+    }
+    if ($("nm")) $("nm").value = WHOAMI.name;
+    if ($("mg")) $("mg").value = WHOAMI.manager;
+    if ($("cd")) { $("cd").value = WHOAMI.code; $("cd").readOnly = true; }
+    if ($("rg")) $("rg").value = WHOAMI.region || "";
+  }
   window.MINE = MINE;              /* picker 가 「이미 만든 것」을 알아야 한다 */
   window.__pickerInit();
   renderMine();
