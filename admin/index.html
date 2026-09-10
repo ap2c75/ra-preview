@@ -13,35 +13,56 @@ body{margin:0;background:var(--bg);color:var(--ink);
 .sian{background:#fff8e6;border-bottom:1px solid #f6e0a8;color:#7a5209;
   font-size:12.5px;text-align:center;padding:9px 14px;line-height:1.55}
 .sian b{color:#8a3d09}
+
 header.top{background:var(--card);border-bottom:1px solid var(--line)}
-header.top .in{max-width:1040px;margin:0 auto;padding:15px 18px;
+header.top .in{max-width:1080px;margin:0 auto;padding:15px 18px 0;
   display:flex;align-items:center;gap:12px}
 header.top .mark{width:28px;height:28px;border-radius:9px;background:var(--accent);
   color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 header.top h1{font-size:16px;margin:0;letter-spacing:-.3px}
 header.top .who{margin-left:auto;font-size:12.5px;color:var(--muted);text-align:right;line-height:1.4}
 header.top .who b{display:block;color:var(--ink);font-size:13.5px}
-.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 64px}
+
+/* ── 상단 메뉴 ────────────────────────────────────────────────
+   🔴 새 총판 등록을 오른쪽 칸에 끼워 넣었더니 표가 눌리고 순서도 안 읽혔다.
+      할 일마다 화면을 나누고 메뉴로 오간다. */
+nav.tabs{max-width:1080px;margin:0 auto;padding:0 18px;display:flex;gap:2px;overflow-x:auto}
+nav.tabs button{border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;
+  color:var(--muted);padding:13px 16px 12px;cursor:pointer;white-space:nowrap;
+  border-bottom:2.5px solid transparent;margin-bottom:-1px}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+nav.tabs button .n{display:inline-block;margin-left:5px;font-size:11.5px;font-weight:700;
+  background:#eaf3f7;color:var(--accent);border-radius:999px;padding:1px 7px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px 18px 64px}
+section.view[hidden]{display:none}
 h2{font-size:19px;margin:0 0 5px;letter-spacing:-.3px}
+h3{font-size:15px;margin:0 0 10px}
 .lead{color:var(--muted);font-size:13.5px;margin:0 0 18px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
   box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.pad{padding:20px}
 .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;
   padding:10px 17px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--accent)}
 .btn.sm{padding:6px 12px;font-size:12.5px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+
 .field{margin:0 0 14px}
 .field label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}
-.field input,.field select{width:100%;padding:11px 13px;border:1px solid var(--line);
+.field input{width:100%;padding:11px 13px;border:1px solid var(--line);
   border-radius:10px;font:inherit;background:#fff}
-.field input:focus,.field select:focus{outline:2px solid #0d6b8a33;border-color:#8fc0d4}
+.field input:focus{outline:2px solid #0d6b8a33;border-color:#8fc0d4}
 .field input[readonly]{background:#f3f6f9;color:#8496a6;cursor:not-allowed}
 .hint{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.55}
 .err{font-size:12px;color:#9a3412;margin:6px 0 0;display:none}
 .err.on{display:block}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;
+  white-space:nowrap}
+td:first-child{white-space:normal;min-width:150px}
 th{font-size:12px;color:var(--muted);font-weight:600;background:#fafcfe}
 td.num{font-variant-numeric:tabular-nums}
 .tag{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px}
@@ -50,6 +71,8 @@ td.num{font-variant-numeric:tabular-nums}
 .tag.stop{background:#fdeee7;color:var(--stop)}
 code.id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
   background:#f3f6f9;padding:2px 7px;border-radius:6px}
+.rowbtn{display:flex;gap:6px;justify-content:flex-end}
+
 .memo{background:#fff8e6;border:1px solid #f6e0a8;border-radius:11px;padding:12px 14px;
   font-size:12.5px;color:#7a5209;margin:16px 0 0;line-height:1.65}
 .memo b{color:#8a3d09}
@@ -60,22 +83,25 @@ code.id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px
   font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .steps li b{display:block;margin:0 0 3px}
 .steps li span{color:var(--muted);font-size:12.5px;line-height:1.6}
-.grid{display:grid;gap:16px;grid-template-columns:1fr}
-/* 🔴 860px 에서 두 칸으로 쪼개니 표가 눌려 상호가 한 글자씩 끊겼다(2026-09-10).
-      표가 편히 들어갈 너비가 확보될 때만 쪼갠다. */
-@media(min-width:1120px){.grid.two{grid-template-columns:1.3fr .85fr}}
-table{min-width:560px}
-th,td{white-space:nowrap}
-td:first-child{white-space:normal;min-width:150px}
-.pad{padding:20px}
-.sum{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
-.sum .s{flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);
-  border-radius:12px;padding:13px 15px}
+
+/* ── 대시보드 ────────────────────────────────────────────────── */
+.sum{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin:0 0 18px}
+@media(min-width:700px){.sum{grid-template-columns:repeat(4,1fr)}}
+.sum .s{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
 .sum .s i{display:block;font-style:normal;font-size:12px;color:var(--muted)}
-.sum .s b{display:block;font-size:21px;letter-spacing:-.5px;margin:2px 0 0;
+.sum .s b{display:block;font-size:23px;letter-spacing:-.5px;margin:3px 0 0;
   font-variant-numeric:tabular-nums}
-.rowbtn{display:flex;gap:6px;justify-content:flex-end}
-a.plain{color:var(--accent);font-size:13px}
+.sum .s.wait b{color:var(--wait)}
+.sum .s.stop b{color:var(--stop)}
+.grid2{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:860px){.grid2{grid-template-columns:1fr 1fr}}
+.todo{list-style:none;margin:0;padding:0}
+.todo li{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.todo li:last-child{border-bottom:0}
+.todo li .t{flex:1;min-width:0;font-size:13.5px}
+.todo li .t span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.none{color:var(--muted);font-size:13px;padding:14px 0}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0}
 
 /* ── 성과 ────────────────────────────────────────────────────
    🔴 표본 숫자가 실측처럼 보이면 안 된다. 점선 밑줄로 눈에 걸리게 한다 —
@@ -85,11 +111,14 @@ a.plain{color:var(--accent);font-size:13px}
 .seg button{border:0;background:#fff;font:inherit;font-size:12.5px;padding:7px 13px;cursor:pointer;color:#3d5464}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--accent);color:#fff;font-weight:600}
-.toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+.toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;
+  color:var(--muted);cursor:pointer;user-select:none}
 .toggle input{width:16px;height:16px;accent-color:#8a6d0d}
-.nodata{background:#eef4f8;border:1px solid #d6e5ee;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#3d5464;margin:0 0 14px;line-height:1.65}
+.nodata{background:#eef4f8;border:1px solid #d6e5ee;border-radius:11px;padding:12px 14px;
+  font-size:12.5px;color:#3d5464;margin:0 0 14px;line-height:1.65}
 .nodata b{color:#0d6b8a}
-.samplebar{background:#fff3d6;border:1px solid #f0d089;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#7a5209;margin:0 0 14px;line-height:1.65;display:none}
+.samplebar{background:#fff3d6;border:1px solid #f0d089;border-radius:11px;padding:12px 14px;
+  font-size:12.5px;color:#7a5209;margin:0 0 14px;line-height:1.65;display:none}
 .samplebar.on{display:block}
 .samplebar b{color:#8a3d09}
 td.m,th.m{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -98,66 +127,89 @@ td.m.s .v{border-bottom:2px dotted #c99a2e;padding-bottom:1px}
 td.m .no{color:#9fb0bd;font-size:12px}
 .wire{list-style:none;margin:0;padding:0;font-size:13px}
 .wire li{display:flex;gap:9px;padding:0 0 13px}
-.wire .mk{flex:0 0 19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+.wire .mk{flex:0 0 19px;height:19px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
 .wire .mk.y{background:#e8f6f0;color:var(--ok)}
 .wire .mk.n{background:#fdeee7;color:var(--stop)}
 .wire b{display:block;margin:0 0 2px}
 .wire i{display:block;color:var(--muted);font-size:12.5px;line-height:1.6;font-style:normal}
+.scroll{overflow:auto}
 </style>
 </head><body>
 <p class="sian">본사가 <b>총판을 관리하는 화면</b>입니다 · 동작 시안이며 등록·정지는 이 화면 안에서만 반영됩니다</p>
-<header class="top"><div class="in">
-  <span class="mark">R</span><h1>본사 · 총판 관리</h1>
-  <span class="who">렌탈아지트 본사<b>운영 담당</b></span>
-</div></header>
-<div class="wrap">
-  <div class="sum">
-    <div class="s"><i>등록 총판</i><b id="n-all">3</b></div>
-    <div class="s"><i>이용 중</i><b id="n-active">2</b></div>
-    <div class="s"><i>설정 대기</i><b id="n-invited">1</b></div>
-    <div class="s"><i>정지</i><b id="n-susp">0</b></div>
+<header class="top">
+  <div class="in">
+    <span class="mark">R</span><h1>본사 · 총판 관리</h1>
+    <span class="who">렌탈아지트 본사<b>운영 담당</b></span>
   </div>
+  <nav class="tabs">
+    <button type="button" data-view="home" class="on">기본</button>
+    <button type="button" data-view="list">총판 관리<span class="n" id="tab-n">0</span></button>
+    <button type="button" data-view="new">새 총판 등록</button>
+    <button type="button" data-view="perf">성과 분석</button>
+  </nav>
+</header>
+<div class="wrap">
 
-  <div class="grid two">
-    <section>
-      <h2>총판 목록과 이용성과</h2>
-      <div class="perfbar">
-        <span class="seg">
-          <button type="button" data-days="7">최근 7일</button>
-          <button type="button" data-days="30" class="on">최근 30일</button>
-        </span>
-        <label class="toggle"><input type="checkbox" id="showsample">
-          숫자가 들어오면 이렇게 보입니다 <b>(표본)</b></label>
+  <section class="view" id="v-home">
+    <h2>한눈에 보기</h2>
+    <p class="lead">오늘 손이 필요한 것과 지금 막혀 있는 것만 모았습니다.</p>
+    <div class="sum">
+      <div class="s"><i>등록 총판</i><b id="n-all">0</b></div>
+      <div class="s"><i>이용 중</i><b id="n-active">0</b></div>
+      <div class="s wait"><i>설정 대기</i><b id="n-invited">0</b></div>
+      <div class="s stop"><i>정지</i><b id="n-susp">0</b></div>
+    </div>
+    <div class="grid2">
+      <div class="card pad">
+        <h3>손이 필요한 것</h3>
+        <ul class="todo" id="todo"></ul>
       </div>
-      <div class="nodata" id="nodata">
-        <b>이용성과는 아직 집계되지 않습니다.</b> 랜딩은 방문·상담 신청을 이미 보내고 있는데
-        <b>받는 주소가 비어 있습니다</b>(APPS_SCRIPT_URL). 그래서 숫자 자리에 「—」를 둡니다 —
-        0 이라고 적으면 「일을 안 했다」로 읽히는데, 사실은 <b>모르는 것</b>입니다.
+      <div class="card pad">
+        <h3>집계 상태</h3>
+        <div class="nodata" style="margin:0">
+          <b>이용성과는 아직 집계되지 않습니다.</b> 랜딩은 방문·상담 신청을 이미 보내고 있는데
+          <b>받는 주소가 비어 있습니다</b>(APPS_SCRIPT_URL). 그래서 숫자 자리에 「—」를 둡니다 —
+          0 이라고 적으면 「일을 안 했다」로 읽히는데, 사실은 <b>모르는 것</b>입니다.
+        </div>
+        <p class="hint" id="wire-sum"></p>
+        <div class="jump">
+          <button class="btn ghost sm" type="button" data-view="perf">성과 분석 보기</button>
+          <button class="btn ghost sm" type="button" data-view="new">새 총판 등록</button>
+        </div>
       </div>
-      <div class="samplebar" id="samplebar">
-        <b>지금 보이는 숫자는 전부 표본입니다.</b> 실제 성과가 아닙니다 —
-        집계가 붙으면 어떤 화면이 되는지 보여 드리는 것입니다.
-        표본 숫자에는 <b>점선 밑줄</b>이 그어져 있습니다.
-      </div>
-      <p class="lead">아이디·코드는 한 번 매기면 바꾸지 않습니다 — 코드가 랜딩 주소에 들어가 있습니다.</p>
-      <div class="card" style="overflow:auto">
-        <table><thead><tr>
-          <th>총판</th><th>아이디</th><th>코드</th><th>상태</th>
-          <th class="m">만든 랜딩</th><th class="m">방문</th>
-          <th class="m">상담 신청</th><th class="m">전환율</th>
-          <th>최근 신청</th><th></th>
-        </tr></thead><tbody id="rows"></tbody></table>
-      </div>
-      <div class="memo">
-        <b>「삭제」를 두지 않았습니다.</b> 총판이 이미 뿌린 랜딩 주소가 살아 있는데 계정만 지우면,
-        그 페이지에 적힌 담당자에게 연락이 가는데 받을 사람이 없습니다.
-        대신 <b>정지</b>로 두면 로그인이 막히고 만들어 둔 랜딩도 함께 내려갑니다.
-      </div>
-    </section>
+    </div>
+    <div class="card pad" style="margin-top:16px">
+      <h3>최근 등록한 총판</h3>
+      <div class="scroll"><table><thead><tr>
+        <th>총판</th><th>아이디</th><th>코드</th><th>상태</th><th>발급일</th>
+      </tr></thead><tbody id="recent"></tbody></table></div>
+    </div>
+    <div class="memo">
+      <b>동작 시안입니다.</b> 등록·정지는 이 화면 안에서만 반영되고 서버로 가지 않습니다.
+      표본 총판의 상호·담당자·연락처는 <b>실제 정보가 아닙니다</b> — 공개 주소라 실제 연락처를 넣지 않았습니다.
+    </div>
+  </section>
 
-    <section>
-      <h2>새 총판 등록</h2>
-      <p class="lead">아이디를 만들고 설정 링크를 보냅니다.</p>
+  <section class="view" id="v-list" hidden>
+    <h2>총판 관리</h2>
+    <p class="lead">아이디·코드는 한 번 매기면 바꾸지 않습니다 — 코드가 랜딩 주소에 들어가 있습니다.</p>
+    <div class="card scroll">
+      <table><thead><tr>
+        <th>총판</th><th>아이디</th><th>코드</th><th>상태</th><th>발급일</th><th>마지막 접속</th><th></th>
+      </tr></thead><tbody id="rows"></tbody></table>
+    </div>
+    <div class="memo">
+      <b>「삭제」를 두지 않았습니다.</b> 총판이 이미 뿌린 랜딩 주소가 살아 있는데 계정만 지우면,
+      그 페이지에 적힌 담당자에게 연락이 가는데 받을 사람이 없습니다.
+      대신 <b>정지</b>로 두면 로그인이 막히고 만들어 둔 랜딩도 함께 내려갑니다.
+    </div>
+  </section>
+
+  <section class="view" id="v-new" hidden>
+    <h2>새 총판 등록</h2>
+    <p class="lead">아이디를 만들고 설정 링크를 보냅니다.</p>
+    <div class="grid2">
       <div class="card pad">
         <div class="field">
           <label for="f-name">상호명 <span style="color:#9a3412">*</span></label>
@@ -190,45 +242,75 @@ td.m .no{color:#9fb0bd;font-size:12px}
           문자로 보낸 비밀번호는 그 문자가 남아 있는 동안 계속 열쇠입니다 —
           <b>1회용 링크로 총판이 직접</b> 정합니다. 링크는 72시간 뒤 만료됩니다.</p>
       </div>
-
-      <h2 style="margin-top:26px">집계는 어디까지 왔나</h2>
-      <p class="lead">숫자가 안 나오는 이유입니다. 한 곳만 꽂으면 쌓이기 시작합니다.</p>
-      <div class="card pad">
-        <ul class="wire">
-          <li><span class="mk y">✓</span><span><b>랜딩이 방문·상담을 보낸다</b><i>core.js 의 post() 가 {type, partner_code, ts} 를 JSON 으로 보낸다.</i></span></li>
-          <li><span class="mk y">✓</span><span><b>총판을 구분할 값이 실려 있다</b><i>partner_code 가 폼 hidden 과 방문 로그 양쪽에 들어간다.</i></span></li>
-          <li><span class="mk y">✓</span><span><b>받는 쪽 규격이 정해져 있다</b><i>contract.mjs — PAYLOAD_TYPES ['view','lead'] · FORM_FIELDS 6개.</i></span></li>
-          <li><span class="mk n">!</span><span><b>🔴 받는 주소가 없다</b><i>APPS_SCRIPT_URL 이 아직 토큰 그대로다. 이 한 곳만 꽂으면 숫자가 쌓이기 시작한다.</i></span></li>
-          <li><span class="mk n">!</span><span><b>🔴 총판이 만든 랜딩을 저장할 곳이 없다</b><i>지금은 총판 브라우저 안에만 있다. 만든 목록을 본사가 보려면 저장소가 필요하다.</i></span></li>
-        </ul>
-      </div>
-
-      <h2 style="margin-top:26px">계정 발급 절차</h2>
-      <div class="card pad">
-        <ol class="steps">
+      <div>
+        <div class="card pad">
+          <h3>계정 발급 절차</h3>
+          <ol class="steps">
           <li><b>총판 정보를 받는다</b><span>상호 · 담당자 · 연락처 · 활동 지역. 사업자등록증 사본은 계약 때 받는다.</span></li>
           <li><b>총판 코드를 매긴다</b><span>sa-0417 꼴. 랜딩 주소에 그대로 나가므로 한 번 매기면 바꾸지 않는다.</span></li>
           <li><b>아이디를 만든다</b><span>gangseo01 꼴. 🔴 총판 코드와 같게 만들지 않는다.</span></li>
           <li><b>설정 링크를 보낸다</b><span>🔴 초기 비밀번호를 만들어 알려 주지 않는다. 1회용 링크로 **본인이** 정한다. 문자로 보낸 비밀번호는 그 문자가 남아 있는 동안 계속 유효한 열쇠다.</span></li>
           <li><b>총판이 설정을 마치면 「이용 중」이 된다</b><span>링크는 72시간 뒤 만료된다. 만료되면 다시 보낸다.</span></li>
-        </ol>
+          </ol>
+        </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 
-  <div class="memo" style="margin-top:24px">
-    <b>동작 시안입니다.</b> 등록·정지는 이 화면 안에서만 반영되고 서버로 가지 않습니다.
-    표본 총판 3곳의 상호·담당자·연락처는 <b>실제 정보가 아닙니다</b> — 공개 주소라 실제 연락처를 넣지 않았습니다.
-  </div>
+  <section class="view" id="v-perf" hidden>
+    <h2>성과 분석</h2>
+    <p class="lead">총판이 만든 랜딩이 얼마나 보이고 상담으로 이어졌는지 봅니다.</p>
+    <div class="perfbar">
+      <span class="seg">
+        <button type="button" data-days="7">최근 7일</button>
+        <button type="button" data-days="30" class="on">최근 30일</button>
+      </span>
+      <label class="toggle"><input type="checkbox" id="showsample">
+        숫자가 들어오면 이렇게 보입니다 <b>(표본)</b></label>
+    </div>
+    <div class="nodata" id="nodata">
+      <b>이용성과는 아직 집계되지 않습니다.</b> 랜딩은 방문·상담 신청을 이미 보내고 있는데
+      <b>받는 주소가 비어 있습니다</b>(APPS_SCRIPT_URL). 그래서 숫자 자리에 「—」를 둡니다 —
+      0 이라고 적으면 「일을 안 했다」로 읽히는데, 사실은 <b>모르는 것</b>입니다.
+    </div>
+    <div class="samplebar" id="samplebar">
+      <b>지금 보이는 숫자는 전부 표본입니다.</b> 실제 성과가 아닙니다 —
+      집계가 붙으면 어떤 화면이 되는지 보여 드리는 것입니다.
+      표본 숫자에는 <b>점선 밑줄</b>이 그어져 있습니다.
+    </div>
+    <div class="card scroll">
+      <table><thead><tr>
+        <th>총판</th><th>상태</th>
+        <th class="m">만든 랜딩</th><th class="m">방문</th>
+        <th class="m">상담 신청</th><th class="m">전환율</th>
+        <th>최근 신청</th>
+      </tr></thead><tbody id="prows"></tbody></table>
+    </div>
+    <h3 style="margin-top:26px">집계는 어디까지 왔나</h3>
+    <p class="lead">숫자가 안 나오는 이유입니다. 한 곳만 꽂으면 쌓이기 시작합니다.</p>
+    <div class="card pad">
+      <ul class="wire">
+          <li><span class="mk y">✓</span><span><b>랜딩이 방문·상담을 보낸다</b><i>core.js 의 post() 가 {type, partner_code, ts} 를 JSON 으로 보낸다.</i></span></li>
+          <li><span class="mk y">✓</span><span><b>총판을 구분할 값이 실려 있다</b><i>partner_code 가 폼 hidden 과 방문 로그 양쪽에 들어간다.</i></span></li>
+          <li><span class="mk y">✓</span><span><b>받는 쪽 규격이 정해져 있다</b><i>contract.mjs — PAYLOAD_TYPES [&#39;view&#39;,&#39;lead&#39;] · FORM_FIELDS 6개.</i></span></li>
+          <li><span class="mk n">!</span><span><b>🔴 받는 주소가 없다</b><i>APPS_SCRIPT_URL 이 아직 토큰 그대로다. 이 한 곳만 꽂으면 숫자가 쌓이기 시작한다.</i></span></li>
+          <li><span class="mk n">!</span><span><b>🔴 총판이 만든 랜딩을 저장할 곳이 없다</b><i>지금은 총판 브라우저 안에만 있다. 만든 목록을 본사가 보려면 저장소가 필요하다.</i></span></li>
+      </ul>
+    </div>
+  </section>
+
 </div>
 <script>
 (function(){
   "use strict";
   var P = [{"code":"sa-0417","loginId":"gangseo01","name":"아지트렌탈 강서점","manager":"백종화","phone":"010-0000-0000","region":"서울 강서","state":"active","issued":"2026-08-14","lastSeen":"2026-09-10"},{"code":"sa-0922","loginId":"bundang01","name":"아지트렌탈 분당점","manager":"김수현","phone":"010-0000-0000","region":"경기 성남 분당","state":"active","issued":"2026-08-28","lastSeen":"2026-09-09"},{"code":"sa-1130","loginId":"haeundae01","name":"아지트렌탈 해운대점","manager":"이정민","phone":"010-0000-0000","region":"부산 해운대","state":"invited","issued":"2026-09-09","lastSeen":null}];
   var STATES = [{"key":"invited","name":"초대함","tone":"wait","what":"설정 링크를 보냈고 아직 비밀번호를 안 정했다","can":[]},{"key":"active","name":"이용 중","tone":"ok","what":"로그인해서 랜딩을 만들 수 있다","can":["make","view"]},{"key":"suspended","name":"정지","tone":"stop","what":"로그인이 막히고 만들어 둔 랜딩도 내려간다","can":[]}];
+  var SAMPLES = {"sa-0417:7":{"links":6,"views":173,"leads":8,"rate":4.6,"recent":"2026-09-09","sample":true},"sa-0417:30":{"links":6,"views":1008,"leads":35,"rate":3.5,"recent":"2026-08-29","sample":true},"sa-0922:7":{"links":9,"views":184,"leads":5,"rate":2.7,"recent":"2026-09-08","sample":true},"sa-0922:30":{"links":9,"views":1200,"leads":28,"rate":2.3,"recent":"2026-08-31","sample":true},"sa-1130:7":{"links":0,"views":0,"leads":0,"rate":null,"recent":null,"sample":true},"sa-1130:30":{"links":0,"views":0,"leads":0,"rate":null,"recent":null,"sample":true}};
+  var LIVE = false;
+  var WIRE_LEFT = 2;
   var CODE_RE = /^sa-\d{4}$/;
   var ID_RE = /^[a-z][a-z0-9]{3,19}$/;
-  var BASE = "https://ap2c75.github.io/ra-preview";
+  var days = 30, sample = false;
   var $ = function(id){ return document.getElementById(id); };
 
   function esc(s){
@@ -236,90 +318,41 @@ td.m .no{color:#9fb0bd;font-size:12px}
       .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
   function tone(k){ for (var i=0;i<STATES.length;i++) if (STATES[i].key===k) return STATES[i]; return null; }
-
-  function counts(){
-    $("n-all").textContent = P.length;
-    $("n-active").textContent = P.filter(function(x){return x.state==="active";}).length;
-    $("n-invited").textContent = P.filter(function(x){return x.state==="invited";}).length;
-    $("n-susp").textContent = P.filter(function(x){return x.state==="suspended";}).length;
-  }
-
-  function render(){
-    $("rows").innerHTML = P.map(function(p){
-      var s = tone(p.state);
-      var m = statsOf(p);
-      /* 정지는 되돌릴 수 있다 — 되돌리기도 같은 자리에 둔다 */
-      var act = p.state === "suspended"
-        ? '<button class="btn ghost sm" data-on="' + esc(p.code) + '">되살리기</button>'
-        : '<button class="btn ghost sm" data-off="' + esc(p.code) + '">정지</button>';
-      var resend = p.state === "invited"
-        ? '<button class="btn ghost sm" data-re="' + esc(p.code) + '">링크 다시</button>' : "";
-      return "<tr>" +
-        "<td><b>" + esc(p.name) + "</b><br><span style=\"color:#5b6b7c;font-size:12px\">" +
-          esc(p.manager) + (p.region ? " · " + esc(p.region) : "") + "</span></td>" +
-        "<td><code class=\"id\">" + esc(p.loginId) + "</code></td>" +
-        "<td><code class=\"id\">" + esc(p.code) + "</code></td>" +
-        "<td><span class=\"tag " + s.tone + "\">" + esc(s.name) + "</span></td>" +
-        cell(m.links, "") + cell(m.views, "") + cell(m.leads, "") + rateCell(m) +
-        "<td class=\"num\">" + (m.recent ? esc(m.recent) : "—") + "</td>" +
-        "<td><div class=\"rowbtn\">" + resend + act + "</div></td>" +
-      "</tr>";
-    }).join("");
-
-    var offs = $("rows").querySelectorAll("[data-off]");
-    for (var i=0;i<offs.length;i++) (function(b){
-      b.addEventListener("click", function(){
-        var p = find(b.getAttribute("data-off"));
-        /* 🔴 정지는 총판이 뿌린 주소를 죽인다. 무엇이 없어지는지 밝히고 묻는다. */
-        var br = String.fromCharCode(10);
-        if (!window.confirm("이 총판을 정지합니다." + br + br + p.name + " (" + p.loginId + ")" + br +
-          "로그인이 막히고, 만들어 둔 랜딩도 함께 내려갑니다." + br +
-          "이미 나눠 드린 주소는 더 이상 열리지 않습니다." + br + br + "정지할까요?")) return;
-        p.state = "suspended"; counts(); render();
-      });
-    })(offs[i]);
-
-    var ons = $("rows").querySelectorAll("[data-on]");
-    for (var j=0;j<ons.length;j++) (function(b){
-      b.addEventListener("click", function(){
-        var p = find(b.getAttribute("data-on"));
-        p.state = "active"; counts(); render();
-      });
-    })(ons[j]);
-
-    var res = $("rows").querySelectorAll("[data-re]");
-    for (var k=0;k<res.length;k++) (function(b){
-      b.addEventListener("click", function(){
-        var p = find(b.getAttribute("data-re"));
-        window.alert("설정 링크를 다시 보냈습니다." + String.fromCharCode(10,10) +
-          p.name + " · " + p.phone + String.fromCharCode(10) +
-          "72시간 뒤 만료됩니다." + String.fromCharCode(10,10) +
-          "(시안이라 실제로 보내지 않습니다)");
-      });
-    })(res[k]);
-  }
   function find(code){ for (var i=0;i<P.length;i++) if (P[i].code===code) return P[i]; return null; }
+  function tag(p){ var s = tone(p.state); return "<span class=\"tag " + s.tone + "\">" + esc(s.name) + "</span>"; }
+
+  /* ── 화면 오가기 ──────────────────────────────────────────── */
+  var VIEWS = ["home","list","new","perf"];
+  function show(name){
+    if (VIEWS.indexOf(name) < 0) name = "home";
+    for (var i=0;i<VIEWS.length;i++) $("v-" + VIEWS[i]).hidden = (VIEWS[i] !== name);
+    var tabs = document.querySelectorAll("nav.tabs button");
+    for (var j=0;j<tabs.length;j++) {
+      tabs[j].className = (tabs[j].getAttribute("data-view") === name) ? "on" : "";
+    }
+    /* 주소에 남겨 두면 새로고침해도 그 화면으로 돌아온다 */
+    try { history.replaceState(null, "", "#" + name); } catch (e) {}
+    window.scrollTo({ top: 0 });
+  }
+  var navBtns = document.querySelectorAll("[data-view]");
+  for (var k=0;k<navBtns.length;k++) (function(b){
+    b.addEventListener("click", function(){ show(b.getAttribute("data-view")); });
+  })(navBtns[k]);
 
   /* ── 이용성과 ──────────────────────────────────────────────
      🔴 집계가 안 붙었다. 기본은 「—」다 — 0 이 아니다.
         0 이라고 적으면 「일을 안 했다」로 읽히는데, 사실은 모르는 것이다. */
-  var SAMPLES = {"sa-0417:7":{"links":6,"views":173,"leads":8,"rate":4.6,"recent":"2026-09-09","sample":true},"sa-0417:30":{"links":6,"views":1008,"leads":35,"rate":3.5,"recent":"2026-08-29","sample":true},"sa-0922:7":{"links":9,"views":184,"leads":5,"rate":2.7,"recent":"2026-09-08","sample":true},"sa-0922:30":{"links":9,"views":1200,"leads":28,"rate":2.3,"recent":"2026-08-31","sample":true},"sa-1130:7":{"links":0,"views":0,"leads":0,"rate":null,"recent":null,"sample":true},"sa-1130:30":{"links":0,"views":0,"leads":0,"rate":null,"recent":null,"sample":true}};
-  var LIVE = false;
-  var days = 30, sample = false;
-
   function statsOf(p){
     if (LIVE) return p.stats || {};        /* 집계가 붙으면 진짜 값이 여기로 온다 */
     if (!sample) return { links:null, views:null, leads:null, rate:null, recent:null };
     return SAMPLES[p.code + ":" + days] || { links:0, views:0, leads:0, rate:null, recent:null };
   }
-
   function cell(v, suffix){
     if (v === null || v === undefined) return "<td class=\"m\"><span class=\"no\">—</span></td>";
     var cls = "m" + ((sample && !LIVE) ? " s" : "");
     return "<td class=\"" + cls + "\"><span class=\"v\">" +
       Number(v).toLocaleString("ko-KR") + suffix + "</span></td>";
   }
-
   /* 🔴 방문이 적을 때의 전환율은 튄다 — 3회에 1건이면 33%다.
         그 숫자로 총판을 평가하면 억울한 사람이 생긴다. */
   function rateCell(m){
@@ -331,6 +364,118 @@ td.m .no{color:#9fb0bd;font-size:12px}
     return cell(m.rate, "%");
   }
 
+  /* ── 그리기 ────────────────────────────────────────────────── */
+  function counts(){
+    var a = P.filter(function(x){return x.state==="active";}).length;
+    var i = P.filter(function(x){return x.state==="invited";}).length;
+    var s = P.filter(function(x){return x.state==="suspended";}).length;
+    $("n-all").textContent = P.length;
+    $("n-active").textContent = a;
+    $("n-invited").textContent = i;
+    $("n-susp").textContent = s;
+    $("tab-n").textContent = P.length;
+    $("wire-sum").textContent = WIRE_LEFT
+      ? "남은 것 " + WIRE_LEFT + "가지 — 성과 분석 화면 아래에 무엇이 남았는지 적어 두었습니다."
+      : "집계가 붙어 있습니다.";
+  }
+
+  /* 대시보드 — 오늘 손이 필요한 것만 */
+  function renderHome(){
+    var need = P.filter(function(x){ return x.state === "invited" || x.state === "suspended"; });
+    $("todo").innerHTML = need.length ? need.map(function(p){
+      var what = p.state === "invited"
+        ? "설정 링크를 아직 안 눌렀습니다"
+        : "정지 상태입니다 — 랜딩도 내려가 있습니다";
+      var btn = p.state === "invited"
+        ? "<button class=\"btn ghost sm\" data-re=\"" + esc(p.code) + "\">링크 다시</button>"
+        : "<button class=\"btn ghost sm\" data-on=\"" + esc(p.code) + "\">되살리기</button>";
+      return "<li><span class=\"t\"><b>" + esc(p.name) + "</b><span>" + what + "</span></span>" +
+        tag(p) + btn + "</li>";
+    }).join("") : "<p class=\"none\">지금 손이 필요한 총판이 없습니다.</p>";
+    wire($("todo"));
+
+    var recent = P.slice().sort(function(a,b){ return String(b.issued).localeCompare(String(a.issued)); }).slice(0,5);
+    $("recent").innerHTML = recent.map(function(p){
+      return "<tr><td><b>" + esc(p.name) + "</b><br><span style=\"color:#5b6b7c;font-size:12px\">" +
+        esc(p.manager) + (p.region ? " · " + esc(p.region) : "") + "</span></td>" +
+        "<td><code class=\"id\">" + esc(p.loginId) + "</code></td>" +
+        "<td><code class=\"id\">" + esc(p.code) + "</code></td>" +
+        "<td>" + tag(p) + "</td>" +
+        "<td class=\"num\">" + esc(p.issued) + "</td></tr>";
+    }).join("");
+  }
+
+  /* 총판 관리 — 계정 중심 */
+  function renderList(){
+    $("rows").innerHTML = P.map(function(p){
+      var act = p.state === "suspended"
+        ? "<button class=\"btn ghost sm\" data-on=\"" + esc(p.code) + "\">되살리기</button>"
+        : "<button class=\"btn ghost sm\" data-off=\"" + esc(p.code) + "\">정지</button>";
+      var resend = p.state === "invited"
+        ? "<button class=\"btn ghost sm\" data-re=\"" + esc(p.code) + "\">링크 다시</button>" : "";
+      return "<tr>" +
+        "<td><b>" + esc(p.name) + "</b><br><span style=\"color:#5b6b7c;font-size:12px\">" +
+          esc(p.manager) + (p.region ? " · " + esc(p.region) : "") + "</span></td>" +
+        "<td><code class=\"id\">" + esc(p.loginId) + "</code></td>" +
+        "<td><code class=\"id\">" + esc(p.code) + "</code></td>" +
+        "<td>" + tag(p) + "</td>" +
+        "<td class=\"num\">" + esc(p.issued) + "</td>" +
+        "<td class=\"num\">" + (p.lastSeen ? esc(p.lastSeen) : "—") + "</td>" +
+        "<td><div class=\"rowbtn\">" + resend + act + "</div></td></tr>";
+    }).join("");
+    wire($("rows"));
+  }
+
+  /* 성과 분석 */
+  function renderPerf(){
+    $("prows").innerHTML = P.map(function(p){
+      var m = statsOf(p);
+      return "<tr><td><b>" + esc(p.name) + "</b><br><span style=\"color:#5b6b7c;font-size:12px\">" +
+        esc(p.code) + "</span></td><td>" + tag(p) + "</td>" +
+        cell(m.links, "") + cell(m.views, "") + cell(m.leads, "") + rateCell(m) +
+        "<td class=\"num\">" + (m.recent ? esc(m.recent) : "—") + "</td></tr>";
+    }).join("");
+    $("nodata").style.display = (LIVE || sample) ? "none" : "block";
+    $("samplebar").className = (!LIVE && sample) ? "samplebar on" : "samplebar";
+  }
+
+  function renderAll(){ counts(); renderHome(); renderList(); renderPerf(); }
+
+  /* ── 버튼 배선 — 대시보드와 총판 관리가 같은 버튼을 쓴다 ──────── */
+  function wire(root){
+    var offs = root.querySelectorAll("[data-off]");
+    for (var i=0;i<offs.length;i++) (function(b){
+      b.addEventListener("click", function(){
+        var p = find(b.getAttribute("data-off"));
+        /* 🔴 정지는 총판이 뿌린 주소를 죽인다. 무엇이 없어지는지 밝히고 묻는다. */
+        var br = String.fromCharCode(10);
+        if (!window.confirm("이 총판을 정지합니다." + br + br + p.name + " (" + p.loginId + ")" + br +
+          "로그인이 막히고, 만들어 둔 랜딩도 함께 내려갑니다." + br +
+          "이미 나눠 드린 주소는 더 이상 열리지 않습니다." + br + br + "정지할까요?")) return;
+        p.state = "suspended"; renderAll();
+      });
+    })(offs[i]);
+
+    var ons = root.querySelectorAll("[data-on]");
+    for (var j=0;j<ons.length;j++) (function(b){
+      b.addEventListener("click", function(){
+        find(b.getAttribute("data-on")).state = "active"; renderAll();
+      });
+    })(ons[j]);
+
+    var res = root.querySelectorAll("[data-re]");
+    for (var k=0;k<res.length;k++) (function(b){
+      b.addEventListener("click", function(){
+        var p = find(b.getAttribute("data-re"));
+        window.alert("설정 링크를 다시 보냈습니다." + String.fromCharCode(10,10) +
+          p.name + " · " + p.phone + String.fromCharCode(10) +
+          "72시간 뒤 만료됩니다." + String.fromCharCode(10,10) +
+          "(시안이라 실제로 보내지 않습니다)");
+      });
+    })(res[k]);
+  }
+
+  /* ── 새 총판 등록 ──────────────────────────────────────────── */
   function bad(id, msg){
     var e = $(id); if (!e) return;
     if (msg) { e.textContent = msg; e.className = "err on"; } else e.className = "err";
@@ -370,7 +515,7 @@ td.m .no{color:#9fb0bd;font-size:12px}
     P.push({ code:code, loginId:id, name:name, manager:mgr,
              phone:"010-0000-0000", region:$("f-region").value.trim(),
              state:"invited", issued:today, lastSeen:null });
-    counts(); render();
+    renderAll();
 
     var br = String.fromCharCode(10);
     window.alert("설정 링크를 보냈습니다." + br + br +
@@ -379,29 +524,26 @@ td.m .no{color:#9fb0bd;font-size:12px}
       "링크는 72시간 뒤 만료됩니다." + br + br + "(시안이라 실제로 보내지 않습니다)");
 
     $("f-name").value = ""; $("f-mgr").value = ""; $("f-region").value = ""; $("f-id").value = "";
-    /* 다음 코드를 미리 매겨 둔다 */
     var used = {}; for (var j=0;j<P.length;j++) used[Number(P[j].code.slice(3))] = 1;
     for (var n=1;n<=9999;n++) if (!used[n]) { $("f-code").value = "sa-" + ("000"+n).slice(-4); break; }
+
+    /* 만들었으면 목록으로 보내 준다 — 방금 한 일의 결과를 보여 준다 */
+    show("list");
   });
 
-  function banners(){
-    $("nodata").style.display = (LIVE || sample) ? "none" : "block";
-    $("samplebar").className = (!LIVE && sample) ? "samplebar on" : "samplebar";
-  }
-
-  $("showsample").addEventListener("change", function(){
-    sample = this.checked; banners(); render();
-  });
+  /* ── 성과 화면 조작 ────────────────────────────────────────── */
+  $("showsample").addEventListener("change", function(){ sample = this.checked; renderPerf(); });
   var segs = document.querySelectorAll("[data-days]");
   for (var q=0;q<segs.length;q++) (function(b){
     b.addEventListener("click", function(){
       days = Number(b.getAttribute("data-days"));
       for (var r=0;r<segs.length;r++) segs[r].className = (segs[r]===b) ? "on" : "";
-      render();
+      renderPerf();
     });
   })(segs[q]);
 
-  banners(); counts(); render();
+  renderAll();
+  show((location.hash || "#home").slice(1));
 })();
 </script>
 </body></html>

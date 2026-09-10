@@ -13,35 +13,56 @@ body{margin:0;background:var(--bg);color:var(--ink);
 .sian{background:#fff8e6;border-bottom:1px solid #f6e0a8;color:#7a5209;
   font-size:12.5px;text-align:center;padding:9px 14px;line-height:1.55}
 .sian b{color:#8a3d09}
+
 header.top{background:var(--card);border-bottom:1px solid var(--line)}
-header.top .in{max-width:1040px;margin:0 auto;padding:15px 18px;
+header.top .in{max-width:1080px;margin:0 auto;padding:15px 18px 0;
   display:flex;align-items:center;gap:12px}
 header.top .mark{width:28px;height:28px;border-radius:9px;background:var(--accent);
   color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 header.top h1{font-size:16px;margin:0;letter-spacing:-.3px}
 header.top .who{margin-left:auto;font-size:12.5px;color:var(--muted);text-align:right;line-height:1.4}
 header.top .who b{display:block;color:var(--ink);font-size:13.5px}
-.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 64px}
+
+/* ── 상단 메뉴 ────────────────────────────────────────────────
+   🔴 새 총판 등록을 오른쪽 칸에 끼워 넣었더니 표가 눌리고 순서도 안 읽혔다.
+      할 일마다 화면을 나누고 메뉴로 오간다. */
+nav.tabs{max-width:1080px;margin:0 auto;padding:0 18px;display:flex;gap:2px;overflow-x:auto}
+nav.tabs button{border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;
+  color:var(--muted);padding:13px 16px 12px;cursor:pointer;white-space:nowrap;
+  border-bottom:2.5px solid transparent;margin-bottom:-1px}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+nav.tabs button .n{display:inline-block;margin-left:5px;font-size:11.5px;font-weight:700;
+  background:#eaf3f7;color:var(--accent);border-radius:999px;padding:1px 7px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px 18px 64px}
+section.view[hidden]{display:none}
 h2{font-size:19px;margin:0 0 5px;letter-spacing:-.3px}
+h3{font-size:15px;margin:0 0 10px}
 .lead{color:var(--muted);font-size:13.5px;margin:0 0 18px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
   box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.pad{padding:20px}
 .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;
   padding:10px 17px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--accent)}
 .btn.sm{padding:6px 12px;font-size:12.5px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+
 .field{margin:0 0 14px}
 .field label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}
-.field input,.field select{width:100%;padding:11px 13px;border:1px solid var(--line);
+.field input{width:100%;padding:11px 13px;border:1px solid var(--line);
   border-radius:10px;font:inherit;background:#fff}
-.field input:focus,.field select:focus{outline:2px solid #0d6b8a33;border-color:#8fc0d4}
+.field input:focus{outline:2px solid #0d6b8a33;border-color:#8fc0d4}
 .field input[readonly]{background:#f3f6f9;color:#8496a6;cursor:not-allowed}
 .hint{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.55}
 .err{font-size:12px;color:#9a3412;margin:6px 0 0;display:none}
 .err.on{display:block}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;
+  white-space:nowrap}
+td:first-child{white-space:normal;min-width:150px}
 th{font-size:12px;color:var(--muted);font-weight:600;background:#fafcfe}
 td.num{font-variant-numeric:tabular-nums}
 .tag{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px}
@@ -50,6 +71,8 @@ td.num{font-variant-numeric:tabular-nums}
 .tag.stop{background:#fdeee7;color:var(--stop)}
 code.id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
   background:#f3f6f9;padding:2px 7px;border-radius:6px}
+.rowbtn{display:flex;gap:6px;justify-content:flex-end}
+
 .memo{background:#fff8e6;border:1px solid #f6e0a8;border-radius:11px;padding:12px 14px;
   font-size:12.5px;color:#7a5209;margin:16px 0 0;line-height:1.65}
 .memo b{color:#8a3d09}
@@ -60,22 +83,25 @@ code.id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px
   font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .steps li b{display:block;margin:0 0 3px}
 .steps li span{color:var(--muted);font-size:12.5px;line-height:1.6}
-.grid{display:grid;gap:16px;grid-template-columns:1fr}
-/* 🔴 860px 에서 두 칸으로 쪼개니 표가 눌려 상호가 한 글자씩 끊겼다(2026-09-10).
-      표가 편히 들어갈 너비가 확보될 때만 쪼갠다. */
-@media(min-width:1120px){.grid.two{grid-template-columns:1.3fr .85fr}}
-table{min-width:560px}
-th,td{white-space:nowrap}
-td:first-child{white-space:normal;min-width:150px}
-.pad{padding:20px}
-.sum{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
-.sum .s{flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);
-  border-radius:12px;padding:13px 15px}
+
+/* ── 대시보드 ────────────────────────────────────────────────── */
+.sum{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin:0 0 18px}
+@media(min-width:700px){.sum{grid-template-columns:repeat(4,1fr)}}
+.sum .s{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
 .sum .s i{display:block;font-style:normal;font-size:12px;color:var(--muted)}
-.sum .s b{display:block;font-size:21px;letter-spacing:-.5px;margin:2px 0 0;
+.sum .s b{display:block;font-size:23px;letter-spacing:-.5px;margin:3px 0 0;
   font-variant-numeric:tabular-nums}
-.rowbtn{display:flex;gap:6px;justify-content:flex-end}
-a.plain{color:var(--accent);font-size:13px}
+.sum .s.wait b{color:var(--wait)}
+.sum .s.stop b{color:var(--stop)}
+.grid2{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:860px){.grid2{grid-template-columns:1fr 1fr}}
+.todo{list-style:none;margin:0;padding:0}
+.todo li{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.todo li:last-child{border-bottom:0}
+.todo li .t{flex:1;min-width:0;font-size:13.5px}
+.todo li .t span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.none{color:var(--muted);font-size:13px;padding:14px 0}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0}
 
 /* ── 성과 ────────────────────────────────────────────────────
    🔴 표본 숫자가 실측처럼 보이면 안 된다. 점선 밑줄로 눈에 걸리게 한다 —
@@ -85,11 +111,14 @@ a.plain{color:var(--accent);font-size:13px}
 .seg button{border:0;background:#fff;font:inherit;font-size:12.5px;padding:7px 13px;cursor:pointer;color:#3d5464}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--accent);color:#fff;font-weight:600}
-.toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+.toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;
+  color:var(--muted);cursor:pointer;user-select:none}
 .toggle input{width:16px;height:16px;accent-color:#8a6d0d}
-.nodata{background:#eef4f8;border:1px solid #d6e5ee;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#3d5464;margin:0 0 14px;line-height:1.65}
+.nodata{background:#eef4f8;border:1px solid #d6e5ee;border-radius:11px;padding:12px 14px;
+  font-size:12.5px;color:#3d5464;margin:0 0 14px;line-height:1.65}
 .nodata b{color:#0d6b8a}
-.samplebar{background:#fff3d6;border:1px solid #f0d089;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#7a5209;margin:0 0 14px;line-height:1.65;display:none}
+.samplebar{background:#fff3d6;border:1px solid #f0d089;border-radius:11px;padding:12px 14px;
+  font-size:12.5px;color:#7a5209;margin:0 0 14px;line-height:1.65;display:none}
 .samplebar.on{display:block}
 .samplebar b{color:#8a3d09}
 td.m,th.m{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -98,15 +127,17 @@ td.m.s .v{border-bottom:2px dotted #c99a2e;padding-bottom:1px}
 td.m .no{color:#9fb0bd;font-size:12px}
 .wire{list-style:none;margin:0;padding:0;font-size:13px}
 .wire li{display:flex;gap:9px;padding:0 0 13px}
-.wire .mk{flex:0 0 19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+.wire .mk{flex:0 0 19px;height:19px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
 .wire .mk.y{background:#e8f6f0;color:var(--ok)}
 .wire .mk.n{background:#fdeee7;color:var(--stop)}
 .wire b{display:block;margin:0 0 2px}
 .wire i{display:block;color:var(--muted);font-size:12.5px;line-height:1.6;font-style:normal}
+.scroll{overflow:auto}
 </style>
 </head><body>
 <p class="sian">총판이 <b>로그인하는 화면</b>입니다 · 동작 시안이며 <b>아무 값도 서버로 보내지 않습니다</b></p>
-<header class="top"><div class="in">
+<header class="top"><div class="in" style="padding-bottom:15px">
   <span class="mark">R</span><h1>렌탈아지트 총판</h1>
 </div></header>
 <div class="wrap" style="max-width:420px">
