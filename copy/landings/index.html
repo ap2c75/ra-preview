@@ -423,7 +423,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
       <div class="pager"><button type="button">이전</button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button">다음</button></div>
       <div class="fixbar">
         <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
-          고친 곳 · 짚은 곳 (6)</button>
+          고친 곳 · 짚은 곳 (10)</button>
         <span>⏳ 표시는 <b>고치지 않고 짚어만 둔 것</b>입니다 — 원본 그대로 뒀습니다.</span>
       </div>
       <div class="fixes" id="fixlist" hidden>
@@ -432,6 +432,10 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
       <div class="fix"><h3>집계 중…</h3><dl><dt>원본</dt><dd class="was">「분포 데이터 집계 중…」·「상태 지표 집계 중…」이 안 끝난다</dd><dt>카피본</dt><dd>값이 없으면 없다고 적는다</dd><dt>이유</dt><dd class="why">「집계 중」은 곧 끝난다는 뜻으로 읽힌다. 끝나지 않으면 거짓말이 된다.</dd></dl></div>
       <div class="fix"><h3>타일 숫자</h3><dl><dt>원본</dt><dd class="was">네 칸 다 비어 있는데 부제는 「0% 가동률」·「전환율 0%」</dd><dt>카피본</dt><dd>값이 없으면 「—」, 있으면 값과 식을 함께</dd><dt>이유</dt><dd class="why">값은 비었는데 부제만 0%면, 0인지 못 센 것인지 알 수 없다.</dd></dl></div>
       <div class="fix"><h3>🔴 「주소 확인」이 열리지 않는다</h3><dl><dt>원본</dt><dd class="was">버튼 HTML 이 `&lt;div class=&quot;fbv2-landing-urls-wrap&quot;&gt;&lt;button class=&quot;fbv2-landing-urls-btn&quot; aria-expanded=&quot;false&quot; aria-haspopup=&quot;menu&quot;&gt;주소 확인 (1개) ▾&lt;/button&gt;&lt;/div&gt;` — **감쌈 안에 버튼 하나뿐, 열 메뉴가 없다.** 눌러도 `aria-expanded` 가 false 그대로다</dd><dt>카피본</dt><dd>주소가 실제로 펼쳐진다</dd><dt>이유</dt><dd class="why">🔴 **개수(1개)는 세는 데 성공했는데 주소 목록은 안 내려온다.** 페이지 전체 HTML 에 `/l/` 슬러그가 **한 건도 없다.** 열 이름이 「랜딩 주소 확인」인데 관리자가 수강생 랜딩 주소를 볼 방법이 없다. 랜딩관리 목록이 0건인 것과 같은 뿌리다.</dd></dl></div>
+      <div class="fix"><h3>🔴 발행 랜딩 실측 — 법정 표시가 0건이다</h3><dl><dt>원본</dt><dd class="was">`dbpolder.com/l/asd-tv-afajl6qd` (수강생 baek1 · 인터넷 · 공개). 이름·전화번호를 받는 폼이 있는데 **상호·대표자·주소·이메일·통신판매업 신고번호가 하나도 없다**</dd><dt>카피본</dt><dd>우리 랜딩 템플릿은 §6-1 계속거래 고지 · §6-2 표시항목 자리 · §6-3 동의 분리를 처음부터 내장한다</dd><dt>이유</dt><dd class="why">🔴 전자상거래법 **§13①**(우리가 §6에서 원문 확인해 둔 조문) — 청약을 받을 목적의 표시·광고에는 상호·대표자 성명 / 주소·전화·이메일 / **통신판매업 신고번호와 신고기관**을 포함해야 한다. 개인정보 동의도 한 줄뿐이다(「상담을 위해 이름, 전화번호와 신청내용을 수집·이용하는 데 동의합니다」) — 보유기간·제3자 제공·국외이전이 없다.</dd></dl></div>
+      <div class="fix"><h3>🔴 기준자료의 「후기」가 그대로 랜딩에 실린다 — 확정</h3><dl><dt>원본</dt><dd class="was">발행 랜딩의 `#reviews` 에 김하늘·박준서·이수민·최다은·정우진·한예린·오동혁·윤서아·강민호가 ★★★★★ 별점과 함께 실려 있다. 기준자료 「인터넷 · 후기」 15건의 이름과 일치한다</dd><dt>카피본</dt><dd>연결을 밝힌다 — 기준자료 → 랜딩</dd><dt>이유</dt><dd class="why">⏳ **이 후기가 실제 고객의 것인지 확인이 필요하다.** 기준자료 45건이 2026-08-01~02 이틀 만에 상품마다 정확히 15개씩 등록됐다. 화면은 「상담 과정에서 고객이 확인한 상황을 바탕으로 정리한 후기」라고 적어 두었다. 판정은 하지 않는다.</dd></dl></div>
+      <div class="fix"><h3>🔴 가격 섹션에 금액이 없다 — 고객 지적이 실측으로 확인됐다</h3><dl><dt>원본</dt><dd class="was">`#pricing` 이 「가장 저렴한 구성으로 안내해 드립니다」 · 「상담 후 최저가 안내」 · 「상담 후 맞춤 견적」뿐. 페이지 전체 금액 표기는 히어로의 「최대 100만원??」 하나</dd><dt>카피본</dt><dd>우리 랜딩은 실측 혜택표(약정별 월납입료·총납입료·의무기간)를 붙인다</dd><dt>이유</dt><dd class="why">🔴 §2-2 의 고객 지적 「총판 랜딩페이지에 **상품도 가격도 약정 안내도 하나도 없다**」가 그대로 맞다. 그리고 「최저가」가 한 페이지에 **8번** 나온다 — 최상급 표현은 입증 책임이 붙는다.</dd></dl></div>
+      <div class="fix"><h3>⏳ AI 생성물의 잔재가 남아 있다</h3><dl><dt>원본</dt><dd class="was">가격 섹션에 「**스마트스토어**는 통신 3사 프로모션을 비교해…」 — 인터넷 상담 랜딩에 스마트스토어가 왜 나오는지 문맥이 없다. 버튼 오타 「지원금 신청**해기**」. 브랜드가 「혜택소문」과 「소문 컨설팅」으로 섞여 있다. 히어로에 내부 라벨 「상담문구」가 노출</dd><dt>카피본</dt><dd>짚어만 둔다</dd><dt>이유</dt><dd class="why">다른 업종 템플릿에서 흘러들어온 문구로 보인다. **사람이 마지막에 읽어 보는 관문이 없다.** 「20년차 전문 업체」·「박수진 상담사」도 사실 확인이 필요하다.</dd></dl></div>
       <div class="fix"><h3>🔴 랜딩 제목과 상품이 따로 논다</h3><dl><dt>원본</dt><dd class="was">고객목록의 랜딩 이름은 「소상공인 정책자금 무료 상담」·「소상공인 지원금 신청하기」인데 상품 유입은 100% 「인터넷」</dd><dt>카피본</dt><dd>짚어만 둔다 — 원본 그대로</dd><dt>이유</dt><dd class="why">🔴 정책자금 상담으로 들어온 고객이 인터넷 상품 실적으로 잡힌다. 수익 배분이 이 숫자를 쓰면 배분이 틀어진다.</dd></dl></div>
       </div>
       <p class="subnote">원본: <code>/admin/landings.php</code></p>
@@ -442,7 +446,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
   t.addEventListener("click", function () {
     var open = l.hidden; l.hidden = !open;
     t.setAttribute("aria-expanded", String(open));
-    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (6)";
+    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (10)";
   });
   document.querySelectorAll("[data-reveal]").forEach(function (b) {
     b.addEventListener("click", function () {
