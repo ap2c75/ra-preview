@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {initialState,respond} from '../conversation.mjs';
 import {createQualityRecorder} from '../quality-recorder.mjs';
+import {createTurnHistory,isUndoRequest} from '../turn-history.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('../api/catalog.json',import.meta.url),'utf8')).products;
 const context={catalogAvailable:true};
 const send=(state,text)=>respond(state,{text},catalog,context);
@@ -104,5 +105,21 @@ assert.ok(alternateRecommendation.cards.length>0);
 assert.ok(alternateRecommendation.cards.every(card=>!recommended.cards.some(previous=>previous.code===card.code)));
 assert.equal(new Set(alternateRecommendation.cards.map(card=>card.brand)).size,alternateRecommendation.cards.length);
 
-console.log('conversation regression: 22 scenarios / 52 assertions passed');
+assert.equal(isUndoRequest('방금 선택 취소해줘'),true);
+assert.equal(isUndoRequest('이전 조건으로 돌아가자'),true);
+assert.equal(isUndoRequest('정수기 추천해줘'),false);
+const history=createTurnHistory({limit:2});
+assert.equal(history.checkpoint(initialState(),category.state),true);
+assert.equal(history.checkpoint(category.state,recommended.state),true);
+const undoRecommendation=history.undo(recommended.state);
+assert.equal(undoRecommendation.restored,true);
+assert.deepEqual(undoRecommendation.state.filters,category.state.filters);
+const undoResult=respond(recommended.state,{action:'undo',restoreState:undoRecommendation.state,undoAvailable:true},catalog,context);
+assert.equal(undoResult.state.filters.category,'정수기');
+assert.deepEqual(undoResult.state.recommendedCodes,[]);
+assert.match(undoResult.reply,/바로 전 조건으로/);
+const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
+assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
+
+console.log('conversation regression: 25 scenarios / 63 assertions passed');
 

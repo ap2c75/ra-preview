@@ -4,8 +4,9 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-3';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-4';
 import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
+import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
 
 let siteData=null;
 fetch('/ra-preview/chatbot/site-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1')siteData=d;}).catch(()=>{siteData=null;});
@@ -19,6 +20,7 @@ const $ = q => document.querySelector(q);
 const el = (tag, text, className) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (className) n.className = className; return n; };
 let state = initialState(), busy = false, dialogEpoch = 0, offer = null, receipt = null;
 const qualityRecorder=createQualityRecorder();
+const turnHistory=createTurnHistory();
 let latestUserText='';
 const money = n => Number(n).toLocaleString('ko-KR') + '원';
 const emptyContent = $('#results').cloneNode(true);
@@ -84,7 +86,7 @@ function setEntryStep(step) {
   });
 }
 function initializeEntry() {
-  entryMode = 'waiting'; renderReceiptState(); state = initialState(); visibleCards = 0; renderBrowse(); $('#product-feedback').hidden=true;
+  entryMode = 'waiting'; renderReceiptState(); state = initialState(); turnHistory.clear(); visibleCards = 0; renderBrowse(); $('#product-feedback').hidden=true;
   $('.workspace').dataset.entry = 'waiting';
   $('.page-heading h1').textContent = '고객정보 확인부터 시작하겠습니다.';
   $('.page-note').lastChild.textContent = ' 고지·동의 후 고객정보를 입력합니다';
@@ -321,6 +323,7 @@ function renderActions(out = {}) {
   if (state.filters.budget) actions.append(button('예산 해제', () => run({text:'예산 해제'})));
   if (state.selected.length) actions.append(button('담은 상품으로 상담 이어가기', () => {run({action:'consultSelection'});setPanel('chat');}, 'primary'));
   if (state.selected.length>=2) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
+  if(turnHistory.count())actions.append(button('방금 조건 되돌리기',()=>run({action:'undo'}),'undo-action'));
   const qualityCount=qualityRecorder.all().length;
   if(qualityCount)actions.append(button('개선 기록 복사 ('+qualityCount+')',copyQualityRecords,'quality-export'));
   // Receipt management lives in the status bar; do not repeat intake in every turn.
@@ -334,7 +337,10 @@ async function copyQualityRecords(){
 function run(input) {
   if(entryMode==='waiting'){openConsent();return;}
   const available=catalogReady();
+  const before=structuredClone(state),undoRequested=input.action==='undo'||isUndoRequest(input.text);
+  if(undoRequested){const restored=turnHistory.undo(state);input={...input,action:'undo',restoreState:restored.state,undoAvailable:restored.restored};}
   const out = respond(state, input, SAMPLE_PRODUCTS, {entryMode,catalogAvailable:available, internalOnly:serviceMode==='internal', knowledgeEntries, siteData, hasReceipt:receipt?.status==='stored',receiptFreshness:receiptCheck.phase,delivery:receipt?.delivery});
+  if(!undoRequested)turnHistory.checkpoint(before,out.state);
   // Echo the customer's words only in the current DOM; intent labels stay internal.
   if (typeof input.text==='string' && input.text.trim()) say(input.text, 'user');
   else if (out.requestSummary) say(out.requestSummary, 'user');
@@ -473,7 +479,7 @@ $('#reset').addEventListener('click', () => {
 });
 $('#close-consent').addEventListener('click', closeConsent);
 $('#consent-dialog').addEventListener('cancel', event => { event.preventDefault(); closeConsent(); });
-window.addEventListener('pagehide', () => { ++dialogEpoch; $('#consent-body').replaceChildren(); $('#query').value = ''; state = initialState(); offer = null; });
+window.addEventListener('pagehide', () => { ++dialogEpoch; $('#consent-body').replaceChildren(); $('#query').value = ''; state = initialState(); turnHistory.clear(); offer = null; });
 matchMedia('(min-width:761px)').addEventListener('change',()=>{$('#messages').scrollTop=$('#messages').scrollHeight;});
 initializeEntry();
 async function resumeSession(){const epoch=dialogEpoch;try{const data=await api('resume',{});if(epoch!==dialogEpoch||entryMode!=='waiting'||receipt)return;if(data.receipt?.status==='stored'){setReceipt(data.receipt);$('#messages').replaceChildren();finishEntry('saved',null,true);}}catch{/* Unknown or unavailable sessions keep the consent-first entry. */}}

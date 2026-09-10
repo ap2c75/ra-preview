@@ -93,6 +93,17 @@ function respondCatalog(previous, input, catalog) {
   let requestSummary = null;
   const result = (reply, extra = {}) => ({ state:s, reply, requestSummary, ...extra });
   if (safety.kinds.length) return result('연락처는 상담 신청 화면에서 따로 받을게요.\n여기에는 찾으시는 제품이나 조건만 말씀해 주세요.');
+  if(input.action==='undo'){
+    if(!input.undoAvailable)return result('아직 되돌릴 조건 변경이 없어요. 원하시는 상품이나 조건을 말씀해 주세요.');
+    const restored=structuredClone(input.restoreState||initialState()),all=cardsFor(catalog,restored.filters);
+    const recommended=(restored.recommendedCodes||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
+    const selected=(restored.selected||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
+    let display={cards:[],suggestions:['정수기','공기청정기','비데']};
+    if(restored.view==='compare'&&selected.length>=2)display={cards:selected,comparison:true};
+    else if(recommended.length)display={cards:recommended,total:recommended.length,page:1,pages:1,start:1,end:recommended.length,previous:false,more:false,recommendation:true};
+    else if(restored.filters.category||restored.filters.model)display=pageData(all,restored);
+    return {state:restored,reply:'바로 전 조건으로 되돌렸어요. 여기서 다시 이어갈게요.',requestSummary:null,...display};
+  }
   if (input.action === 'reset' || /^(처음으로|조건 초기화)$/.test(text)) return {state:initialState(),reply:'새로 찾아볼게요. 어떤 제품이 필요하세요?',requestSummary:'조건 새로 고르기',cards:[],suggestions:['정수기','공기청정기','비데']};
   if(input.catalogUnavailable&&(['select','compare','resume','more','previous','first','sort'].includes(input.action)||String(input.action||'').startsWith('repair')||input.parsed?.changed||/추천|상품|제품|보여|찾아/.test(text)))return result('상품 자료를 확인하지 못해 지금은 상품과 요금을 안내할 수 없어요. 입력한 조건은 유지됩니다. 상품 자료 다시 불러오기를 눌러 주세요.',{catalogUnavailable:true,needsReview:true,requestSummary:filterLabels(s.filters).join(' · ')||'상품 자료 확인 필요'});
   if(input.action==='repairRepeat'){
