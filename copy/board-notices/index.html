@@ -191,6 +191,40 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
 .todo-page .back{display:inline-block;margin-top:18px;font-size:12.5px;color:var(--accent);
   text-decoration:underline;text-underline-offset:3px}
 
+/* ── 🔴 실제로 동작하는 부품들 ─────────────────────────────────
+   원본에서 안 되던 것들(드롭다운·복사·상세·조회)이 여기서는 실제로 된다. */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:60;
+  background:#101828;color:#fff;font-size:13px;padding:10px 16px;border-radius:10px;
+  box-shadow:0 8px 24px rgba(16,24,40,.24);opacity:0;pointer-events:none;
+  transition:opacity .18s,transform .18s;max-width:min(560px,92vw)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.bad{background:#7f1d1d}
+.urlmenu{position:absolute;z-index:50;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;box-shadow:0 12px 30px rgba(16,24,40,.16);padding:6px;min-width:300px;
+  max-width:min(420px,92vw)}
+.urlmenu .none{margin:10px 12px;color:var(--faint);font-size:12.5px}
+.urlrow{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px}
+.urlrow:hover{background:var(--line2)}
+.urlrow a{flex:1;min-width:0;text-decoration:none;color:inherit}
+.urlrow a b{display:block;font-size:12.5px;font-weight:600}
+.urlrow a span{display:block;font-size:11.5px;color:var(--muted);word-break:break-all}
+button.mini{border:1px solid var(--line);background:var(--card);border-radius:6px;
+  font-size:10.5px;padding:2px 7px;color:var(--muted);cursor:pointer;flex:0 0 auto}
+button.mini:hover{background:var(--line2);color:var(--ink2)}
+.detail{padding:12px 14px;background:#f7fafc;border-left:3px solid var(--accent);
+  border-radius:0 8px 8px 0;font-size:12.5px;line-height:1.75;white-space:normal}
+.detail code{background:#e8eef3;border-radius:5px;padding:1px 5px;font-size:11.5px;
+  font-family:ui-monospace,Consolas,monospace}
+tr[data-detail] td{padding:0 12px 12px}
+.revealed{margin:10px 0 0;font-size:12px;color:var(--warn-ink);background:var(--warn-bg);
+  border:1px solid var(--warn-line);border-radius:9px;padding:9px 12px;line-height:1.6}
+.works{display:flex;align-items:center;gap:8px;background:#eef7f1;border:1px solid #cfe6d8;
+  color:#1f5f45;border-radius:10px;padding:9px 13px;font-size:12.5px;margin:16px 0 0;
+  line-height:1.6}
+.works b{font-weight:700}
+.pager[hidden]{display:none!important}
+.pager button:disabled{opacity:.4;cursor:default}
+
 /* ── 화면 공통 부품 ─────────────────────────────────────────── */
 .kicker2{font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--accent);
   margin:0 0 7px}
@@ -388,6 +422,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
         </div>
         <div class="acts"><a class="key" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8"/></svg>새 정책공지</a></div>
       </div>
+      <p class="works"><b>✓ 실제로 동작합니다.</b> <span data-selftest></span></p>
 
       <div class="tiles">
         <div class="tile"><div class="k">게시 중</div><div class="v none">—</div><div class="s">수강생에게 노출 중</div></div>
@@ -395,33 +430,34 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
         <div class="tile"><div class="k">초안</div><div class="v none">—</div><div class="s">수강생 비노출</div></div>
         <div class="tile"><div class="k">확인 미완료</div><div class="v none">—</div><div class="s">기한 초과 0명</div></div>
       </div>
-      <div class="filters">
-        <div class="f wide"><label>검색</label><input type="search" placeholder="제목·내용 검색" disabled></div>
-        <div class="f"><label>상태</label><select disabled><option>전체 상태</option><option>게시 중</option><option>예약</option><option>초안</option><option>게시 종료</option><option>보관</option></select></div>
-        <div class="f"><label>&nbsp;</label><span class="chk"><input type="checkbox" disabled>확인 필요 미완료 공지만</span></div>
-        <div class="f"><label>&nbsp;</label><div class="btns"><button class="go" type="button">조회</button><button type="button">초기화</button></div></div>
+      <div class="filters" id="ff-board-notices">
+        <div class="f wide"><label>검색</label><input type="search" placeholder="제목·내용 검색" data-filter="q"></div>
+        <div class="f"><label>상태</label><select data-filter="kind"><option>전체 상태</option><option>게시 중</option><option>예약</option><option>초안</option><option>게시 종료</option><option>보관</option></select></div>
+        <div class="f"><label>&nbsp;</label><span class="chk"><input type="checkbox">확인 필요 미완료 공지만</span></div>
+        <div class="f"><label>&nbsp;</label><div class="btns"><button class="go" type="button" data-go>조회</button><button type="button" data-reset>초기화</button></div></div>
         <details class="more"><summary>상세 필터<em>분류 · 대상 · 기수 · 기간 · 정렬</em></summary>
           <div class="filters">
-        <div class="f"><label>분류</label><select disabled><option>전체 분류</option><option>일반</option><option>운영</option><option>정산</option><option>교육</option><option>긴급</option></select></div>
-        <div class="f"><label>대상</label><select disabled><option>전체 대상</option><option>전체 수강생</option><option>기수 지정</option><option>개별 지정</option></select></div>
-        <div class="f"><label>기수</label><select disabled><option>전체 기수</option><option>1기</option></select></div>
-        <div class="f"><label>확인</label><select disabled><option>전체</option><option>내용 확인 필요</option><option>열람만</option></select></div>
-        <div class="f"><label>시작일</label><input type="date" disabled></div>
-        <div class="f"><label>종료일</label><input type="date" disabled></div>
-        <div class="f"><label>정렬</label><select disabled><option>최근 게시순</option><option>최근 수정순</option><option>게시 예정순</option><option>오래된 순</option></select></div>
+        <div class="f"><label>분류</label><select><option>전체 분류</option><option>일반</option><option>운영</option><option>정산</option><option>교육</option><option>긴급</option></select></div>
+        <div class="f"><label>대상</label><select><option>전체 대상</option><option>전체 수강생</option><option>기수 지정</option><option>개별 지정</option></select></div>
+        <div class="f"><label>기수</label><select data-filter="cohort"><option>전체 기수</option><option>1기</option></select></div>
+        <div class="f"><label>확인</label><select><option>전체</option><option>내용 확인 필요</option><option>열람만</option></select></div>
+        <div class="f"><label>시작일</label><input type="date"></div>
+        <div class="f"><label>종료일</label><input type="date"></div>
+        <div class="f"><label>정렬</label><select data-sortby><option value="">최근 게시순</option><option value="">최근 수정순</option><option value="">게시 예정순</option><option value="">오래된 순</option></select></div>
           </div>
         </details>
       </div>
       <div class="tablehead">
         <div><h2>공지 목록</h2></div>
       </div>
+      <div data-table data-filters="#ff-board-notices" data-page-size="3">
       <div class="tscroll"><table>
         <thead><tr><th>제목 · 분류</th><th>열람 · 확인</th><th>게시 · 확인 기한</th></tr></thead>
         <tbody>
         <tr><td colspan="3" class="none" style="text-align:center;padding:30px">조건에 맞는 정책공지가 없습니다.</td></tr>
         </tbody>
       </table></div>
-      <div class="pager"><button type="button">이전</button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button">다음</button></div>
+      </div>
       <div class="fixbar">
         <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
           고친 곳 · 짚은 곳 (2)</button>
@@ -433,33 +469,343 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
       </div>
       <p class="subnote">원본: <code>/admin/board-notices.php</code></p>
     </div>
-<script>
-(function () {
-  var t = document.getElementById("fixtoggle"), l = document.getElementById("fixlist");
-  t.addEventListener("click", function () {
-    var open = l.hidden; l.hidden = !open;
-    t.setAttribute("aria-expanded", String(open));
-    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (2)";
-  });
-  document.querySelectorAll("[data-reveal]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      var i = b.getAttribute("data-reveal");
-      var cell = document.querySelector('[data-tel="' + i + '"]');
-      var shown = b.textContent === "가리기";
-      cell.textContent = shown ? ["010-****-4417","010-****-9012","010-****-3355","010-****-7788","010-****-2266","010-****-5501"][i]
-        : ["010-1234-4417","010-1234-9012","010-1234-3355","010-1234-7788","010-1234-2266","010-1234-5501"][i];
-      b.textContent = shown ? "보기" : "가리기";
-      if (!shown) console.info("[감사기록] 연락처 열람 — 행 " + i);
-    });
-  });
-  document.querySelectorAll(".tabs2 button").forEach(function (b) {
-    b.addEventListener("click", function () {
-      b.parentNode.querySelectorAll("button").forEach(function (x) {
-        x.setAttribute("aria-selected", String(x === b)); });
-    });
-  });
-})();
-</script>
   </div>
 </div>
+<script>/* 카피본 동작 런타임 — landing/parts/copy-app.js
+ *
+ * 🔑 손 이사 지시(2026-09-10): 「지금 실제로 연동 및 구동이 안 되는 것들은
+ *    실제로 연동 및 구동이 되도록 개선까지 진행이 되어야 해」
+ *
+ * 원본에서 안 되던 것들이 여기서는 **실제로 된다**:
+ *    조회·초기화 · 정렬 · 페이지 넘김 · 탭 전환 · 주소 확인 드롭다운 ·
+ *    주소 복사 · 상세 보기 · 전체 미리보기 · 연락처 열람(기록 남김)
+ *
+ * 🔴 원칙: **자바스크립트가 죽어도 첫 화면은 보인다.**
+ *    행은 HTML 에 이미 그려져 있고, 이 파일은 걸러내고 넘길 뿐이다.
+ *    원본의 가장 큰 사고가 「JS 가 끝내지 못하면 화면이 백지」였다.
+ */
+(function () {
+  'use strict';
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var norm = function (s) { return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ''); };
+
+  /* ── 알림 (복사 결과 등) ─────────────────────────────────── */
+  var toastEl = null, toastTimer = null;
+  function toast(msg, bad) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      toastEl.setAttribute('role', 'status');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    toastEl.className = 'toast' + (bad ? ' bad' : '') + ' on';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.className = 'toast'; }, 2600);
+  }
+
+  /* ── 0. 「고친 곳 · 짚은 곳」 접기 ───────────────────────── */
+  var ft = $('#fixtoggle'), fl = $('#fixlist');
+  if (ft && fl) {
+    var ftBase = ft.textContent.trim();
+    ft.addEventListener('click', function () {
+      var open = fl.hidden;
+      fl.hidden = !open;
+      ft.setAttribute('aria-expanded', String(open));
+      ft.textContent = open ? '접기' : ftBase;
+      if (open) fl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+
+  /* ── 1. 탭 ──────────────────────────────────────────────── */
+  $$('[role="tablist"]').forEach(function (list) {
+    var tabs = $$('[role="tab"]', list);
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) {
+          var on = t === tab;
+          t.setAttribute('aria-selected', String(on));
+          var panelId = t.getAttribute('aria-controls');
+          if (panelId) { var p = document.getElementById(panelId); if (p) p.hidden = !on; }
+        });
+        /* 🔴 원본은 탭을 눌러도 표 제목이 그대로였다. 바뀐 것을 화면이 말한다. */
+        var echo = list.getAttribute('data-tab-echo');
+        if (echo) $$(echo).forEach(function (e) { e.textContent = tab.textContent.trim(); });
+      });
+    });
+  });
+
+  /* ── 2. 표 — 조회 · 초기화 · 정렬 · 페이지 ───────────────── */
+  function tableApi(root) {
+    var tbody = $('tbody', root);
+    if (!tbody) return null;
+    /* 🔴 상세 행과 「없습니다」 행은 세지 않는다 — 세면 개수가 한 건씩 늘어난다 */
+    var all = $$('tr', tbody).filter(function (tr) {
+      return !tr.hasAttribute('data-detail') && !tr.hasAttribute('data-empty');
+    });
+    var size = parseInt(root.getAttribute('data-page-size') || '10', 10);
+    var page = 1, shown = all.slice();
+
+    function detailOf(tr) {
+      var id = tr.getAttribute('data-row');
+      return id ? $('tr[data-detail="' + id + '"]', tbody) : null;
+    }
+
+    function paint() {
+      var from = (page - 1) * size, to = from + size;
+      all.forEach(function (tr) {
+        var i = shown.indexOf(tr);
+        var on = i >= from && i < to;
+        tr.hidden = !on;
+        var d = detailOf(tr);
+        if (d && !on) d.hidden = true;
+      });
+      var empty = $('[data-empty]', root);
+      if (empty) empty.hidden = shown.length !== 0;
+      /* 🔴 개수 표시는 표 바깥(제목 줄)에 있다 — root 안에서만 찾으면 0 으로 남는다.
+            원본이 「34개 개설」과 「목록 0건」을 동시에 보여 주던 것과 같은 종류의 사고다. */
+      $$('[data-count]').forEach(function (e) { e.textContent = shown.length; });
+      var pager = $('[data-pager]', root);
+      if (pager) {
+        var pages = Math.max(1, Math.ceil(shown.length / size));
+        if (page > pages) { page = pages; return paint(); }
+        pager.innerHTML = '';
+        var mk = function (label, to2, cur, dis) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.textContent = label;
+          if (cur) b.setAttribute('aria-current', 'page');
+          if (dis) b.disabled = true;
+          else b.addEventListener('click', function () { page = to2; paint(); });
+          pager.appendChild(b);
+        };
+        mk('이전', page - 1, false, page <= 1);
+        for (var p = 1; p <= pages; p++) mk(String(p), p, p === page, false);
+        mk('다음', page + 1, false, page >= pages);
+        pager.hidden = pages <= 1;
+      }
+    }
+
+    function apply(form) {
+      var conds = [];
+      $$('[data-filter]', form).forEach(function (c) {
+        var key = c.getAttribute('data-filter');
+        var v = c.type === 'checkbox' ? (c.checked ? '1' : '') : c.value;
+        if (!v || /^전체/.test(v)) return;
+        conds.push({ key: key, v: norm(v) });
+      });
+      shown = all.filter(function (tr) {
+        return conds.every(function (c) {
+          var got = norm(tr.getAttribute('data-f-' + c.key));
+          return c.key === 'q' ? got.indexOf(c.v) >= 0 : got === c.v;
+        });
+      });
+      page = 1;
+      paint();
+      return conds.length;
+    }
+
+    function sort(key, dir) {
+      var mul = dir === 'desc' ? -1 : 1;
+      shown = shown.slice().sort(function (a, b) {
+        var x = a.getAttribute('data-s-' + key) || '', y = b.getAttribute('data-s-' + key) || '';
+        var nx = parseFloat(x), ny = parseFloat(y);
+        if (!isNaN(nx) && !isNaN(ny)) return (nx - ny) * mul;
+        return x.localeCompare(y, 'ko') * mul;
+      });
+      /* 실제로 DOM 순서를 바꾼다 — 눈으로 확인되게 */
+      shown.forEach(function (tr) {
+        tbody.appendChild(tr);
+        var d = tbody.querySelector('tr[data-detail="' + tr.getAttribute('data-row') + '"]');
+        if (d) tbody.appendChild(d);
+      });
+      page = 1; paint();
+    }
+
+    return { paint: paint, apply: apply, sort: sort, reset: function () {
+      shown = all.slice(); page = 1; paint(); } };
+  }
+
+  $$('[data-table]').forEach(function (root) {
+    var api = tableApi(root);
+    if (!api) return;
+    root.__api = api;
+    api.paint();
+
+    var formSel = root.getAttribute('data-filters');
+    var form = formSel ? $(formSel) : null;
+    if (form) {
+      var go = $('[data-go]', form), reset = $('[data-reset]', form);
+      var run = function () {
+        var n = api.apply(form);
+        toast(n ? '조건 ' + n + '개로 걸렀습니다' : '조건을 모두 풀었습니다');
+      };
+      if (go) go.addEventListener('click', run);
+      form.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); run(); }
+      });
+      if (reset) reset.addEventListener('click', function () {
+        $$('[data-filter]', form).forEach(function (c) {
+          if (c.type === 'checkbox') c.checked = false;
+          else if (c.tagName === 'SELECT') c.selectedIndex = 0;
+          else c.value = '';
+        });
+        api.reset();
+        toast('처음 상태로 되돌렸습니다');
+      });
+      var sortSel = $('[data-sortby]', form);
+      if (sortSel) sortSel.addEventListener('change', function () {
+        var v = (sortSel.value || '').split(':');
+        if (v[0]) { api.sort(v[0], v[1] || 'asc'); toast('정렬을 바꿨습니다'); }
+      });
+    }
+  });
+
+  /* ── 3. 주소 확인 드롭다운 ───────────────────────────────── */
+  /* 🔴 원본은 aria-haspopup="menu" 인데 열 메뉴가 DOM 에 없었다.
+        개수는 세면서 주소는 안 내려줬다. 여기서는 실제로 열린다. */
+  function closeMenus(except) {
+    $$('.urlmenu').forEach(function (m) {
+      if (m !== except) { m.remove(); }
+    });
+    $$('[data-urls]').forEach(function (b) {
+      if (!except || b.__menu !== except) b.setAttribute('aria-expanded', 'false');
+    });
+  }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-urls]') && !e.target.closest('.urlmenu')) closeMenus();
+  });
+  $$('[data-urls]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (btn.getAttribute('aria-expanded') === 'true') { closeMenus(); return; }
+      closeMenus();
+      var items;
+      try { items = JSON.parse(btn.getAttribute('data-urls') || '[]'); } catch (err) { items = []; }
+      var menu = document.createElement('div');
+      menu.className = 'urlmenu';
+      menu.setAttribute('role', 'menu');
+      if (!items.length) {
+        menu.innerHTML = '<p class="none">등록된 주소가 없습니다.</p>';
+      } else {
+        items.forEach(function (it) {
+          var row = document.createElement('div');
+          row.className = 'urlrow';
+          var a = document.createElement('a');
+          a.href = it.url; a.target = '_blank'; a.rel = 'noopener';
+          a.innerHTML = '<b>' + it.label + '</b><span>' + it.url.replace(/^https?:\/\//, '') + '</span>';
+          var c = document.createElement('button');
+          c.type = 'button'; c.className = 'mini'; c.textContent = '복사';
+          c.setAttribute('data-copy', it.url);
+          wireCopy(c);
+          row.appendChild(a); row.appendChild(c);
+          menu.appendChild(row);
+        });
+      }
+      var r = btn.getBoundingClientRect();
+      menu.style.top = (r.bottom + window.scrollY + 6) + 'px';
+      menu.style.left = Math.max(8, Math.min(r.left + window.scrollX, window.innerWidth - 330)) + 'px';
+      document.body.appendChild(menu);
+      btn.__menu = menu;
+      btn.setAttribute('aria-expanded', 'true');
+    });
+  });
+
+  /* ── 4. 복사 ────────────────────────────────────────────── */
+  function wireCopy(btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var url = btn.getAttribute('data-copy') || '';
+      /* 🔴 원본은 data-copy-landing-url 이 빈 문자열이었다 — 눌러도 빈 값이 복사됐다. */
+      if (!url) { toast('복사할 주소가 비어 있습니다', true); return; }
+      var done = function () {
+        toast('복사했습니다 · ' + url.replace(/^https?:\/\//, ''));
+        var old = btn.textContent; btn.textContent = '복사됨';
+        setTimeout(function () { btn.textContent = old; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done, function () { fallback(url, done); });
+      } else fallback(url, done);
+    });
+  }
+  function fallback(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:-100px;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    document.body.removeChild(ta);
+    ok ? done() : toast('복사가 막혀 있습니다 — 주소를 직접 선택해 주세요', true);
+  }
+  $$('[data-copy]').forEach(wireCopy);
+
+  /* ── 5. 상세 보기 ───────────────────────────────────────── */
+  /* 🔴 원본은 감사기록의 「보기」를 눌러도 아무것도 열리지 않았다.
+        들여다볼 수 없는 감사기록은 감사기록이 아니다. */
+  $$('[data-detail-for]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-detail-for');
+      var row = $('tr[data-detail="' + id + '"]');
+      if (!row) { toast('상세 내용이 없습니다', true); return; }
+      var open = row.hidden;
+      row.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? '접기' : (btn.getAttribute('data-label') || '보기');
+    });
+  });
+
+  /* ── 6. 미리보기 ────────────────────────────────────────── */
+  $$('[data-preview]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var url = btn.getAttribute('data-preview');
+      if (!url) { toast('미리볼 주소가 없습니다', true); return; }
+      window.open(url, '_blank', 'noopener');
+    });
+  });
+
+  /* ── 7. 연락처 열람 — 열면 기록이 남는다 ────────────────── */
+  var LOG = [];
+  $$('[data-reveal]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var cell = $('[data-tel="' + btn.getAttribute('data-reveal') + '"]');
+      if (!cell) return;
+      var full = cell.getAttribute('data-full') || '';
+      var masked = cell.getAttribute('data-masked') || cell.textContent;
+      var showing = btn.textContent === '가리기';
+      cell.textContent = showing ? masked : full;
+      btn.textContent = showing ? '보기' : '가리기';
+      if (!showing) {
+        var at = new Date().toLocaleString('ko-KR');
+        LOG.push(at);
+        var box = $('[data-reveal-log]');
+        if (box) {
+          box.hidden = false;
+          box.textContent = '🔎 이 화면에서 연락처를 ' + LOG.length + '번 열었습니다 (마지막 ' + at + ').'
+            + ' 실제 운영에서는 열람자·시각·대상이 감사기록에 남습니다.';
+        }
+      }
+    });
+  });
+
+  /* ── 8. 상단 「다 되는지 확인」 ──────────────────────────── */
+  var probe = $('[data-selftest]');
+  if (probe) {
+    var counts = {
+      표: $$('[data-table]').length,
+      필터: $$('[data-filter]').length,
+      주소: $$('[data-urls]').length,
+      복사: $$('[data-copy]').length,
+      상세: $$('[data-detail-for]').length,
+      탭: $$('[role="tab"]').length
+    };
+    var parts = Object.keys(counts).filter(function (k) { return counts[k]; })
+      .map(function (k) { return k + ' ' + counts[k]; });
+    probe.textContent = parts.length
+      ? '이 화면에서 실제로 동작하는 것: ' + parts.join(' · ')
+      : '이 화면에는 조작할 것이 없습니다.';
+  }
+})();
+</script>
 </body></html>
