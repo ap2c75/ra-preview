@@ -19,7 +19,7 @@ export const DEFAULT_POLICY = Object.freeze({
   relationship: 'third_party', recipient: '제휴총판',
   recipientPurpose: '렌탈 상품 상담, 영업 안내 및 계약 접수',
   recipientRetention: '제공받은 날부터 90일', partnerCompanies: [],
-  contractRef: null, operationsApproved: false,
+  partnerRegistryVersion: null, contractRef: null, operationsApproved: false,
 });
 export const consultationFields = () => FIELDS.filter(f => f.stage === 'consultation');
 export function policyIssues(p) {
@@ -35,6 +35,7 @@ export function policyIssues(p) {
   if (p.relationship === 'processor' && !p.contractRef) issues.push('contractRef');
   if (p.relationship === 'processor' && !p.recipientPurpose?.trim()) issues.push('processorPurpose');
   if (p.relationship === 'third_party' && (!p.recipientPurpose || !p.recipientRetention)) issues.push('recipientTerms');
+  if (p.relationship === 'third_party' && (typeof p.partnerRegistryVersion!=='string'||!p.partnerRegistryVersion.trim())) issues.push('partnerRegistryVersion');
   if(p.partnerCompanies!==undefined){
     if(!Array.isArray(p.partnerCompanies)||p.partnerCompanies.length>500||p.partnerCompanies.some(v=>!v||typeof v.name!=='string'||!v.name.trim()||v.name.length>120||typeof v.purpose!=='string'||!v.purpose.trim()||typeof v.retention!=='string'||!v.retention.trim())||new Set(p.partnerCompanies.map(v=>v?.name?.trim())).size!==p.partnerCompanies.length)issues.push('partnerCompanies');
     else if(p.relationship==='third_party'&&!p.partnerCompanies.length)issues.push('partnerCompaniesEmpty');
@@ -63,12 +64,13 @@ export function consentEvidence(p, choices, agreedAt = new Date().toISOString())
     collectionUse: true,
     thirdParty: required.thirdParty,
     over14: true,
+    partnerRegistryVersion: required.thirdParty ? p.partnerRegistryVersion : null,
     recipients: required.thirdParty ? p.partnerCompanies.map(v => v.name) : [],
   });
 }
 export function notice(p) {
   return {
-    version: p.version, controller: p.controller, controllerDisplay: p.controller, purpose: p.purpose,
+    version: p.version, partnerRegistryVersion:p.partnerRegistryVersion, controller: p.controller, controllerDisplay: p.controller, purpose: p.purpose,
     addressHelp: '설치 장소가 아직 정해지지 않았다면 설치 주소 미정을 선택할 수 있습니다.',
     requiredItems: consultationFields().filter(f => f.required).map(f => f.label),
     optionalItems: consultationFields().filter(f => !f.required).map(f => f.label),
@@ -96,6 +98,7 @@ export function noticeIssues(n) {
     const t=n.transfer;
     if(!t||typeof t!=='object'||!['recipient','purpose','retention','refusal'].every(key=>typeof t[key]==='string'&&t[key].trim())||!Array.isArray(t.items)||!t.items.length)issues.push('transfer');
     if(!Array.isArray(n.partners)||!n.partners.length||n.partners.some(v=>!v||typeof v.name!=='string'||!v.name.trim()||typeof v.purpose!=='string'||!v.purpose.trim()||typeof v.retention!=='string'||!v.retention.trim()))issues.push('partners');
+    if(typeof n.partnerRegistryVersion!=='string'||!n.partnerRegistryVersion.trim())issues.push('partnerRegistryVersion');
   }
   return [...new Set(issues)];
 }

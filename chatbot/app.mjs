@@ -5,12 +5,26 @@ import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
 import {noticeIssues} from '/ra-preview/chatbot/privacy.mjs?v=consent-policy-20260910-1';
+import {publicPartnerList,validatePartnerRegistry} from '/ra-preview/chatbot/partner-registry.mjs?v=partner-registry-20260910-1';
 import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-11';
 import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
+import {createQualityMetrics} from '/ra-preview/chatbot/quality-metrics.mjs?v=quality-metrics-20260910-1';
 import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
 
-let siteData=null;
-fetch('/ra-preview/chatbot/site-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1')siteData=d;}).catch(()=>{siteData=null;});
+let siteData=null,siteDataRequest=null,consultationDataPrimed=false;
+let partnerRegistry=null,partnerRegistryRequest=null;
+async function loadPartnerRegistry(){
+ if(partnerRegistry)return partnerRegistry;if(partnerRegistryRequest)return partnerRegistryRequest;
+ partnerRegistryRequest=fetch('/ra-preview/chatbot/api/partner-registry.json',{cache:'default'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{validatePartnerRegistry(data,{allowDraft:true});partnerRegistry=data;return data;}).catch(()=>null).finally(()=>{partnerRegistryRequest=null;});
+ return partnerRegistryRequest;
+}
+async function loadSiteData(){
+ if(siteData)return siteData;
+ if(siteDataRequest)return siteDataRequest;
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+ siteDataRequest=fetch('/ra-preview/chatbot/site-data-core.json',{cache:'default',signal:controller.signal}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1'&&Array.isArray(d.carriers)&&Array.isArray(d.products))siteData=d;return siteData;}).catch(()=>null).finally(()=>{clearTimeout(timer);siteDataRequest=null;});
+ return siteDataRequest;
+}
 let knowledgeEntries=[],knowledgeRequest=0;
 async function refreshKnowledge(){const request=++knowledgeRequest,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const r=await fetch('/ra-preview/chatbot/api/knowledge.json',{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error();const data=await r.json();if(request===knowledgeRequest)knowledgeEntries=activeEntries(data.entries);}catch{if(request===knowledgeRequest)knowledgeEntries=[];}finally{clearTimeout(timer);}}
 
@@ -21,6 +35,7 @@ const $ = q => document.querySelector(q);
 const el = (tag, text, className) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (className) n.className = className; return n; };
 let state = initialState(), busy = false, dialogEpoch = 0, offer = null, receipt = null;
 const qualityRecorder=createQualityRecorder();
+const qualityMetrics=createQualityMetrics({storage:localStorage});
 const turnHistory=createTurnHistory();
 let latestUserText='';
 const money = n => Number(n).toLocaleString('ko-KR') + '원';
@@ -215,6 +230,7 @@ function appendMessageFeedback(row,assistantText,userText){
   for(const [reason,label] of QUALITY_REASONS){
     choices.append(button(label,()=>{
       qualityRecorder.add({reason:label,userText,assistantText,context:qualityContext()});
+      qualityMetrics.feedback(reason);
       details.replaceChildren(el('span','개선 항목에 담았습니다.','message-feedback-done'));
       run({action:{repeat:'repairRepeat',misread:'repairMisread',insufficient:'repairInsufficient',recommendation:'repairRecommendation'}[reason]});
     }));
@@ -327,11 +343,18 @@ function renderActions(out = {}) {
   if(turnHistory.count())actions.append(button('방금 조건 되돌리기',()=>run({action:'undo'}),'undo-action'));
   const qualityCount=qualityRecorder.all().length;
   if(qualityCount)actions.append(button('개선 기록 복사 ('+qualityCount+')',copyQualityRecords,'quality-export'));
+  const metricCount=qualityMetrics.snapshot().turns;
+  if(metricCount)actions.append(button('익명 품질 통계 복사 ('+metricCount+')',copyQualityMetrics,'quality-export'));
   // Receipt management lives in the status bar; do not repeat intake in every turn.
 }
 async function copyQualityRecords(){
   const text=qualityRecorder.exportText();
   try{await navigator.clipboard.writeText(text);say('개선 기록을 복사했습니다. 담당자에게 전달하면 회귀검사에 반영할 수 있어요.');}
+  catch{say('브라우저가 복사를 허용하지 않았어요. 주소창의 사이트 권한에서 클립보드를 허용한 뒤 다시 시도해 주세요.');}
+  renderActions();
+}
+async function copyQualityMetrics(){
+  try{await navigator.clipboard.writeText(qualityMetrics.exportText());say('발화 원문과 고객정보를 제외한 대화 결과 통계를 복사했습니다.');}
   catch{say('브라우저가 복사를 허용하지 않았어요. 주소창의 사이트 권한에서 클립보드를 허용한 뒤 다시 시도해 주세요.');}
   renderActions();
 }
@@ -346,6 +369,7 @@ function run(input) {
   if (typeof input.text==='string' && input.text.trim()) say(input.text, 'user');
   else if (out.requestSummary) say(out.requestSummary, 'user');
   state = out.state; renderFilters(); say(out.reply);
+  if(typeof input.text==='string'&&input.text.trim())qualityMetrics.observe({outcome:out.outcome,intent:out.intent,selectedCount:state.selected.length});
   if(out.siteSources?.length){const box=el('div',null,'answer-sources');for(const source of out.siteSources){const a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';const row=el('p');row.append(a);box.append(row);}$('#messages').lastElementChild.append(box);}
   if(out.sources?.length){const box=el('details',null,'answer-sources');box.append(el('summary','확인한 안내 근거'));for(const source of out.sources){const row=el('p'),a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';row.append(a,el('small',source.topic+' · '+source.scope+' · 적용 종료 '+new Date(source.validUntil).toLocaleDateString('ko-KR')));box.append(row);}$('#messages').lastElementChild.append(box);}
   // Customer messages remain in this page only, not storage, analytics or external/model APIs.
@@ -405,6 +429,8 @@ function checkbox(label, id) {
   wrap.append(input, el('span',label)); return {wrap,input};
 }
 async function openConsent(){
+ primeConsultationData();
+ await loadPartnerRegistry();
  const body=$('#consent-body');body.replaceChildren();$('#consent-title').textContent='개인정보 수집·이용 안내';setEntryStep('consent');
  body.append(el('p','원활한 상담을 위해 고객님의 정보 확인부터 진행하겠습니다. 아래 안내를 확인해 주세요.'));
  const operationalRequested=serviceStatus.available===true;
@@ -432,7 +458,7 @@ async function openConsent(){
  body.append(el('p','고객사 검토용 사이트입니다. 입력 항목과 상담 흐름을 테스트하며, 실제 상담 접수·서버 저장·총판 전달은 하지 않습니다. 가상 이름과 테스트 연락처를 사용해 주세요.','banner'));
  const dl=el('dl',null,'notice');
  const controller=el('dd','브로씨앤씨 및 제휴총판');
- appendPartnerDisclosure(controller,{partners:[],relationship:'third_party'});
+ appendPartnerDisclosure(controller,{partners:partnerRegistry?publicPartnerList(partnerRegistry):[],relationship:'third_party'});
  dl.append(el('dt','수집·이용 주체'),controller);
  for(const [k,v] of [['입력 항목','이름, 연락처, 설치 주소 또는 설치 주소 미정'],['이용 목적','고객정보 확인 및 렌탈 상담 화면 흐름 검토'],['보관 및 전달','입력값은 현재 입력 화면에서만 처리합니다. 상담 시작·창 닫기·새로고침 시 지우며 서버 저장, 총판 제공, 광고 활용은 하지 않습니다.'],['주소 검색','주소 검색어는 카카오 우편번호 서비스로 전송됩니다. 공개된 건물 주소로 테스트해 주세요.'],['동의 거부','동의하지 않으면 고객정보 입력 단계로 진행하지 않습니다. 창을 닫을 수 있습니다.']])dl.append(el('dt',k),el('dd',v));
  body.append(dl);
@@ -510,6 +536,7 @@ resumeSession();
 window.addEventListener('pageshow',event=>{if(event.persisted){setReceipt(null);initializeEntry();resumeSession();}});
 
 $('#retry-catalog').addEventListener('click',()=>catalogLoader.refresh());
-refreshKnowledge();catalogLoader.refresh();
-function maybeRefreshCatalog(force=false){const value=catalogLoader.checkExpiry();if(value.status!=='loading'&&(value.status!=='ready'?(force||Date.now()>=nextCatalogRetry):Date.now()-value.checkedAt>=300000))catalogLoader.refresh();}
+refreshKnowledge();
+function primeConsultationData(){if(consultationDataPrimed)return;consultationDataPrimed=true;loadSiteData();loadPartnerRegistry();catalogLoader.refresh();}
+function maybeRefreshCatalog(force=false){if(!consultationDataPrimed)return;const value=catalogLoader.checkExpiry();if(value.status!=='loading'&&(value.status!=='ready'?(force||Date.now()>=nextCatalogRetry):Date.now()-value.checkedAt>=300000))catalogLoader.refresh();}
 window.addEventListener('online',()=>maybeRefreshCatalog(true));window.addEventListener('focus',()=>maybeRefreshCatalog());document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeRefreshCatalog();});setInterval(()=>{catalogLoader.checkExpiry();if(!document.hidden)maybeRefreshCatalog();},1000);

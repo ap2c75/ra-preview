@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {createQualityMetrics} from '../quality-metrics.mjs';
+
+const values=new Map();
+const storage={getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)};
+const first=createQualityMetrics({storage,now:()=>Date.parse('2026-09-10T03:00:00Z')});
+first.observe({outcome:'responded',intent:'recommendation',selectedCount:1,userText:'010-1234-5678'});
+first.observe({outcome:'unresolved',intent:'install-lead-time',userText:'서울시 테스트로'});
+first.feedback('misread');
+const snapshot=first.snapshot();
+assert.equal(snapshot.turns,2);
+assert.equal(snapshot.outcomes.responded,1);
+assert.equal(snapshot.outcomes.unresolved,1);
+assert.equal(snapshot.feedback.misread,1);
+assert.equal(snapshot.intents.recommendation,1);
+assert.equal(snapshot.selectionTurns,1);
+assert.doesNotMatch(JSON.stringify(snapshot),/010-1234|서울시/);
+const restored=createQualityMetrics({storage});
+assert.equal(restored.snapshot().turns,2);
+restored.clear();
+assert.equal(restored.snapshot().turns,0);
+assert.equal(values.size,0);
+console.log('quality metrics: 10 assertions passed');
