@@ -49,6 +49,23 @@ export function cardsFor(catalog, f) {
     return plans.length ? [{ code: p.code, name: p.name, brand: p.brand, plans }] : [];
   }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
+function publicRecommendationValue(card){
+  let maxDiscount=0,benefitSignals=0,minFee=Number.MAX_SAFE_INTEGER;
+  for(const plan of card.plans)for(const option of plan.options){
+    minFee=Math.min(minFee,option.fee);
+    if(Number.isFinite(option.baseFee))maxDiscount=Math.max(maxDiscount,option.baseFee-option.fee);
+    if(option.promo||option.discount)benefitSignals+=1;
+  }
+  return {maxDiscount,benefitSignals,minFee};
+}
+function recommendationsByBrand(all,limit=3){
+  const groups=new Map();
+  for(const card of all){if(!groups.has(card.brand))groups.set(card.brand,[]);groups.get(card.brand).push(card);}
+  return [...groups.entries()].map(([brand,cards])=>{
+    const ranked=cards.map(card=>({card,value:publicRecommendationValue(card)})).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||a.value.minFee-b.value.minFee||a.card.name.localeCompare(b.card.name,'ko'));
+    return {brand,card:ranked[0].card,value:ranked[0].value,count:cards.length};
+  }).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||b.count-a.count||a.value.minFee-b.value.minFee||a.brand.localeCompare(b.brand,'ko')).slice(0,limit).map(item=>item.card);
+}
 // Structured state and presentation summaries only. Never persist raw messages.
 function guidance(s, catalog) {
   if(s.filters.model)return {question:'모델 검색 결과예요. 약정과 관리 조건을 확인해 주세요.',suggestions:['모델 검색 해제']};
@@ -69,6 +86,7 @@ function respondCatalog(previous, input, catalog) {
   const s = structuredClone(previous || initialState());
   s.preferences ||= {}; s.awaiting ??= null;
   const text = String(input.text || '').trim().slice(0, 500);
+  const recommendationRequested=/추천|골라(?:줘|주세요)?|뭐가\s*좋|어떤(?:게|것이)\s*좋/.test(text);
   const safety = mask(text, { profile: 'storage' });
   let requestSummary = null;
   const result = (reply, extra = {}) => ({ state:s, reply, requestSummary, ...extra });
@@ -131,7 +149,7 @@ function respondCatalog(previous, input, catalog) {
     return result('상담을 신청하실 때 어떤 정보를 왜 받는지, 얼마나 보관하는지 먼저 안내해 드려요.\n동의하지 않으셔도 상품은 계속 둘러보실 수 있어요.');
   }
   const pending=UNKNOWN.find(u=>matchingTopics(text).some(t=>t.id===u.id));
-  if (pending) {
+  if (pending&&!(recommendationRequested&&s.filters.category)) {
     requestSummary = pending.fact.title;
     s.unresolved=[...new Set([...s.unresolved,pending.fact.title])];
     return result(withParticle(pending.what,'은','는')+' 지금 자료로는 확정할 수 없어요. 상담할 때 확인이 필요한 부분이에요.\n보시던 조건으로 상품 탐색을 이어갈 수 있어요.',{resume:true});
@@ -141,6 +159,7 @@ function respondCatalog(previous, input, catalog) {
     return result('그 부분은 상품별 계약 조건을 확인해야 정확히 안내할 수 있어요.\n아까 보시던 제품은 그대로 두었어요.',{resume:true});
   }
   const {patch:next={},changed=false,anyBrand=false,anyTerm=false}=input.parsed||{};
+  if(recommendationRequested&&s.filters.category&&!s.filters.brand&&!s.filters.brands?.length&&!s.filters.maker){s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;}
   const wantsResults=changed || ['resume','more','previous','first','sort'].includes(input.action) || /추천|상품|다시 보기|보여|얼마|비교/.test(text);
   if(!wantsResults) {
     const guide=guidance(s,catalog);
@@ -156,7 +175,9 @@ function respondCatalog(previous, input, catalog) {
   if(input.action==='more')s.offset+=PAGE_SIZE;
   if(input.action==='previous')s.offset-=PAGE_SIZE;
   if(input.action==='first')s.offset=0;
-  const page=pageData(all,s);
+  const recommendations=recommendationRequested?recommendationsByBrand(all):null;
+  if(recommendations)s.offset=0;
+  const page=recommendations?{cards:recommendations,total:recommendations.length,page:1,pages:1,start:1,end:recommendations.length,previous:false,more:false}:pageData(all,s);
   if(s.filters.care||s.filters.excludedCare?.length){
     const unknown=cardsFor(catalog,{...s.filters,care:null,excludedCare:[]}).filter(c=>c.plans.some(p=>p.options.some(o=>o.care==='관리 방식 확인 필요')));
     if(!all.length&&unknown.length)return result('다른 조건에 맞는 상품은 있지만 관리 방식이 등록되지 않은 상품이 있어요. 방문·자가관리 가능 여부는 확인이 필요합니다. 관리 방식 확인을 보류하고 상품부터 보실까요?',{cards:[],total:0,more:false,needsReview:true,suggestions:['관리 방식 확인 보류'],requestSummary:'관리 방식 자료 확인 필요'});
@@ -165,7 +186,8 @@ function respondCatalog(previous, input, catalog) {
   if(!all.length) return result('말씀하신 조건으로는 맞는 상품을 찾지 못했어요.\n브랜드나 약정 기간을 조금 넓혀볼까요?',{cards:[],total:0,more:false});
   const guide=guidance(s,catalog);
   let lead;
-  if(input.action==='more') lead=s.offset===previous.offset?'마지막 페이지예요. 이전 상품으로 돌아가거나 조건을 바꿔보세요.':'다음 상품을 가져왔어요.';
+  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n');lead=(s.filters.category||'해당 카테고리')+'에서 서로 다른 브랜드 상품을 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.';}
+  else if(input.action==='more') lead=s.offset===previous.offset?'마지막 페이지예요. 이전 상품으로 돌아가거나 조건을 바꿔보세요.':'다음 상품을 가져왔어요.';
   else if(input.action==='previous')lead=s.offset===previous.offset?'첫 페이지예요.':'이전 상품으로 돌아왔어요.';
   else if(input.action==='first')lead='첫 페이지로 돌아왔어요.';
   else if(input.action==='sort'||input.parsed?.sortChanged)lead=SORTS[validSort(s.sort)]+'으로 다시 보여드릴게요.';
