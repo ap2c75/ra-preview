@@ -76,6 +76,33 @@ td:first-child{white-space:normal;min-width:150px}
   font-variant-numeric:tabular-nums}
 .rowbtn{display:flex;gap:6px;justify-content:flex-end}
 a.plain{color:var(--accent);font-size:13px}
+
+/* ── 성과 ────────────────────────────────────────────────────
+   🔴 표본 숫자가 실측처럼 보이면 안 된다. 점선 밑줄로 눈에 걸리게 한다 —
+      캡처해서 남에게 보내도 표본인 게 보여야 한다. */
+.perfbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:#fff;font:inherit;font-size:12.5px;padding:7px 13px;cursor:pointer;color:#3d5464}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:#fff;font-weight:600}
+.toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+.toggle input{width:16px;height:16px;accent-color:#8a6d0d}
+.nodata{background:#eef4f8;border:1px solid #d6e5ee;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#3d5464;margin:0 0 14px;line-height:1.65}
+.nodata b{color:#0d6b8a}
+.samplebar{background:#fff3d6;border:1px solid #f0d089;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#7a5209;margin:0 0 14px;line-height:1.65;display:none}
+.samplebar.on{display:block}
+.samplebar b{color:#8a3d09}
+td.m,th.m{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.m .v{font-weight:600}
+td.m.s .v{border-bottom:2px dotted #c99a2e;padding-bottom:1px}
+td.m .no{color:#9fb0bd;font-size:12px}
+.wire{list-style:none;margin:0;padding:0;font-size:13px}
+.wire li{display:flex;gap:9px;padding:0 0 13px}
+.wire .mk{flex:0 0 19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+.wire .mk.y{background:#e8f6f0;color:var(--ok)}
+.wire .mk.n{background:#fdeee7;color:var(--stop)}
+.wire b{display:block;margin:0 0 2px}
+.wire i{display:block;color:var(--muted);font-size:12.5px;line-height:1.6;font-style:normal}
 </style>
 </head><body>
 <p class="sian">총판이 <b>로그인하는 화면</b>입니다 · 동작 시안이며 <b>아무 값도 서버로 보내지 않습니다</b></p>

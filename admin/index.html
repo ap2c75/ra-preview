@@ -76,6 +76,33 @@ td:first-child{white-space:normal;min-width:150px}
   font-variant-numeric:tabular-nums}
 .rowbtn{display:flex;gap:6px;justify-content:flex-end}
 a.plain{color:var(--accent);font-size:13px}
+
+/* ── 성과 ────────────────────────────────────────────────────
+   🔴 표본 숫자가 실측처럼 보이면 안 된다. 점선 밑줄로 눈에 걸리게 한다 —
+      캡처해서 남에게 보내도 표본인 게 보여야 한다. */
+.perfbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:#fff;font:inherit;font-size:12.5px;padding:7px 13px;cursor:pointer;color:#3d5464}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:#fff;font-weight:600}
+.toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+.toggle input{width:16px;height:16px;accent-color:#8a6d0d}
+.nodata{background:#eef4f8;border:1px solid #d6e5ee;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#3d5464;margin:0 0 14px;line-height:1.65}
+.nodata b{color:#0d6b8a}
+.samplebar{background:#fff3d6;border:1px solid #f0d089;border-radius:11px;padding:12px 14px;font-size:12.5px;color:#7a5209;margin:0 0 14px;line-height:1.65;display:none}
+.samplebar.on{display:block}
+.samplebar b{color:#8a3d09}
+td.m,th.m{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.m .v{font-weight:600}
+td.m.s .v{border-bottom:2px dotted #c99a2e;padding-bottom:1px}
+td.m .no{color:#9fb0bd;font-size:12px}
+.wire{list-style:none;margin:0;padding:0;font-size:13px}
+.wire li{display:flex;gap:9px;padding:0 0 13px}
+.wire .mk{flex:0 0 19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+.wire .mk.y{background:#e8f6f0;color:var(--ok)}
+.wire .mk.n{background:#fdeee7;color:var(--stop)}
+.wire b{display:block;margin:0 0 2px}
+.wire i{display:block;color:var(--muted);font-size:12.5px;line-height:1.6;font-style:normal}
 </style>
 </head><body>
 <p class="sian">본사가 <b>총판을 관리하는 화면</b>입니다 · 동작 시안이며 등록·정지는 이 화면 안에서만 반영됩니다</p>
@@ -93,11 +120,32 @@ a.plain{color:var(--accent);font-size:13px}
 
   <div class="grid two">
     <section>
-      <h2>총판 목록</h2>
+      <h2>총판 목록과 이용성과</h2>
+      <div class="perfbar">
+        <span class="seg">
+          <button type="button" data-days="7">최근 7일</button>
+          <button type="button" data-days="30" class="on">최근 30일</button>
+        </span>
+        <label class="toggle"><input type="checkbox" id="showsample">
+          숫자가 들어오면 이렇게 보입니다 <b>(표본)</b></label>
+      </div>
+      <div class="nodata" id="nodata">
+        <b>이용성과는 아직 집계되지 않습니다.</b> 랜딩은 방문·상담 신청을 이미 보내고 있는데
+        <b>받는 주소가 비어 있습니다</b>(APPS_SCRIPT_URL). 그래서 숫자 자리에 「—」를 둡니다 —
+        0 이라고 적으면 「일을 안 했다」로 읽히는데, 사실은 <b>모르는 것</b>입니다.
+      </div>
+      <div class="samplebar" id="samplebar">
+        <b>지금 보이는 숫자는 전부 표본입니다.</b> 실제 성과가 아닙니다 —
+        집계가 붙으면 어떤 화면이 되는지 보여 드리는 것입니다.
+        표본 숫자에는 <b>점선 밑줄</b>이 그어져 있습니다.
+      </div>
       <p class="lead">아이디·코드는 한 번 매기면 바꾸지 않습니다 — 코드가 랜딩 주소에 들어가 있습니다.</p>
       <div class="card" style="overflow:auto">
         <table><thead><tr>
-          <th>총판</th><th>아이디</th><th>코드</th><th>상태</th><th>마지막 접속</th><th></th>
+          <th>총판</th><th>아이디</th><th>코드</th><th>상태</th>
+          <th class="m">만든 랜딩</th><th class="m">방문</th>
+          <th class="m">상담 신청</th><th class="m">전환율</th>
+          <th>최근 신청</th><th></th>
         </tr></thead><tbody id="rows"></tbody></table>
       </div>
       <div class="memo">
@@ -141,6 +189,18 @@ a.plain{color:var(--accent);font-size:13px}
         <p class="hint" style="margin-top:11px">🔴 초기 비밀번호를 만들어 알려 드리지 않습니다.
           문자로 보낸 비밀번호는 그 문자가 남아 있는 동안 계속 열쇠입니다 —
           <b>1회용 링크로 총판이 직접</b> 정합니다. 링크는 72시간 뒤 만료됩니다.</p>
+      </div>
+
+      <h2 style="margin-top:26px">집계는 어디까지 왔나</h2>
+      <p class="lead">숫자가 안 나오는 이유입니다. 한 곳만 꽂으면 쌓이기 시작합니다.</p>
+      <div class="card pad">
+        <ul class="wire">
+          <li><span class="mk y">✓</span><span><b>랜딩이 방문·상담을 보낸다</b><i>core.js 의 post() 가 {type, partner_code, ts} 를 JSON 으로 보낸다.</i></span></li>
+          <li><span class="mk y">✓</span><span><b>총판을 구분할 값이 실려 있다</b><i>partner_code 가 폼 hidden 과 방문 로그 양쪽에 들어간다.</i></span></li>
+          <li><span class="mk y">✓</span><span><b>받는 쪽 규격이 정해져 있다</b><i>contract.mjs — PAYLOAD_TYPES ['view','lead'] · FORM_FIELDS 6개.</i></span></li>
+          <li><span class="mk n">!</span><span><b>🔴 받는 주소가 없다</b><i>APPS_SCRIPT_URL 이 아직 토큰 그대로다. 이 한 곳만 꽂으면 숫자가 쌓이기 시작한다.</i></span></li>
+          <li><span class="mk n">!</span><span><b>🔴 총판이 만든 랜딩을 저장할 곳이 없다</b><i>지금은 총판 브라우저 안에만 있다. 만든 목록을 본사가 보려면 저장소가 필요하다.</i></span></li>
+        </ul>
       </div>
 
       <h2 style="margin-top:26px">계정 발급 절차</h2>
@@ -187,6 +247,7 @@ a.plain{color:var(--accent);font-size:13px}
   function render(){
     $("rows").innerHTML = P.map(function(p){
       var s = tone(p.state);
+      var m = statsOf(p);
       /* 정지는 되돌릴 수 있다 — 되돌리기도 같은 자리에 둔다 */
       var act = p.state === "suspended"
         ? '<button class="btn ghost sm" data-on="' + esc(p.code) + '">되살리기</button>'
@@ -199,7 +260,8 @@ a.plain{color:var(--accent);font-size:13px}
         "<td><code class=\"id\">" + esc(p.loginId) + "</code></td>" +
         "<td><code class=\"id\">" + esc(p.code) + "</code></td>" +
         "<td><span class=\"tag " + s.tone + "\">" + esc(s.name) + "</span></td>" +
-        "<td class=\"num\">" + (p.lastSeen ? esc(p.lastSeen) : "—") + "</td>" +
+        cell(m.links, "") + cell(m.views, "") + cell(m.leads, "") + rateCell(m) +
+        "<td class=\"num\">" + (m.recent ? esc(m.recent) : "—") + "</td>" +
         "<td><div class=\"rowbtn\">" + resend + act + "</div></td>" +
       "</tr>";
     }).join("");
@@ -237,6 +299,37 @@ a.plain{color:var(--accent);font-size:13px}
     })(res[k]);
   }
   function find(code){ for (var i=0;i<P.length;i++) if (P[i].code===code) return P[i]; return null; }
+
+  /* ── 이용성과 ──────────────────────────────────────────────
+     🔴 집계가 안 붙었다. 기본은 「—」다 — 0 이 아니다.
+        0 이라고 적으면 「일을 안 했다」로 읽히는데, 사실은 모르는 것이다. */
+  var SAMPLES = {"sa-0417:7":{"links":6,"views":173,"leads":8,"rate":4.6,"recent":"2026-09-09","sample":true},"sa-0417:30":{"links":6,"views":1008,"leads":35,"rate":3.5,"recent":"2026-08-29","sample":true},"sa-0922:7":{"links":9,"views":184,"leads":5,"rate":2.7,"recent":"2026-09-08","sample":true},"sa-0922:30":{"links":9,"views":1200,"leads":28,"rate":2.3,"recent":"2026-08-31","sample":true},"sa-1130:7":{"links":0,"views":0,"leads":0,"rate":null,"recent":null,"sample":true},"sa-1130:30":{"links":0,"views":0,"leads":0,"rate":null,"recent":null,"sample":true}};
+  var LIVE = false;
+  var days = 30, sample = false;
+
+  function statsOf(p){
+    if (LIVE) return p.stats || {};        /* 집계가 붙으면 진짜 값이 여기로 온다 */
+    if (!sample) return { links:null, views:null, leads:null, rate:null, recent:null };
+    return SAMPLES[p.code + ":" + days] || { links:0, views:0, leads:0, rate:null, recent:null };
+  }
+
+  function cell(v, suffix){
+    if (v === null || v === undefined) return "<td class=\"m\"><span class=\"no\">—</span></td>";
+    var cls = "m" + ((sample && !LIVE) ? " s" : "");
+    return "<td class=\"" + cls + "\"><span class=\"v\">" +
+      Number(v).toLocaleString("ko-KR") + suffix + "</span></td>";
+  }
+
+  /* 🔴 방문이 적을 때의 전환율은 튄다 — 3회에 1건이면 33%다.
+        그 숫자로 총판을 평가하면 억울한 사람이 생긴다. */
+  function rateCell(m){
+    if (m.rate === null || m.rate === undefined) {
+      var few = (m.views !== null && m.views !== undefined && m.views < 30);
+      var why = few ? "방문 30회 미만" : "—";
+      return "<td class=\"m\"><span class=\"no\">" + why + "</span></td>";
+    }
+    return cell(m.rate, "%");
+  }
 
   function bad(id, msg){
     var e = $(id); if (!e) return;
@@ -291,7 +384,24 @@ a.plain{color:var(--accent);font-size:13px}
     for (var n=1;n<=9999;n++) if (!used[n]) { $("f-code").value = "sa-" + ("000"+n).slice(-4); break; }
   });
 
-  counts(); render();
+  function banners(){
+    $("nodata").style.display = (LIVE || sample) ? "none" : "block";
+    $("samplebar").className = (!LIVE && sample) ? "samplebar on" : "samplebar";
+  }
+
+  $("showsample").addEventListener("change", function(){
+    sample = this.checked; banners(); render();
+  });
+  var segs = document.querySelectorAll("[data-days]");
+  for (var q=0;q<segs.length;q++) (function(b){
+    b.addEventListener("click", function(){
+      days = Number(b.getAttribute("data-days"));
+      for (var r=0;r<segs.length;r++) segs[r].className = (segs[r]===b) ? "on" : "";
+      render();
+    });
+  })(segs[q]);
+
+  banners(); counts(); render();
 })();
 </script>
 </body></html>
