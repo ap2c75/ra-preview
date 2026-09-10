@@ -20,6 +20,62 @@ assert.doesNotMatch(recommended.reply,/선호하시는 브랜드|약정 기간.*
 const direct=send(initialState(),'정수기 추천해주세요');
 assert.equal(direct.cards.length,3);
 assert.equal(new Set(direct.cards.map(card=>card.brand)).size,3);
+assert.ok(direct.cards.every(card=>/정수기|이온수기/.test(card.name)));
+assert.ok(direct.cards.every(card=>!/조리수기/.test(card.name)));
+
+const airRecommendation=send(initialState(),'공기청정기 추천해주세요');
+assert.equal(airRecommendation.cards.length,3);
+assert.equal(new Set(airRecommendation.cards.map(card=>card.brand)).size,3);
+assert.ok(airRecommendation.cards.every(card=>/공기\s*청정기|공청기|에어\s*퓨리파이어/i.test(card.name)));
+
+const bidetRecommendation=send(initialState(),'비데 추천해주세요');
+assert.equal(bidetRecommendation.cards.length,3);
+assert.equal(new Set(bidetRecommendation.cards.map(card=>card.brand)).size,3);
+assert.ok(bidetRecommendation.cards.every(card=>/비데/.test(card.name)));
+
+const cuckooRecommendation=send(initialState(),'쿠쿠 정수기 추천해줘');
+assert.equal(cuckooRecommendation.state.filters.brand,'쿠쿠');
+assert.ok(cuckooRecommendation.cards.length>0);
+assert.ok(cuckooRecommendation.cards.every(card=>card.brand==='쿠쿠'));
+assert.doesNotMatch(cuckooRecommendation.reply,/서로 다른 브랜드/);
+
+const lgRecommendation=send(initialState(),'엘지 공기청정기 추천해줘');
+assert.equal(lgRecommendation.state.filters.brand,'엘지');
+assert.ok(lgRecommendation.cards.length>0);
+assert.ok(lgRecommendation.cards.every(card=>card.brand==='엘지'));
+
+const combinedConditions=send(initialState(),'정수기 월 2만원 안 넘고 방문관리 되는 걸로 추천해줘');
+assert.equal(combinedConditions.state.filters.category,'정수기');
+assert.equal(combinedConditions.state.filters.care,'visit');
+assert.equal(combinedConditions.state.filters.budget,20000);
+assert.equal(combinedConditions.cards.length,3);
+assert.ok(combinedConditions.cards.every(card=>card.plans.some(plan=>plan.options.some(option=>option.fee<=20000&&option.care==='방문관리'))));
+
+const noResultRecovery=send(initialState(),'쿠쿠 정수기 60개월 월 1000원 이하로 추천해줘');
+assert.equal(noResultRecovery.cards.length,0);
+assert.match(noResultRecovery.reply,/월 1,000원 상한을 풀면/);
+assert.deepEqual(noResultRecovery.suggestions,['예산 해제']);
+const recoveredBudget=send(noResultRecovery.state,'예산 해제');
+assert.ok(recoveredBudget.cards.length>0);
+assert.ok(recoveredBudget.cards.every(card=>card.brand==='쿠쿠'));
+
+const alternateByText=send(direct.state,'다른 거 보여줘');
+assert.equal(alternateByText.recommendation,true);
+assert.equal(alternateByText.cards.length,3);
+assert.ok(alternateByText.cards.every(card=>!direct.cards.some(previous=>previous.code===card.code)));
+assert.equal(new Set(alternateByText.cards.map(card=>card.brand)).size,3);
+
+const cheaperByText=send(direct.state,'좀 더 싼 걸로 보여줘');
+assert.equal(cheaperByText.state.sort,'priceAsc');
+assert.equal(cheaperByText.cards.length,3);
+assert.ok(cheaperByText.cards.every(card=>!/조리수기/.test(card.name)));
+
+const iceRecommendation=send(initialState(),'얼음정수기 추천해줘');
+const withoutIce=send(iceRecommendation.state,'얼음 없는 걸로 바꿔줘');
+assert.equal(withoutIce.state.filters.feature,null);
+assert.equal(withoutIce.state.filters.excludeIce,true);
+assert.ok(withoutIce.cards.length>0);
+assert.ok(withoutIce.cards.every(card=>!/얼음|아이스/i.test(card.name)));
 
 const repaired=send(category.state,'왜 자꾸 같은 걸 물어봐?');
 assert.equal(repaired.cards.length,3);
@@ -83,6 +139,26 @@ const benefitReference=send(recommended.state,'세 번째 혜택은 뭐예요?')
 assert.equal(benefitReference.state.focusCode,recommended.cards[2].code);
 assert.match(benefitReference.reply,/등록된 혜택|별도 혜택 문구/);
 
+const recommendationReason=send(recommended.state,'왜 이 제품들을 추천했어요?');
+assert.equal(recommendationReason.recommendation,true);
+assert.deepEqual(recommendationReason.cards.map(card=>card.code),recommended.cards.map(card=>card.code));
+assert.match(recommendationReason.reply,/카테고리에 정확히 맞는 상품|등록 할인·혜택과 월요금/);
+const firstRecommendationReason=send(recommended.state,'1번을 추천한 이유가 뭐예요?');
+assert.ok(firstRecommendationReason.reply.includes(recommended.cards[0].name));
+assert.ok(!firstRecommendationReason.reply.includes(recommended.cards[1].name));
+
+const visibleBenefitComparison=send(recommended.state,'셋 중 혜택 좋은 건 뭐예요?');
+assert.equal(visibleBenefitComparison.comparison,true);
+assert.equal(visibleBenefitComparison.cards.length,3);
+assert.match(visibleBenefitComparison.reply,/등록된 혜택 문구를 비교/);
+const visiblePriceComparison=send(recommended.state,'셋 중 월요금 가장 싼 건?');
+assert.equal(visiblePriceComparison.comparison,true);
+assert.equal(visiblePriceComparison.cards.length,3);
+assert.match(visiblePriceComparison.reply,/번이 낮음|동일/);
+const visibleGeneralComparison=send(recommended.state,'세 개 차이를 알려줘');
+assert.equal(visibleGeneralComparison.comparison,true);
+assert.equal(visibleGeneralComparison.cards.length,3);
+
 const directComparison=send(recommended.state,'1번이랑 2번 비교해줘');
 assert.equal(directComparison.comparison,true);
 assert.deepEqual(directComparison.state.selected,[recommended.cards[0].code,recommended.cards[1].code]);
@@ -98,6 +174,7 @@ assert.match(careComparison.reply,/등록된 관리 방식/);
 const ambiguousComparison=send(recommended.state,'둘 중 싼 건?');
 assert.equal(ambiguousComparison.needsReview,true);
 assert.match(ambiguousComparison.reply,/비교할 상품 두 개를 번호로/);
+assert.equal(ambiguousComparison.state.sort,'default');
 const unavailableComparison=respond(recommended.state,{text:'1번이랑 2번 비교해줘'},catalog,{catalogAvailable:false});
 assert.equal(unavailableComparison.catalogUnavailable,true);
 assert.match(unavailableComparison.reply,/상품 자료를 확인하지 못해/);
@@ -107,12 +184,14 @@ assert.equal(explicitDecision.state.view,'list');
 assert.equal(explicitDecision.cards.length,1);
 assert.match(explicitDecision.reply,new RegExp(directComparison.cards[0].name));
 const priceDecision=send(directComparison.state,'그럼 싼 걸로 할게요');
-assert.equal(priceDecision.state.selected[0],directComparison.cards[0].code);
+const commonDecisionTerm=directComparison.cards[0].plans.map(plan=>plan.months).find(months=>directComparison.cards.every(card=>card.plans.some(plan=>plan.months===months)));
+const expectedPriceCode=directComparison.cards.map(card=>({code:card.code,min:card.plans.find(plan=>plan.months===commonDecisionTerm).min})).sort((a,b)=>a.min-b.min)[0].code;
+assert.equal(priceDecision.state.selected[0],expectedPriceCode);
 assert.match(priceDecision.reply,/등록 월요금 하한에서 더 낮게/);
 assert.equal(priceDecision.cards.length,1);
 const careDecision=send(directComparison.state,'방문관리 되는 걸로 할게요');
-assert.equal(careDecision.state.selected[0],directComparison.cards[1].code);
-assert.match(careDecision.reply,/방문관리 옵션이 확인된/);
+assert.equal(careDecision.needsReview,true);
+assert.match(careDecision.reply,/가능한 상품이 여러 개|상품 번호를 하나/);
 const ambiguousDecision=send(directComparison.state,'그럼 이걸로 할게요');
 assert.equal(ambiguousDecision.needsReview,true);
 assert.match(ambiguousDecision.reply,/어느 상품인지 번호로/);
@@ -176,5 +255,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 40 scenarios / 101 assertions passed');
+console.log('conversation regression: 55 scenarios / 151 assertions passed');
 

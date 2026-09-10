@@ -23,7 +23,7 @@ function mentions(text,pattern,resolve) {
  return matches.map((m,i)=>({value:resolve(m[0]),negative:denied.test(text.slice(m.index+m[0].length,matches[i+1]?.index)),index:m.index})).filter(m=>m.value);
 }
 const unique=a=>[...new Set(a)];
-const brandPattern=/코웨이|coway|쿠쿠|cuckoo|sk\s*매직|에스케이매직|skmagic|교원웰스|교원|웰스|wells|청호나이스|청호|chungho|세스코|cesco|동양매직|동양렌탈|bs렌탈|비에스렌탈|유버스|ubus|캐리어|carrier|루헨스|ruhens/gi;
+const brandPattern=/코웨이|coway|삼성(?:전자)?|엘지|lg(?:전자)?|쿠쿠|cuckoo|ckoo|sk\s*매직|에스케이매직|skmagic|교원웰스|교원|웰스|wells|청호나이스|청호|chungho|세스코|cesco|동양매직|동양렌탈|bs렌탈|비에스렌탈|유버스|ubus|캐리어|carrier|루헨스|ruhens/gi;
 export function interpret(text,previous) {
  const s=structuredClone(previous),patch={};let clarification=null;
  const modelTokens=[...text.matchAll(/(?<![a-z0-9])[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*(?![a-z0-9])/gi)].map(m=>m[0]).filter(v=>v.length>=4&&v.length<=40&&/[a-z]/i.test(v)&&/\d/.test(v));
@@ -57,7 +57,8 @@ export function interpret(text,previous) {
  if(anyTerm){patch.term=null;patch.excludedTerms=[];s.preferences.termAny=true;}
  const ice=mentions(text,/얼음|아이스/g,()=>true);
  if(ice.length){const last=ice.at(-1);patch.feature=last.negative?null:'ice';patch.excludeIce=last.negative;}
- if(/얼음.*없이|일반\s*정수기/.test(text)){patch.feature=null;patch.excludeIce=true;}
+  if(/얼음.*없이|일반\s*정수기/.test(text)){patch.feature=null;patch.excludeIce=true;}
+  if(/얼음.*(?:없는|빼고|제외)/.test(text)){patch.feature=null;patch.excludeIce=true;}
  if(/관리\s*방식\s*(?:확인\s*보류|상관없|해제)/.test(text)){patch.care=null;patch.excludedCare=[];}
  const careHits=mentions(text,/방문\s*관리|자가\s*관리|자가|셀프/g,v=>/방문/.test(v)?'visit':'self');
  if(careHits.length){
@@ -108,6 +109,7 @@ export function referenceDecision(text,{visibleCodes=[],selectedCodes=[],view='l
  return {criterion,requestedMonths,codes:[...pool]};
 }
 export function referenceComparison(text,{visibleCodes=[],selectedCodes=[],view='list'}={}) {
+  if(/(?:좀\s*)?더\s*(?:싼|저렴한|낮은).*(?:걸로|것으로).*(?:보여|찾아|추천)/.test(text)&&!/(?:둘|셋|두|세)\s*(?:개|가지)?\s*중/.test(text))return null;
  const cue=/비교|차이|다르|달라|(?:둘|셋)\s*중|어느\s*(?:게|것)|뭐가\s*(?:더)?\s*(?:싼|싸|저렴|낮)|더\s*(?:싼|싸|저렴|낮)/.test(text);
  if(!cue)return null;
  const references=[...text.matchAll(/(첫|한|두|둘|세|셋|네|넷|\d+)\s*(?:번째|번)(?:\s*(?:상품|제품))?/g)];
@@ -119,7 +121,8 @@ export function referenceComparison(text,{visibleCodes=[],selectedCodes=[],view=
    codes.push(visibleCodes[n-1]);
   }
   codes=[...new Set(codes)];
- } else if(view==='compare'&&visibleCodes.length>=2&&visibleCodes.length<=3) codes=[...visibleCodes];
+ } else if(((visibleCodes.length===3&&/(?:셋|세)\s*(?:개|가지)?\s*(?:중|차이|비교)/.test(text))||(visibleCodes.length===2&&/(?:둘|두)\s*(?:개|가지)?\s*(?:중|차이|비교)/.test(text))||(visibleCodes.length>=2&&visibleCodes.length<=3&&/추천(?:한)?\s*(?:상품|제품).*(?:비교|차이)/.test(text)))) codes=[...visibleCodes];
+ else if(view==='compare'&&visibleCodes.length>=2&&visibleCodes.length<=3) codes=[...visibleCodes];
  else if(selectedCodes.length>=2&&selectedCodes.length<=3) codes=[...selectedCodes];
  if(codes.length<2)return {clarification:'비교할 상품 두 개를 번호로 말씀해 주세요. 예: “1번이랑 2번 비교해줘.”'};
  const criterion=/방문\s*관리|자가\s*관리|셀프\s*관리|관리\s*방식|케어/.test(text)?'care':/혜택|프로모션|할인|지원금/.test(text)?'benefit':/약정|개월/.test(text)?'term':/싼|싸|저렴|낮|가격|요금|얼마/.test(text)?'price':'general';

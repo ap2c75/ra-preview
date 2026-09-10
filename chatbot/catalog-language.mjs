@@ -1,10 +1,12 @@
 import {categoryFromText} from '/ra-preview/chatbot/taxonomy.mjs';
 const BRANDS = {
   '코웨이': ['코웨이', 'coway'],
+  '삼성': ['삼성', '삼성전자'],
+  '엘지': ['엘지', 'lg', 'lg전자'],
   'SK매직': ['sk매직', 'sk 매직', '에스케이매직', 'skmagic'],
   '교원웰스': ['교원웰스', '웰스', 'wells', '교원'],
   '청호나이스': ['청호나이스', '청호', 'chungho'],
-  '쿠쿠': ['쿠쿠', 'cuckoo'],
+  '쿠쿠': ['쿠쿠', 'cuckoo', 'ckoo'],
   '세스코': ['세스코', 'cesco'],
   '동양': ['동양매직', '동양렌탈'],
   'BS렌탈': ['bs렌탈', '비에스렌탈'],
