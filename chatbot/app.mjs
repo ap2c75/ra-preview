@@ -4,7 +4,7 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-2';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-3';
 import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
 
 let siteData=null;
@@ -213,7 +213,7 @@ function appendMessageFeedback(row,assistantText,userText){
     choices.append(button(label,()=>{
       qualityRecorder.add({reason:label,userText,assistantText,context:qualityContext()});
       details.replaceChildren(el('span','개선 항목에 담았습니다.','message-feedback-done'));
-      renderActions();
+      run({action:{repeat:'repairRepeat',misread:'repairMisread',insufficient:'repairInsufficient',recommendation:'repairRecommendation'}[reason]});
     }));
   }
   details.append(choices);row.append(details);

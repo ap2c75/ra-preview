@@ -58,9 +58,10 @@ function publicRecommendationValue(card){
   }
   return {maxDiscount,benefitSignals,minFee};
 }
-function recommendationsByBrand(all,limit=3){
+function recommendationsByBrand(all,limit=3,excludedCodes=[]){
+  const excluded=new Set(excludedCodes);
   const groups=new Map();
-  for(const card of all){if(!groups.has(card.brand))groups.set(card.brand,[]);groups.get(card.brand).push(card);}
+  for(const card of all){if(excluded.has(card.code))continue;if(!groups.has(card.brand))groups.set(card.brand,[]);groups.get(card.brand).push(card);}
   return [...groups.entries()].map(([brand,cards])=>{
     const ranked=cards.map(card=>({card,value:publicRecommendationValue(card)})).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||a.value.minFee-b.value.minFee||a.card.name.localeCompare(b.card.name,'ko'));
     return {brand,card:ranked[0].card,value:ranked[0].value,count:cards.length};
@@ -93,7 +94,22 @@ function respondCatalog(previous, input, catalog) {
   const result = (reply, extra = {}) => ({ state:s, reply, requestSummary, ...extra });
   if (safety.kinds.length) return result('연락처는 상담 신청 화면에서 따로 받을게요.\n여기에는 찾으시는 제품이나 조건만 말씀해 주세요.');
   if (input.action === 'reset' || /^(처음으로|조건 초기화)$/.test(text)) return {state:initialState(),reply:'새로 찾아볼게요. 어떤 제품이 필요하세요?',requestSummary:'조건 새로 고르기',cards:[],suggestions:['정수기','공기청정기','비데']};
-  if(input.catalogUnavailable&&(['select','compare','resume','more','previous','first','sort'].includes(input.action)||input.parsed?.changed||/추천|상품|제품|보여|찾아/.test(text)))return result('상품 자료를 확인하지 못해 지금은 상품과 요금을 안내할 수 없어요. 입력한 조건은 유지됩니다. 상품 자료 다시 불러오기를 눌러 주세요.',{catalogUnavailable:true,needsReview:true,requestSummary:filterLabels(s.filters).join(' · ')||'상품 자료 확인 필요'});
+  if(input.catalogUnavailable&&(['select','compare','resume','more','previous','first','sort'].includes(input.action)||String(input.action||'').startsWith('repair')||input.parsed?.changed||/추천|상품|제품|보여|찾아/.test(text)))return result('상품 자료를 확인하지 못해 지금은 상품과 요금을 안내할 수 없어요. 입력한 조건은 유지됩니다. 상품 자료 다시 불러오기를 눌러 주세요.',{catalogUnavailable:true,needsReview:true,requestSummary:filterLabels(s.filters).join(' · ')||'상품 자료 확인 필요'});
+  if(input.action==='repairRepeat'){
+    if(!s.filters.category&&!s.filters.model)return result('같은 질문을 반복했네요. 필요한 제품 종류만 알려주시면 그다음 선택 질문은 건너뛰고 바로 찾아볼게요.',{suggestions:['정수기','공기청정기','비데']});
+    s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;
+    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all);s.recommendedCodes=cards.map(card=>card.code);
+    return result('같은 질문은 건너뛰고 현재 조건에서 바로 골라봤어요. 마음에 드는 상품 하나만 선택해도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});
+  }
+  if(input.action==='repairMisread')return result('제가 다르게 이해했네요. 지금까지 고른 조건은 유지해 둘게요. 바꾸려는 부분만 말씀해 주세요. 예: “코웨이 말고 쿠쿠로 보여줘.”',{suggestions:['조건 초기화','브랜드 상관없어요']});
+  if(input.action==='repairInsufficient')return result('답변이 부족했네요. 궁금한 기준을 골라주시거나 한 문장으로 다시 말씀해 주세요.',{suggestions:['월요금 낮은 순','약정 상관없어요','방문관리 상품']});
+  if(input.action==='repairRecommendation'){
+    if(!s.filters.category&&!s.filters.model)return result('다른 상품을 다시 고르려면 먼저 필요한 제품 종류를 알려주세요.',{suggestions:['정수기','공기청정기','비데']});
+    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all,3,s.recommendedCodes||[]);
+    if(!cards.length)return result('현재 조건에서 새로 바꿔 보여드릴 상품이 더 없어요. 브랜드나 예산 조건을 넓혀볼까요?',{suggestions:['브랜드 상관없어요','조건 초기화']});
+    s.recommendedCodes=cards.map(card=>card.code);s.view='list';
+    return result('앞서 보여드린 상품은 제외하고 다른 후보로 바꿨어요. 이 중 하나만 선택해도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});
+  }
   if (/^(안녕|안녕하세요|반가워|하이)[.!~?\s]*$/.test(text)) {
     requestSummary = '인사'; const guide=guidance(s,catalog);
     return result('안녕하세요. 편하게 말씀해 주세요.\n'+guide.question,guide);
@@ -328,4 +344,3 @@ export function respond(previous, input, catalog, context = {}) {
   if(out.cards)out.state.visibleCodes=out.cards.map(c=>c.code);
   return out;
 }
-

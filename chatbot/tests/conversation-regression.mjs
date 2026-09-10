@@ -83,5 +83,26 @@ assert.match(qualityText,/의도 오인식/);
 quality.clear();
 assert.equal(quality.all().length,0);
 
-console.log('conversation regression: 17 scenarios / 40 assertions passed');
+const repairedByFeedback=respond(category.state,{action:'repairRepeat'},catalog,context);
+assert.equal(repairedByFeedback.cards.length,3);
+assert.equal(repairedByFeedback.recommendation,true);
+assert.doesNotMatch(repairedByFeedback.reply,/선호하시는 브랜드/);
+
+const misreadRecovery=respond(recommended.state,{action:'repairMisread'},catalog,context);
+assert.equal(misreadRecovery.state.filters.category,'정수기');
+assert.match(misreadRecovery.reply,/바꾸려는 부분만/);
+
+const insufficientRecovery=respond(recommended.state,{action:'repairInsufficient'},catalog,context);
+assert.ok(insufficientRecovery.suggestions.includes('월요금 낮은 순'));
+assert.equal(insufficientRecovery.state.filters.category,'정수기');
+const sortedAfterRecovery=send(insufficientRecovery.state,'월요금 낮은 순');
+assert.equal(sortedAfterRecovery.state.sort,'priceAsc');
+
+const alternateRecommendation=respond(recommended.state,{action:'repairRecommendation'},catalog,context);
+assert.equal(alternateRecommendation.recommendation,true);
+assert.ok(alternateRecommendation.cards.length>0);
+assert.ok(alternateRecommendation.cards.every(card=>!recommended.cards.some(previous=>previous.code===card.code)));
+assert.equal(new Set(alternateRecommendation.cards.map(card=>card.brand)).size,alternateRecommendation.cards.length);
+
+console.log('conversation regression: 22 scenarios / 52 assertions passed');
 
