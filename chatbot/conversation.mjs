@@ -49,23 +49,28 @@ export function cardsFor(catalog, f) {
     return plans.length ? [{ code: p.code, name: p.name, brand: p.brand, plans }] : [];
   }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
-function publicRecommendationValue(card){
+function categoryNameMatch(card,category){
+ const patterns={정수기:/정수기|이온수기/,공기청정기:/공기\s*청정기|공청기|에어\s*퓨리파이어/i,비데:/비데/,연수기:/연수기/,제습기:/제습기/,'에어컨·냉난방':/에어컨|냉난방|냉방기|온풍기|항온항습/,'매트리스·침대':/매트리스|침대/,'소파·가구':/소파|의자|책상|식탁|가구/,'안마·힐링':/안마|마사지|힐링|리클라이너/,청소기:/청소기/,전기레인지:/전기레인지|인덕션|하이라이트|가스레인지|전기그리들/,음식물처리기:/음식물처리|음처기/,식기세척기:/식기세척|식세기/,의류관리기:/의류관리|스타일러|의류청정/,'건조기·세탁기':/건조기|세탁기|워시/,냉장고:/냉장고|김치냉장고/,TV:/\btv\b|티비|올레드|qned|qled/i,커피머신:/커피|에스프레소|그라인더/,제빙기:/제빙기/,'업소용 냉장·냉동':/냉장|냉동|쇼케이스|워크인/,'업소용 주방':/오븐|튀김기|절단기|슬라이서|반죽기|진공포장/,'전기자전거·스쿠터':/전기자전거|전동스쿠터|전동킥보드/,'PC·사무기기':/노트북|전자칠판|복합기|프린터|모니터|\bpc\b/i};
+ return patterns[category]?.test(card.name)||false;
+}
+function publicRecommendationValue(card,category){
   let maxDiscount=0,benefitSignals=0,minFee=Number.MAX_SAFE_INTEGER;
   for(const plan of card.plans)for(const option of plan.options){
     minFee=Math.min(minFee,option.fee);
     if(Number.isFinite(option.baseFee))maxDiscount=Math.max(maxDiscount,option.baseFee-option.fee);
     if(option.promo||option.discount)benefitSignals+=1;
   }
-  return {maxDiscount,benefitSignals,minFee};
+  return {maxDiscount,benefitSignals,categoryMatch:categoryNameMatch(card,category)?1:0,minFee};
 }
-function recommendationsByBrand(all,limit=3,excludedCodes=[]){
+function recommendationsByBrand(all,limit=3,excludedCodes=[],category=null){
   const excluded=new Set(excludedCodes);
   const groups=new Map();
   for(const card of all){if(excluded.has(card.code))continue;if(!groups.has(card.brand))groups.set(card.brand,[]);groups.get(card.brand).push(card);}
   return [...groups.entries()].map(([brand,cards])=>{
-    const ranked=cards.map(card=>({card,value:publicRecommendationValue(card)})).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||a.value.minFee-b.value.minFee||a.card.name.localeCompare(b.card.name,'ko'));
+    const exact=cards.filter(card=>categoryNameMatch(card,category)),pool=exact.length?exact:cards;
+    const ranked=pool.map(card=>({card,value:publicRecommendationValue(card,category)})).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||a.value.minFee-b.value.minFee||a.card.name.localeCompare(b.card.name,'ko'));
     return {brand,card:ranked[0].card,value:ranked[0].value,count:cards.length};
-  }).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||b.count-a.count||a.value.minFee-b.value.minFee||a.brand.localeCompare(b.brand,'ko')).slice(0,limit).map(item=>item.card);
+  }).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||b.value.categoryMatch-a.value.categoryMatch||b.count-a.count||a.value.minFee-b.value.minFee||a.brand.localeCompare(b.brand,'ko')).slice(0,limit).map(item=>item.card);
 }
 const feeLabel=plan=>plan.min===plan.max?`${plan.min.toLocaleString('ko-KR')}원`:`${plan.min.toLocaleString('ko-KR')}~${plan.max.toLocaleString('ko-KR')}원`;
 function contextualProductReply(s,query,catalog){
@@ -187,14 +192,14 @@ function respondCatalog(previous, input, catalog) {
   if(input.action==='repairRepeat'){
     if(!s.filters.category&&!s.filters.model)return result('같은 질문을 반복했네요. 필요한 제품 종류만 알려주시면 그다음 선택 질문은 건너뛰고 바로 찾아볼게요.',{suggestions:['정수기','공기청정기','비데']});
     s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;
-    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all);s.recommendedCodes=cards.map(card=>card.code);
+    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all,3,[],s.filters.category);s.recommendedCodes=cards.map(card=>card.code);
     return result('같은 질문은 건너뛰고 현재 조건에서 바로 골라봤어요. 마음에 드는 상품 하나만 선택해도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});
   }
   if(input.action==='repairMisread')return result('제가 다르게 이해했네요. 지금까지 고른 조건은 유지해 둘게요. 바꾸려는 부분만 말씀해 주세요. 예: “코웨이 말고 쿠쿠로 보여줘.”',{suggestions:['조건 초기화','브랜드 상관없어요']});
   if(input.action==='repairInsufficient')return result('답변이 부족했네요. 궁금한 기준을 골라주시거나 한 문장으로 다시 말씀해 주세요.',{suggestions:['월요금 낮은 순','약정 상관없어요','방문관리 상품']});
   if(input.action==='repairRecommendation'){
     if(!s.filters.category&&!s.filters.model)return result('다른 상품을 다시 고르려면 먼저 필요한 제품 종류를 알려주세요.',{suggestions:['정수기','공기청정기','비데']});
-    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all,3,s.recommendedCodes||[]);
+    const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all,3,s.recommendedCodes||[],s.filters.category);
     if(!cards.length)return result('현재 조건에서 새로 바꿔 보여드릴 상품이 더 없어요. 브랜드나 예산 조건을 넓혀볼까요?',{suggestions:['브랜드 상관없어요','조건 초기화']});
     s.recommendedCodes=cards.map(card=>card.code);s.view='list';
     return result('앞서 보여드린 상품은 제외하고 다른 후보로 바꿨어요. 이 중 하나만 선택해도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});
@@ -275,7 +280,7 @@ function respondCatalog(previous, input, catalog) {
     if(waiting&&waiting===s.awaiting){
       const count=s.reprompt?.key===waiting?s.reprompt.count+1:1;s.reprompt={key:waiting,count};
       if(waiting==='brand'){
-        if(count>=2){s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all);s.recommendedCodes=cards.map(card=>card.code);return result('선호 브랜드는 선택 사항이라 건너뛰고, 서로 다른 브랜드에서 바로 골라봤어요.\n마음에 드는 상품 하나만 담아도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});}
+        if(count>=2){s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all,3,[],s.filters.category);s.recommendedCodes=cards.map(card=>card.code);return result('선호 브랜드는 선택 사항이라 건너뛰고, 서로 다른 브랜드에서 바로 골라봤어요.\n마음에 드는 상품 하나만 담아도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});}
         return result('선호 브랜드가 없거나 잘 모르셔도 괜찮아요. 제가 서로 다른 세 브랜드에서 바로 골라드릴 수도 있어요.',{...guide,suggestions:['추천해주세요','브랜드 상관없어요']});
       }
       if(waiting==='term'){
@@ -297,7 +302,7 @@ function respondCatalog(previous, input, catalog) {
   if(input.action==='more')s.offset+=PAGE_SIZE;
   if(input.action==='previous')s.offset-=PAGE_SIZE;
   if(input.action==='first')s.offset=0;
-  const recommendations=recommendationRequested?recommendationsByBrand(all):null;
+  const recommendations=recommendationRequested?recommendationsByBrand(all,3,[],s.filters.category):null;
   if(recommendations){s.offset=0;s.recommendedCodes=recommendations.map(card=>card.code);}
   else s.recommendedCodes=[];
   const page=recommendations?{cards:recommendations,total:recommendations.length,page:1,pages:1,start:1,end:recommendations.length,previous:false,more:false}:pageData(all,s);
@@ -433,7 +438,7 @@ export function respond(previous, input, catalog, context = {}) {
   if(out.handoff){delete out.sources;delete out.knowledgeEvidence;}
   // Price evidence is scoped to the current filters, never the entire catalog.
   const valid = cardsFor(catalog,out.state.filters);
-  const evidence = valid.flatMap(c=>c.plans.flatMap(p=>[String(p.months),...p.options.flatMap(o=>[String(o.fee),o.fee.toLocaleString('ko-KR')])])).join(' ');
+  const evidence = valid.flatMap(c=>[c.brand,c.name,c.code,...c.plans.flatMap(p=>[String(p.months),...p.options.flatMap(o=>[String(o.fee),o.fee.toLocaleString('ko-KR')])])]).join(' ');
   const violations = inspectReply(out.reply,{intent,evidence:evidence+' '+(out.referenceEvidence||'')+' '+(out.knowledgeEvidence||''),candidateCount:valid.length});
   const invalidCards = out.cards?.some(c=>!valid.some(v=>v.code===c.code && JSON.stringify(v)===JSON.stringify(c)));
   if (violations.length || invalidCards) {
