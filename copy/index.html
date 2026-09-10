@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>대시보드 | 폴더백선생 (카피본)</title>
+<style>
+:root{
+  --ink:#101828; --ink2:#344054; --muted:#667085; --faint:#98a2b3;
+  --line:#e4e7ec; --line2:#eef1f4; --bg:#f7f9fb; --card:#fff;
+  --accent:#0b6b8a; --accent-w:#e8f3f7;
+  --blue:#3b82f6; --gray:#98a2b3; --amber:#f59e0b; --green:#16a34a; --teal:#0d9488;
+  --warn-bg:#fffaeb; --warn-line:#fde9b5; --warn-ink:#93500b;
+  --shadow:0 1px 2px rgba(16,24,40,.05);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* ── 시안 띠 ── */
+.sian{background:#132430;color:#cfe3ec;font-size:12px;padding:7px 16px;text-align:center;
+  line-height:1.5}
+.sian b{color:#fff}
+.sian a{color:#8fd2ea;text-decoration:underline;text-underline-offset:2px}
+
+.shell{display:flex;min-height:calc(100vh - 32px)}
+
+/* ── 왼쪽 메뉴 ── */
+.side{width:196px;flex:0 0 196px;background:var(--card);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:18px 0 14px}
+.brand{padding:0 16px 16px}
+.brand .eyebrow{font-size:9.5px;letter-spacing:.14em;color:var(--faint);font-weight:700}
+.brand .nm{font-size:15px;font-weight:700;margin-top:3px;letter-spacing:-.2px}
+.brand .who{font-size:12px;color:var(--muted);margin-top:9px}
+.nav{flex:1;overflow-y:auto;padding:0 10px}
+.grp{font-size:11px;color:var(--faint);font-weight:600;padding:14px 6px 5px;
+  display:flex;align-items:center;gap:6px}
+.grp .dots{letter-spacing:1px;opacity:.6}
+.grp .chev{margin-left:auto;opacity:.5}
+.nav a{display:flex;align-items:center;gap:9px;padding:8px 8px;border-radius:8px;
+  font-size:13px;color:var(--ink2)}
+.nav a:hover{background:var(--line2)}
+.nav a.on{background:var(--accent-w);color:var(--accent);font-weight:600}
+.nav svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.nav a .todo{margin-left:auto;font-size:9.5px;color:var(--faint);border:1px solid var(--line);
+  border-radius:5px;padding:1px 4px;font-weight:600}
+.out{margin:10px 14px 0}
+.out button{width:100%;padding:9px;border:1px solid var(--line);background:var(--card);
+  border-radius:8px;font-size:12.5px;color:var(--ink2);cursor:pointer}
+.out button:hover{background:var(--line2)}
+
+/* ── 본문 ── */
+.main{flex:1;min-width:0;padding:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow)}
+.page{padding:20px 22px 26px}
+
+.head{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.head .t{min-width:280px;flex:1}
+.badge{display:inline-block;background:#fdf1d6;color:#96551a;font-size:11px;font-weight:700;
+  border-radius:6px;padding:3px 7px;vertical-align:3px;margin-right:8px}
+h1{display:inline;font-size:19px;font-weight:700;margin:0;letter-spacing:-.3px}
+.head p{margin:7px 0 0;font-size:12.5px;color:var(--muted)}
+.acts{display:flex;gap:7px;flex-wrap:wrap}
+.acts a{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);
+  border-radius:8px;padding:6px 11px;font-size:12px;color:var(--ink2);background:var(--card)}
+.acts a:hover{background:var(--line2)}
+.acts a.key{border-color:#bcdfec;background:var(--accent-w);color:var(--accent);font-weight:600}
+.acts svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* ── 타일 4 ── */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:14px 16px 15px;background:var(--card)}
+.tile .k{font-size:11.5px;color:var(--muted)}
+.tile .v{font-size:25px;font-weight:700;letter-spacing:-.6px;margin-top:5px;
+  font-variant-numeric:tabular-nums}
+.tile .v small{font-size:14px;font-weight:600;margin-left:1px}
+.tile .v.none{color:var(--faint);font-weight:600}
+.tile .s{font-size:11.5px;color:var(--muted);margin-top:6px}
+.tile a.s{color:var(--accent);text-decoration:underline;text-underline-offset:2px;display:inline-block}
+
+/* ── 2단 ── */
+.duo{display:grid;grid-template-columns:1.28fr 1fr;gap:12px;margin-top:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px 17px 18px;background:var(--card)}
+.bh{display:flex;align-items:flex-start;gap:12px}
+.bh h2{font-size:14.5px;margin:0;font-weight:700;letter-spacing:-.2px}
+.bh p{margin:5px 0 0;font-size:12px;color:var(--muted)}
+.bh .go{margin-left:auto;flex:0 0 auto;border:1px solid var(--line);border-radius:7px;
+  padding:5px 9px;font-size:11.5px;color:var(--ink2);white-space:nowrap}
+.bh .go:hover{background:var(--line2)}
+
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:15px}
+.step{border-left:3px solid var(--gray);padding:2px 0 2px 9px}
+.step.blue{border-color:var(--blue)} .step.gray{border-color:var(--gray)}
+.step.amber{border-color:var(--amber)} .step.green{border-color:var(--green)}
+.step.teal{border-color:var(--teal)}
+.step .k{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.step .v{font-size:20px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.step .v.none{color:var(--faint);font-size:17px}
+
+.barwrap{margin-top:15px}
+.barlab{display:flex;font-size:11px;color:var(--muted);margin-bottom:5px}
+.barlab b{color:var(--ink2);font-weight:600}
+.barlab .r{margin-left:auto}
+.bar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--line2)}
+.bar i{display:block;height:100%}
+.bar i.blue{background:var(--blue)} .bar i.gray{background:var(--gray)}
+.bar i.amber{background:var(--amber)} .bar i.green{background:var(--green)}
+.bar i.teal{background:var(--teal)}
+.legend{display:flex;flex-wrap:wrap;gap:11px;margin-top:9px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:8px;height:8px;border-radius:2px;display:block}
+
+.mets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+.met{border:1px solid var(--line2);border-radius:10px;padding:11px 12px;background:#fcfdfe}
+.met .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.met .k i{width:6px;height:6px;border-radius:999px;display:block}
+.met .v{font-size:16px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums}
+.met .v.none{color:var(--faint)}
+.met .v em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);
+  font-weight:500;margin-top:4px;line-height:1.5}
+
+/* ── 표 ── */
+.tablehead{display:flex;align-items:flex-start;gap:12px;margin:22px 0 0}
+.tablehead h2{font-size:14.5px;margin:0;font-weight:700}
+.tablehead p{margin:5px 0 0;font-size:12px;color:var(--muted)}
+.stale{display:inline-flex;align-items:center;gap:5px;background:var(--warn-bg);
+  border:1px solid var(--warn-line);color:var(--warn-ink);border-radius:7px;
+  padding:3px 8px;font-size:11px;font-weight:600;margin-left:8px;vertical-align:2px}
+.tscroll{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1020px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line2);white-space:nowrap}
+th{font-size:11px;color:var(--muted);font-weight:600;background:#fbfcfd;
+  border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fbfdfe}
+td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
+.pill{display:inline-block;font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px}
+.pill.s1{background:#eaf2ff;color:#1d4ed8} .pill.s2{background:#f1f3f6;color:#475467}
+.pill.s3{background:#fdf1d6;color:#96551a} .pill.s4{background:#e8f7ee;color:#15803d}
+.pill.s5{background:#e2f5f2;color:#0f766e}
+.none{color:var(--faint)}
+.tel{display:inline-flex;align-items:center;gap:6px}
+.tel button{border:1px solid var(--line);background:var(--card);border-radius:6px;
+  font-size:10.5px;padding:1px 6px;color:var(--muted);cursor:pointer}
+.tel button:hover{background:var(--line2);color:var(--ink2)}
+.rowbtn{border:1px solid var(--line);background:var(--card);border-radius:7px;
+  padding:4px 10px;font-size:11.5px;color:var(--ink2);cursor:pointer}
+.rowbtn:hover{background:var(--line2)}
+
+/* ── 표본 띠 · 고친 곳 ── */
+.sample{display:flex;align-items:center;gap:8px;background:var(--warn-bg);
+  border:1px solid var(--warn-line);color:var(--warn-ink);border-radius:10px;
+  padding:9px 12px;font-size:12px;margin-top:12px;line-height:1.55}
+.sample b{font-weight:700}
+.fixbar{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap}
+.fixbar button{border:1px solid #bcdfec;background:var(--accent-w);color:var(--accent);
+  border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer}
+.fixbar button:hover{background:#dcedf4}
+.fixbar span{font-size:12px;color:var(--muted)}
+.fixes{margin-top:12px;display:grid;gap:9px}
+.fix{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
+  padding:12px 14px;background:var(--card)}
+.fix h3{margin:0 0 7px;font-size:13px;font-weight:700}
+.fix dl{margin:0;display:grid;grid-template-columns:52px 1fr;gap:4px 10px;font-size:12.5px}
+.fix dt{color:var(--faint);font-size:11px;font-weight:600;padding-top:2px}
+.fix dd{margin:0;color:var(--ink2)}
+.fix dd.was{color:var(--muted);text-decoration:line-through;text-decoration-color:#d0d5dd}
+.fix dd.why{color:var(--muted);font-size:12px;line-height:1.65}
+
+/* ── 미확인 화면 ── */
+.todo-page{padding:34px 26px 40px;max-width:660px}
+.todo-page h1{display:block;font-size:20px}
+.todo-page .lead{color:var(--muted);font-size:13px;margin:8px 0 20px}
+.todo-page .card{border:1px solid var(--warn-line);background:var(--warn-bg);
+  color:var(--warn-ink);border-radius:12px;padding:15px 17px;font-size:13px;line-height:1.75}
+.todo-page .card b{font-weight:700}
+.todo-page .card code{background:rgba(147,80,11,.09);border-radius:5px;padding:1px 5px;
+  font-size:12px;font-family:ui-monospace,Consolas,monospace}
+.todo-page .back{display:inline-block;margin-top:18px;font-size:12.5px;color:var(--accent);
+  text-decoration:underline;text-underline-offset:3px}
+
+@media (max-width:1180px){
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .duo{grid-template-columns:1fr}
+  .steps{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:760px){
+  .side{display:none}
+  .main{padding:12px}
+  .tiles{grid-template-columns:1fr}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .mets{grid-template-columns:1fr}
+}
+</style>
+</head><body>
+<p class="sian"><b>카피본</b> — 원본 <code>dbpolder.com/admin</code> 화면을 구조만 옮겨 다시 만든 것입니다. 원본을 바꾸거나 원본 데이터를 가져오지 않았습니다. 아래 숫자·이름은 전부 표본입니다.</p>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <div class="eyebrow">FOLDER BAEK</div>
+      <div class="nm">폴더백선생</div>
+      <div class="who">프라임관리자</div>
+    </div>
+    <nav class="nav">
+      <div class="grp"><span class="dots">⋮</span>폴더 백선생<span class="chev">⌄</span></div>
+      <a href="#" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg><span>대시보드</span></a>
+      <a href="../board-notices/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8"/></svg><span>정책공지</span><span class="todo">미확인</span></a>
+      <div class="grp"><span class="dots">⋮</span>수강생<span class="chev">⌄</span></div>
+      <a href="../members/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9"/></svg><span>수강생관리</span><span class="todo">미확인</span></a>
+      <a href="../landings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg><span>랜딩관리</span><span class="todo">미확인</span></a>
+      <div class="grp"><span class="dots">⋮</span>영업 관리<span class="chev">⌄</span></div>
+      <a href="../leads/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>고객목록</span><span class="todo">미확인</span></a>
+      <a href="../revenue/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>수익현황</span><span class="todo">미확인</span></a>
+      <a href="../ranking/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3M9 19h6M12 14v5"/></svg><span>순위현황</span><span class="todo">미확인</span></a>
+      <div class="grp"><span class="dots">⋮</span>정보·설정<span class="chev">⌄</span></div>
+      <a href="../settings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12l2-1-1-3-2 .4a7 7 0 0 0-2-1.2L15.6 5h-3.2l-.4 2.2a7 7 0 0 0-2 1.2L8 8l-1 3 2 1-2 1 1 3 2-.4a7 7 0 0 0 2 1.2l.4 2.2h3.2l.4-2.2a7 7 0 0 0 2-1.2l2 .4 1-3z"/></svg><span>운영·AI 설정</span><span class="todo">미확인</span></a>
+      <a href="../audit/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>감사기록</span><span class="todo">미확인</span></a>
+    </nav>
+    <div class="out"><button type="button">로그아웃</button></div>
+  </aside>
+  <div class="main">
+    <div class="panel page">
+
+      <div class="head">
+        <div class="t">
+          <span class="badge">실시간 관제</span><h1>관리자 종합 관제 센터</h1>
+          <p>수강생 활동, 랜딩 페이지 트래픽, 고객 DB 처리 및 정산 수익을 한곳에서 실시간으로 관제합니다.</p>
+        </div>
+        <div class="acts">
+          <a href="../members/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9"/></svg>수강생 승인 (0명)</a>
+          <a href="../leads/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>고객 DB 관리</a>
+          <a href="../landings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg>랜딩 운영 점검</a>
+          <a href="../settings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12l2-1-1-3-2 .4a7 7 0 0 0-2-1.2L15.6 5h-3.2l-.4 2.2a7 7 0 0 0-2 1.2L8 8l-1 3 2 1-2 1 1 3 2-.4a7 7 0 0 0 2 1.2l.4 2.2h3.2l.4-2.2a7 7 0 0 0 2-1.2l2 .4 1-3z"/></svg>운영·AI 설정</a>
+        </div>
+      </div>
+
+      <div class="tiles">
+      <div class="tile"><div class="k">승인 대기 수강생</div><div class="v">0<small>명</small></div><div class="s"><a class="s" href="../members/">대기 목록 승인 처리 →</a></div></div>
+      <div class="tile"><div class="k">오늘 고객 접수</div><div class="v">0<small>건</small></div><div class="s">누적 103건 접수</div></div>
+      <div class="tile"><div class="k">지급 예정 수익</div><div class="v">0<small>원</small></div><div class="s"><a class="s" href="../revenue/">수익 정산 관리 →</a></div></div>
+      <div class="tile"><div class="k">공개 랜딩 페이지</div><div class="v">91<small>개</small></div><div class="s">총 5,644회 방문</div></div>
+      </div>
+
+      <div class="duo">
+        <div class="box">
+          <div class="bh">
+            <div><h2>고객 처리 파이프라인</h2>
+            <p>접수된 고객 DB가 상담 및 승인 단계로 진행되는 실시간 처리 현황입니다.</p></div>
+            <a class="go" href="../leads/">고객 DB 전체 →</a>
+          </div>
+          <div class="steps">
+        <div class="step blue"><div class="k">1단계 접수</div><div class="v">100</div></div>
+        <div class="step gray"><div class="k">2단계 진행중</div><div class="v">3</div></div>
+        <div class="step amber"><div class="k">3단계 보류</div><div class="v none">0</div></div>
+        <div class="step green"><div class="k">4단계 완료</div><div class="v none">0</div></div>
+        <div class="step teal"><div class="k">최종 승인</div><div class="v none">0</div></div>
+          </div>
+          <div class="barwrap">
+            <div class="barlab"><b>단계 구성비</b><span class="r">전체 103건</span></div>
+            <div class="bar">
+          <i class="blue" style="width:97.1%" title="1단계 접수 100건"></i>
+          <i class="gray" style="width:2.9%" title="2단계 진행중 3건"></i>
+            </div>
+            <div class="legend">
+        <span><i style="background:var(--blue)"></i>1단계 접수 97%</span>
+        <span><i style="background:var(--gray)"></i>2단계 진행중 3%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="bh">
+            <div><h2>운영 지표 &amp; 시스템 가동 현황</h2>
+            <p>상품별 유입 성과 및 AI 자동화 시스템의 오늘 일일 가동 지표입니다.</p></div>
+            <a class="go" href="../settings/">AI 설정 →</a>
+          </div>
+          <div class="mets">
+        <div class="met"><div class="k"><i style="background:var(--blue)"></i>AI 오늘 생성 현황</div><div class="v">13건<em>완료 12건</em></div></div>
+        <div class="met"><div class="k"><i style="background:var(--amber)"></i>랜딩 총 접수 건수</div><div class="v">103건<em>최종 승인 0건 ÷ 접수 103건 = 0%</em></div></div>
+        <div class="met"><div class="k"><i style="background:var(--green)"></i>활동 중 수강생</div><div class="v">35명<em>전원 활동 중</em></div></div>
+        <div class="met"><div class="k"><i style="background:var(--gray)"></i>최종 지급 완료액</div><div class="v">0원<em>아직 정산된 건이 없습니다</em></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tablehead">
+        <div><h2>실시간 최근 접수 고객<span class="stale">마지막 접수 20일 전</span></h2>
+        <p>수강생들의 광고 랜딩을 통해 실시간으로 인입된 최신 고객 DB 명단입니다.</p></div>
+        <a class="go" style="margin-left:auto" href="../leads/">고객 DB 전체 관리 →</a>
+      </div>
+      <div class="sample">
+        <b>표본입니다.</b> 원본 화면에는 실제 고객 이름과 전화번호가 있었지만 한 건도 옮기지 않았습니다.
+        아래 6건은 우리가 지어낸 것이고, 수강생 이름은 우리 총판 대장(<code>partners.mjs</code>)에서 옵니다.
+      </div>
+      <div class="tscroll">
+        <table>
+          <thead><tr>
+            <th>접수일</th><th>고객명</th><th>연락처</th><th>수강생</th><th>아이디</th>
+            <th>상품</th><th>신청 경로</th><th>처리 상태</th><th>최종 승인</th>
+            <th>지급 예정</th><th>관리</th>
+          </tr></thead>
+          <tbody>
+        <tr><td class="num">2026-09-10 14:22</td><td>김O민</td><td><span class="tel"><span data-tel="0">010-****-4417</span><button type="button" data-reveal="0">보기</button></span></td><td>아지트렌탈 강서점</td><td class="num">gangseo01</td><td>정수기</td><td>네이버 검색</td><td><span class="pill s1">1단계 접수</span></td><td class="none">—</td><td class="none">—</td><td><button class="rowbtn" type="button">상세</button></td></tr>
+        <tr><td class="num">2026-09-10 11:05</td><td>이O서</td><td><span class="tel"><span data-tel="1">010-****-9012</span><button type="button" data-reveal="1">보기</button></span></td><td>아지트렌탈 분당점</td><td class="num">bundang01</td><td>매트리스</td><td>인스타 광고</td><td><span class="pill s2">2단계 진행중</span></td><td class="none">—</td><td class="none">—</td><td><button class="rowbtn" type="button">상세</button></td></tr>
+        <tr><td class="num">2026-09-09 19:47</td><td>박O준</td><td><span class="tel"><span data-tel="2">010-****-3355</span><button type="button" data-reveal="2">보기</button></span></td><td>아지트렌탈 강서점</td><td class="num">gangseo01</td><td>건조기</td><td>지인 소개</td><td><span class="pill s1">1단계 접수</span></td><td class="none">—</td><td class="none">—</td><td><button class="rowbtn" type="button">상세</button></td></tr>
+        <tr><td class="num">2026-09-09 16:31</td><td>최O아</td><td><span class="tel"><span data-tel="3">010-****-7788</span><button type="button" data-reveal="3">보기</button></span></td><td>아지트렌탈 분당점</td><td class="num">bundang01</td><td>안마의자</td><td>네이버 검색</td><td><span class="pill s2">2단계 진행중</span></td><td class="none">—</td><td class="none">—</td><td><button class="rowbtn" type="button">상세</button></td></tr>
+        <tr><td class="num">2026-09-09 09:14</td><td>정O우</td><td><span class="tel"><span data-tel="4">010-****-2266</span><button type="button" data-reveal="4">보기</button></span></td><td>아지트렌탈 강서점</td><td class="num">gangseo01</td><td>식기세척기</td><td>카톡 채널</td><td><span class="pill s1">1단계 접수</span></td><td class="none">—</td><td class="none">—</td><td><button class="rowbtn" type="button">상세</button></td></tr>
+        <tr><td class="num">2026-09-08 21:03</td><td>한O빈</td><td><span class="tel"><span data-tel="5">010-****-5501</span><button type="button" data-reveal="5">보기</button></span></td><td>아지트렌탈 분당점</td><td class="num">bundang01</td><td>인터넷+TV</td><td>인스타 광고</td><td><span class="pill s3">3단계 보류</span></td><td class="none">—</td><td class="none">—</td><td><button class="rowbtn" type="button">상세</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="fixbar">
+        <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
+          고친 곳 보기 (7)</button>
+        <span>원본과 같은 자리에 같은 항목을 두되, 동작하지 않던 곳만 고쳤습니다.</span>
+      </div>
+      <div class="fixes" id="fixlist" hidden>
+      <div class="fix"><h3>표</h3><dl><dt>원본</dt><dd class="was">표에 6행이 들어 있는데 화면엔 한 글자도 안 나왔다</dd><dt>카피본</dt><dd>행이 그려진다. 화면 전체가 흐리게 뜨던 것도 걷어냈다</dd><dt>이유</dt><dd class="why">원본은 페이지 전체를 투명하게 띄워 놓고 나중에 나타나게 한다. 그 「나중」이 오지 않아 관리자 첫 화면이 백지로 보였다. 브라우저도 한 번 멎었다.</dd></dl></div>
+      <div class="fix"><h3>숫자</h3><dl><dt>원본</dt><dd class="was">누적 접수 103건인데 아래 운영 지표는 105건</dd><dt>카피본</dt><dd>단계 수치 한 곳에서 계산한다 — 지금은 103건으로 한 값이다</dd><dt>이유</dt><dd class="why">같은 사실을 두 군데서 따로 세면 반드시 벌어진다. 어느 쪽이 맞는지 아무도 모른다.</dd></dl></div>
+      <div class="fix"><h3>진행바</h3><dl><dt>원본</dt><dd class="was">막대가 거의 꽉 차 있었다</dd><dt>카피본</dt><dd>단계별 구성비로 바꿨다 (100/3/0/0/0)</dd><dt>이유</dt><dd class="why">🔴 접수는 진척이 아니다. 최종 승인 0건인데 막대가 거의 꽉 차 있으면 「거의 다 됐다」로 읽힌다. 실제로는 100건이 첫 칸에 쌓여 있는 것이다.</dd></dl></div>
+      <div class="fix"><h3>전환율</h3><dl><dt>원본</dt><dd class="was">전환 1.9% (분모·분자 없음)</dd><dt>카피본</dt><dd>최종 승인 0건 ÷ 접수 103건 = 0% — 무엇을 나눈 값인지 적는다</dd><dt>이유</dt><dd class="why">1.9%면 2건이다. 그런데 같은 화면의 최종 승인은 0건이었다. 계산 근거가 없으면 검산이 안 된다.</dd></dl></div>
+      <div class="fix"><h3>0원 강조</h3><dl><dt>원본</dt><dd class="was">「지급 예정 수익 0원」 한 칸만 배경을 넣어 강조</dd><dt>카피본</dt><dd>0 은 0 으로 그대로 적되, 비어 있는 칸을 가장 눈에 띄게 두지 않는다</dd><dt>이유</dt><dd class="why">강조는 「지금 봐야 할 것」에 준다. 이 화면에서 봐야 할 것은 0원이 아니라, 1단계에 100건이 쌓인 채 20일째 안 움직인다는 사실이다.</dd></dl></div>
+      <div class="fix"><h3>실시간</h3><dl><dt>원본</dt><dd class="was">「실시간 최근 접수 고객」인데 가장 최근 접수가 20일 전</dd><dt>카피본</dt><dd>마지막 접수 시각을 띄우고, 오래되면 화면이 스스로 말한다</dd><dt>이유</dt><dd class="why">「실시간」이라 적힌 화면이 멈춰 있으면 멈춘 줄을 모른다.</dd></dl></div>
+      <div class="fix"><h3>연락처</h3><dl><dt>원본</dt><dd class="was">관리자 첫 화면에 고객 전화번호가 그대로 나와 있었다</dd><dt>카피본</dt><dd>기본은 가리고, 한 건씩 열어 본다. 여는 행위는 감사기록에 남긴다</dd><dt>이유</dt><dd class="why">첫 화면은 어깨너머로 가장 많이 보이는 화면이다. 이 시스템엔 감사기록 메뉴가 이미 있다 — 열람도 거기 남는 것이 맞다.</dd></dl></div>
+      </div>
+
+    </div>
+
+<script>
+(function () {
+  /* 🔴 원본은 화면을 투명하게 띄워 놓고 나중에 나타나게 했다. 그 「나중」이 오지 않아
+        첫 화면이 백지로 보였다. 여기서는 나타나는 연출 자체를 두지 않는다. */
+  var t = document.getElementById("fixtoggle"), l = document.getElementById("fixlist");
+  t.addEventListener("click", function () {
+    var open = l.hidden;
+    l.hidden = !open;
+    t.setAttribute("aria-expanded", String(open));
+    t.textContent = open ? "고친 곳 접기" : "고친 곳 보기 (7)";
+  });
+
+  /* 연락처는 기본으로 가린다. 여는 것은 한 건씩이고, 열었다는 사실이 남는다. */
+  var FULL = ["010-1234-4417","010-1234-9012","010-1234-3355","010-1234-7788","010-1234-2266","010-1234-5501"];
+  document.querySelectorAll("[data-reveal]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var i = b.getAttribute("data-reveal");
+      var cell = document.querySelector('[data-tel="' + i + '"]');
+      var shown = b.textContent === "가리기";
+      cell.textContent = shown ? ["010-****-4417","010-****-9012","010-****-3355","010-****-7788","010-****-2266","010-****-5501"][i] : FULL[i];
+      b.textContent = shown ? "보기" : "가리기";
+      /* 🔴 실제 운영에서는 이 자리에서 감사기록에 남긴다 (열람자·시각·대상).
+            시안이라 서버가 없어 콘솔로만 남긴다 — 지어낸 화면을 만들지 않는다. */
+      if (!shown) console.info("[감사기록] 연락처 열람 — 행 " + i + " · " + new Date().toISOString());
+    });
+  });
+})();
+</script>
+  </div>
+</div>
+</body></html>
