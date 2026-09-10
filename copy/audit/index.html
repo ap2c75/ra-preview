@@ -444,12 +444,13 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
       </table></div>
       <div class="fixbar">
         <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
-          고친 곳 · 짚은 곳 (8)</button>
+          고친 곳 · 짚은 곳 (9)</button>
         <span>⏳ 표시는 <b>고치지 않고 짚어만 둔 것</b>입니다 — 원본 그대로 뒀습니다.</span>
       </div>
       <div class="fixes" id="fixlist" hidden>
       <div class="fix"><h3>로딩 문구</h3><dl><dt>원본</dt><dd class="was">「정보를 불러오는 중입니다.」가 사라지지 않는다</dd><dt>카피본</dt><dd>걷어냈다 — 화면이 처음부터 보인다</dd><dt>이유</dt><dd class="why">실제 화면은 그 아래 이미 다 그려져 있었다. 덮개만 안 걷힌 것이다. 8화면 전부 같은 증상이고, 브라우저가 두 번 멎었다.</dd></dl></div>
       <div class="fix"><h3>🔴 「다뿌려」가 여기서 돌고 있다</h3><dl><dt>원본</dt><dd class="was">감사기록에 「다뿌려 초안 생성」·「dapuryeo auto start」가 오늘 찍혀 있다 (09-10 18:12~18:13)</dd><dt>카피본</dt><dd>그대로 옮겼다</dd><dt>이유</dt><dd class="why">🔴 감사 메뉴에 **「뉴스 기록」·「플랫폼 게시」** 탭도 있다. 우리가 새로 만들고 있던 다뿌려가 **이 시스템 안에 이미 구현돼 돌고 있다.** 무엇을 다시 만들 것인지 먼저 정해야 한다.</dd></dl></div>
+      <div class="fix"><h3>🔴 다뿌려가 오늘 실제로 내보낸 글 — 실물 확인</h3><dl><dt>원본</dt><dd class="was">수강생 화면(`/member/dapuryeo.php`)에서 오늘 만든 카드 2장을 원문 그대로 확인했다. 소재는 **네이버 랭킹뉴스**(「9/10 18:13 · 랭킹 · 서울경제 | 네이버」). ① 「가족의 뜻만으로는 안 되는 결정」 — **연명의료 판결 기사**(인공호흡기 제거, 징역 5년)를 3문단 요약한 뒤 「**이 무거운 문제와 별개로**, 일상의 안전 기록은…」으로 꺾어 CCTV 상담으로 잇는다. ② 「안전판이 바뀌면, 리스크도 달라집니다」 — 2천억달러 대미투자 기사를 요약한 뒤 「**CCTV도 대수부터 늘리기보다**…」로 꺾는다. 둘 다 하단에 랜딩 링크(`/l/somun1`)가 붙는다. 🔴 **Threads·Instagram·Facebook 「오늘 게시 완료」 — 이미 나갔다**</dd><dt>카피본</dt><dd>우리 파이프라인은 `주제선별`에서 품목 관련성이 없으면 **버린다**. 억지로 잇지 않는다</dd><dt>이유</dt><dd class="why">🔴 **수법이 하나다** — 아무 기사나 요약하고 마지막 문단에서 상품으로 꺾는다. 「이 무거운 문제와 별개로」라는 문장 자체가 **다리가 안 놓인다는 걸 글이 스스로 말하는 것**이다. 사람이 죽고 유족이 실형을 받은 사건을 CCTV 광고의 도입부로 쓰고 있다. 그리고 숫자(배심원 9명·징역 5년·320만 명·원전 8기)가 원문과 맞는지 **대조할 방법이 없다** — 뉴스 기록 탭이 비어 있다.</dd></dl></div>
       <div class="fix"><h3>🔴 뉴스 기록 탭이 비어 있다</h3><dl><dt>원본</dt><dd class="was">「뉴스 검색·생성 기록이 없습니다.」 — 칸은 생성일 · 수강생 · **제공사·모델** · 검색·생성 기록</dd><dt>카피본</dt><dd>표본으로 그렸다 — 무엇이 남아야 하는지의 그림</dd><dt>이유</dt><dd class="why">🔴 변경 기록에는 「다뿌려 초안 생성」이 여러 건 찍혀 있고 배포까지 성공했다. 그런데 **어느 기사에서 무엇을 뽑아 만들었는지는 아무 데도 없다.** 나중에 「이 카드 어디서 나온 겁니까」를 물으면 답할 근거가 없다.</dd></dl></div>
       <div class="fix"><h3>⏳ 커뮤니티 두 곳은 지금 동작하지 않는다</h3><dl><dt>원본</dt><dd class="was">플랫폼 게시에 디시인사이드(`login_failed`) · 뽐뿌 자유게시판(`ppomppu_level_required`)이 있다. 마지막 성공은 디시 08-13, 뽐뿌 08-01이고 그 뒤로 실패만 남았다</dd><dt>카피본</dt><dd>실패 사유까지 그대로 옮겼다</dd><dt>이유</dt><dd class="why">사실만 적는다 — ① **둘 다 지금은 안 된다.** 인수하든 말든 현재 값은 0이다. ② 뽐뿌는 `level_required` — 계정 등급 제한이라 계정을 키워야 통과한다. ③ 계정 비밀번호가 시스템에 저장돼 있다(우리 `partners.mjs` 는 비밀번호를 두지 않는다). 🔴 각 사이트 약관에 걸리는지는 **확인하지 않았다.** 1차 출처(약관 원문)를 안 보고 판정하지 않는다.</dd></dl></div>
       <div class="fix"><h3>🔴 「보기」가 아무것도 열지 않는다</h3><dl><dt>원본</dt><dd class="was">모든 행의 「보기」를 눌러도 상세가 뜨지 않는다. 「사유/메모」 칸도 전부 「-」</dd><dt>카피본</dt><dd>상세가 실제로 열린다</dd><dt>이유</dt><dd class="why">🔴 **들여다볼 수 없는 감사기록은 감사기록이 아니다.** 개인정보 사고가 났을 때 「무엇을 했는지」를 못 꺼내면 기록이 있어도 소용이 없다.</dd></dl></div>
@@ -465,7 +466,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
   t.addEventListener("click", function () {
     var open = l.hidden; l.hidden = !open;
     t.setAttribute("aria-expanded", String(open));
-    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (8)";
+    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (9)";
   });
   document.querySelectorAll("[data-reveal]").forEach(function (b) {
     b.addEventListener("click", function () {
