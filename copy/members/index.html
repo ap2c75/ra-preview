@@ -225,6 +225,76 @@ tr[data-detail] td{padding:0 12px 12px}
 .pager[hidden]{display:none!important}
 .pager button:disabled{opacity:.4;cursor:default}
 
+/* ── 수강생 모드 · 자동배포 ─────────────────────────────────── */
+.navoff{display:flex;align-items:center;gap:9px;padding:8px;border-radius:8px;font-size:13px;
+  color:var(--faint);cursor:default}
+.navoff svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.6}
+.navoff .todo{margin-left:auto;font-size:9.5px;border:1px solid var(--line);border-radius:5px;
+  padding:1px 4px;font-weight:600}
+.linkbox{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);
+  border-radius:9px;padding:7px 11px;font-size:11.5px;color:var(--muted);background:var(--card)}
+.linkbox b{font-size:12px;color:var(--accent);font-family:ui-monospace,Consolas,monospace}
+
+.dsteps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 0}
+.dstep{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;
+  padding:12px 14px;background:var(--card)}
+.dstep i{width:20px;height:20px;border-radius:999px;background:#e8f7ee;color:#15803d;
+  display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;
+  font-weight:700;flex:0 0 20px}
+.dstep b{display:block;font-size:12.5px}
+.dstep span{font-size:11.5px;color:var(--muted)}
+.dstep em{font-style:normal;font-size:16px;font-weight:800;color:var(--ink);margin-right:2px;
+  font-variant-numeric:tabular-nums}
+
+.newsbar{display:flex;align-items:center;gap:7px;margin:12px 0 0;flex-wrap:wrap;font-size:11.5px}
+.newslist{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:7px}
+.newsrow{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);
+  border-radius:10px;padding:11px 13px;background:var(--card)}
+.newsrow.off{background:#fbfbfc;border-style:dashed}
+.newsrow input{margin-top:3px;width:15px;height:15px;flex:0 0 15px}
+.newsrow label{flex:1;min-width:0;cursor:pointer;font-size:13px}
+.newsrow.off label{cursor:not-allowed;color:var(--faint)}
+.newsrow b{display:block;font-weight:600}
+.newsrow .src{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
+.newsrow .src .hot{font-style:normal;color:#9a3412;font-weight:700}
+.newsrow .why{display:block;font-size:11.5px;margin-top:5px;color:#9a3412}
+.newsrow .why.ok{color:#15803d}
+.newsrow:has(input:checked){border-color:#bcdfec;background:var(--accent-w)}
+
+.pcards{display:grid;gap:12px;margin-top:12px}
+.pcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card)}
+.pcard .ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px}
+.pcard .chk{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--ink2)}
+.pcard .src{color:var(--muted)}
+.pcard .chs{display:inline-flex;gap:4px;margin-left:auto}
+.pcard .chs em{font-style:normal;font-size:10.5px;border:1px solid var(--line);border-radius:5px;
+  padding:1px 6px;color:var(--faint)}
+.pcard .chs em.on{background:var(--accent-w);border-color:#bcdfec;color:var(--accent);font-weight:600}
+.pcard h4{margin:10px 0 7px;font-size:14.5px}
+.pcard textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 12px;
+  font:inherit;font-size:13px;line-height:1.75;resize:vertical;background:#fcfdfe;color:var(--ink2)}
+.pcard .foot{margin:7px 0 0;font-size:11.5px;color:var(--faint)}
+
+.vend{display:grid;gap:8px;margin-top:14px}
+.vslot{display:block;text-align:left;border:1px solid var(--line);border-radius:11px;
+  padding:12px 14px;background:var(--card);cursor:pointer}
+.vslot:hover{border-color:#c7dbe8}
+.vslot[aria-pressed="true"]{background:var(--accent-w);border-color:#bcdfec}
+.vslot b{display:block;font-size:13.5px}
+.vslot span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.vgo{width:100%;margin-top:12px;background:var(--accent);color:#fff;border:0;border-radius:10px;
+  padding:13px;font-size:14px;font-weight:700;cursor:pointer}
+.vgo:disabled{background:var(--line);color:var(--faint);cursor:not-allowed}
+.hookline{border-top:1px solid var(--line2);padding:11px 0}
+.hookline:first-child{border-top:0}
+.hookline .k{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);
+  font-weight:600}
+.hookline .k button{margin-left:auto}
+.hookline p{margin:6px 0 0;font-size:14px;line-height:1.6}
+
+@media (max-width:900px){ .dsteps{grid-template-columns:repeat(2,1fr)} }
+
 /* ── 화면 공통 부품 ─────────────────────────────────────────── */
 .kicker2{font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--accent);
   margin:0 0 7px}
@@ -797,16 +867,137 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
     });
   });
 
-  /* ── 8. 상단 「다 되는지 확인」 ──────────────────────────── */
+  /* ── 8. 다뿌려 — 기사 고르기 · 진행 숫자 · 글자수 ────────── */
+  /* 🔴 원본은 「뉴스 수집 8 → 기사 선택 0 → 글 2」로 서로 안 맞았고,
+        아래 목록은 「수집된 뉴스가 없습니다」였다. 여기서는 화면 상태에서 센다. */
+  var newsBoxes = $$('[data-news]');
+  if (newsBoxes.length) {
+    var pickBtn = $('[data-pickcount]');
+    var live = function (id) { return $('[data-live="' + id + '"]'); };
+    function recount() {
+      var n = newsBoxes.filter(function (b) { return b.checked; }).length;
+      if (pickBtn) pickBtn.textContent = '선택 기사 글 만들기 (' + n + ')';
+      var p = live('pick'); if (p) p.textContent = n;
+    }
+    newsBoxes.forEach(function (b) { b.addEventListener('change', recount); });
+    var all = $('[data-pickall]'), none = $('[data-pickno]');
+    if (all) all.addEventListener('click', function () {
+      newsBoxes.forEach(function (b) { b.checked = true; }); recount();
+      toast('고를 수 있는 기사 ' + newsBoxes.length + '건을 선택했습니다');
+    });
+    if (none) none.addEventListener('click', function () {
+      newsBoxes.forEach(function (b) { b.checked = false; }); recount();
+    });
+    recount();
+  }
+
+  /* 게시 선택 → 「최종 확인」 숫자 */
+  var posts = $$('[data-post]');
+  if (posts.length) {
+    var sendLive = $('[data-live="send"]');
+    var resend = function () {
+      if (sendLive) sendLive.textContent = posts.filter(function (b) { return b.checked; }).length;
+    };
+    posts.forEach(function (b) { b.addEventListener('change', resend); });
+    resend();
+  }
+
+  /* 글자수 — 채널 한도를 넘는지 바로 보인다 */
+  $$('[data-len]').forEach(function (ta) {
+    var out = ta.parentNode.querySelector('[data-lenout]');
+    var tick = function () {
+      var n = ta.value.length;
+      if (out) out.textContent = n + '자' + (n > 500 ? ' · 🔴 쓰레드 한도(500자)를 넘었습니다' : '');
+      if (out) out.style.color = n > 500 ? '#9a3412' : '';
+    };
+    ta.addEventListener('input', tick); tick();
+  });
+
+  var run = $('[data-run]');
+  if (run) run.addEventListener('click', function () {
+    toast('시안이라 실제 생성·게시는 하지 않습니다 — 아래 글이 그 결과 자리입니다');
+  });
+
+  /* ── 9. 후킹자판기 ──────────────────────────────────────── */
+  var slots = $$('[data-hook]');
+  if (slots.length) {
+    var HOOKS = window.__HOOKS || {};
+    var pickedKey = null, left = 5;
+    var vend = $('[data-vend]'), status = $('[data-vendstatus]'), msg = $('[data-vendmsg]');
+    var out = $('[data-hookout]'), empty = $('[data-hookempty]'), leftEl = $('[data-left]');
+    slots.forEach(function (s) {
+      s.setAttribute('aria-pressed', 'false');
+      s.addEventListener('click', function () {
+        slots.forEach(function (x) { x.setAttribute('aria-pressed', String(x === s)); });
+        pickedKey = s.getAttribute('data-hook');
+        if (vend) vend.disabled = left <= 0;
+        if (status) status.textContent = '준비됨';
+        if (msg) msg.textContent = left > 0
+          ? '[' + s.querySelector('b').textContent + '] 선택됨 · [후킹 뽑기]를 누르면 시작됩니다.'
+          : '오늘 남은 횟수를 다 썼습니다. 내일 00시에 초기화됩니다.';
+      });
+    });
+    if (vend) vend.addEventListener('click', function () {
+      if (!pickedKey || left <= 0) return;
+      var lines = HOOKS[pickedKey] || [];
+      if (!lines.length) { toast('이 상품의 문구가 없습니다', true); return; }
+      vend.disabled = true;
+      if (status) status.textContent = '뽑는 중…';
+      if (msg) msg.textContent = 'AI 가 9:16 광고를 그리고 있습니다. 다른 화면을 다녀와도 이어집니다.';
+      setTimeout(function () {
+        left -= 1;
+        if (leftEl) leftEl.textContent = left;
+        lines.forEach(function (t, i) {
+          var p = $('[data-line="' + i + '"]'); if (p) p.textContent = t;
+        });
+        if (out) out.hidden = false;
+        if (empty) empty.hidden = true;
+        if (status) status.textContent = '완료';
+        if (msg) msg.textContent = left > 0
+          ? '3줄을 복사해 쓰세요. 오늘 ' + left + '회 남았습니다.'
+          : '🔴 오늘 남은 횟수를 다 썼습니다 — 원본은 여기가 「무제한」이었습니다.';
+        vend.disabled = left <= 0;
+        window.__lines = lines;
+        toast('후킹 3줄을 뽑았습니다');
+      }, 900);
+    });
+    $$('[data-copyline]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var t = (window.__lines || [])[+b.getAttribute('data-copyline')];
+        if (!t) { toast('아직 뽑지 않았습니다', true); return; }
+        b.setAttribute('data-copy', t); wireOnce(b, t);
+      });
+    });
+    var ca = $('[data-copyall]'), cs = $('[data-copyslash]');
+    if (ca) ca.addEventListener('click', function () {
+      var l = window.__lines; if (!l) { toast('아직 뽑지 않았습니다', true); return; }
+      wireOnce(ca, l.join('\n'));
+    });
+    if (cs) cs.addEventListener('click', function () {
+      var l = window.__lines; if (!l) { toast('아직 뽑지 않았습니다', true); return; }
+      wireOnce(cs, l.join(' / '));
+    });
+  }
+  function wireOnce(btn, text) {
+    var done = function () { toast('복사했습니다 (' + text.length + '자)'); };
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+    else fallback(text, done);
+  }
+
+  /* ── 10. 상단 「다 되는지 확인」 ─────────────────────────── */
   var probe = $('[data-selftest]');
   if (probe) {
     var counts = {
       표: $$('[data-table]').length,
       필터: $$('[data-filter]').length,
       주소: $$('[data-urls]').length,
-      복사: $$('[data-copy]').length,
+      복사: $$('[data-copy]').length + $$('[data-copyline]').length,
       상세: $$('[data-detail-for]').length,
-      탭: $$('[role="tab"]').length
+      탭: $$('[role="tab"]').length,
+      '기사 고르기': $$('[data-news]').length,
+      '본문 편집': $$('[data-len]').length,
+      '뽑기': $$('[data-hook]').length
     };
     var parts = Object.keys(counts).filter(function (k) { return counts[k]; })
       .map(function (k) { return k + ' ' + counts[k]; });
