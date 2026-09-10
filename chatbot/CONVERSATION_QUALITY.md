@@ -8,6 +8,7 @@ Updated: 2026-09-10
 |---|---|---|
 | Keep context across turns and visible results | Retain category, filters, selected cards, and visible card order. Understand “첫 번째로 상담할게요” against what is on screen. | category → recommendation → ordinal selection |
 | Resolve short follow-up questions against the last product focus | “두 번째는 얼마예요?” establishes a product focus; “60개월이면요?” and “그건 방문관리 돼요?” reuse it. Ambiguous pronouns ask for a number instead of guessing. | ordinal price → term follow-up → pronoun care; ambiguous pronoun; benefit evidence |
+| Compare visible products conversationally | “1번이랑 2번 비교해줘” opens those products side by side. “둘 중 싼 건?” and “관리 방식은 뭐가 달라?” reuse that pair; an ambiguous pair request asks for two numbers. | direct ordinal comparison → price follow-up → care follow-up; ambiguous pair |
 | Treat correction as a normal dialogue act | “왜 자꾸 같은 걸 물어봐”, “아까 답했는데” trigger repair: acknowledge once, retain known conditions, skip the repeated optional question, and show useful results. | repeated-question repair |
 | Do not repeat a failed prompt verbatim | First no-match rephrases the optional brand or term question and gives two natural exits. A second no-match skips the optional slot and advances. | first and second no-match |
 | Support one-shot and step-by-step requests | Both “정수기” followed by “추천해주세요” and “정수기 추천해주세요” lead to the same three-brand result. | sequential and direct recommendation |
