@@ -6,10 +6,12 @@ import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
 import {noticeIssues} from '/ra-preview/chatbot/privacy.mjs?v=consent-policy-20260910-1';
 import {publicPartnerList,validatePartnerRegistry} from '/ra-preview/chatbot/partner-registry.mjs?v=partner-registry-20260910-1';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-11';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260911-1';
 import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
 import {createQualityMetrics} from '/ra-preview/chatbot/quality-metrics.mjs?v=quality-metrics-20260910-1';
 import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
+import { createClientApi } from '/ra-preview/chatbot/client-api.mjs?v=operations-20260911-1';
+import { applyBenefitFeed, validateBenefitFeed } from '/ra-preview/chatbot/benefit-feed.mjs?v=benefit-feed-20260911-1';
 
 let siteData=null,siteDataRequest=null,consultationDataPrimed=false;
 let partnerRegistry=null,partnerRegistryRequest=null;
@@ -30,13 +32,14 @@ async function refreshKnowledge(){const request=++knowledgeRequest,controller=ne
 
 window.addEventListener('focus',refreshKnowledge);
 setInterval(()=>{if(!document.hidden)refreshKnowledge();},5*60000);
-let SAMPLE_PRODUCTS=[],catalogMetadata={status:'idle'};
+let SAMPLE_PRODUCTS=[],catalogMetadata={status:'idle'},benefitFeed=null,benefitRequest=null;
 const $ = q => document.querySelector(q);
 const el = (tag, text, className) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (className) n.className = className; return n; };
 let state = initialState(), busy = false, dialogEpoch = 0, offer = null, receipt = null;
 const qualityRecorder=createQualityRecorder();
 const qualityMetrics=createQualityMetrics({storage:localStorage});
 const turnHistory=createTurnHistory();
+const clientApi=createClientApi();
 let latestUserText='';
 const money = n => Number(n).toLocaleString('ko-KR') + '원';
 const emptyContent = $('#results').cloneNode(true);
@@ -53,7 +56,7 @@ function showCatalogUnavailable(){
 }
 function catalogChanged(value){
  if(['error','expired'].includes(value.status))nextCatalogRetry=Date.now()+30000;
- catalogMetadata=value;SAMPLE_PRODUCTS=value.products;$('#catalog-status').hidden=value.status==='ready';$('#catalog-state').textContent=value.status==='loading'?'상품 자료 확인 중':value.status==='expired'?'상품 자료 적용기간 만료':'상품 자료 연결 실패';$('#retry-catalog').disabled=value.status==='loading';
+ catalogMetadata=value;SAMPLE_PRODUCTS=value.status==='ready'&&benefitFeed?applyBenefitFeed(value.products,benefitFeed):value.products;$('#catalog-status').hidden=value.status==='ready';$('#catalog-state').textContent=value.status==='loading'?'상품 자료 확인 중':value.status==='expired'?'상품 자료 적용기간 만료':'상품 자료 연결 실패';$('#retry-catalog').disabled=value.status==='loading';
  if(entryMode==='waiting')return;
  if(value.status!=='ready'){showCatalogUnavailable();return;}
  const all=cardsFor(SAMPLE_PRODUCTS,state.filters),before=state.selected.length;state.selected=state.selected.filter(code=>all.some(c=>c.code===code));
@@ -190,8 +193,8 @@ function showReceipt() {
 
 function showRecovery(){
  if(busy)return;const epoch=++dialogEpoch;offer=null;const dialog=$('#consent-dialog'),body=$('#consent-body');$('#consent-title').textContent='기존 접수 불러오기';body.replaceChildren(el('p','접수 관리에서 미리 발급·보관한 복구 코드를 입력해 주세요. 이름·전화번호는 입력하지 않습니다. 복구하면 이전 브라우저의 조회·삭제 권한은 종료됩니다.'));
- const form=el('form'),label=el('label','복구 코드','form-field'),input=el('input');input.type='password';input.name='recovery_code';input.autocomplete='off';input.required=true;input.maxLength=43;input.minLength=43;input.pattern='[-_A-Za-z0-9]{43}';label.append(input);const error=el('p',null,'form-error');error.setAttribute('role','alert');const submit=el('button','접수 불러오기','primary');submit.type='submit';form.append(label,error,submit);
- form.addEventListener('submit',async event=>{event.preventDefault();if(busy)return;busy=true;submit.disabled=true;error.textContent='';try{const current=await api('recover',{code:input.value.trim()});if(epoch!==dialogEpoch)return;form.reset();setReceipt(current);$('#messages').replaceChildren();finishEntry('saved',null,true);say('접수를 복구했습니다. 다른 브라우저에서 다시 복구하려면 접수 관리에서 새 코드를 발급해 주세요.');}catch{error.textContent='접수를 복구하지 못했습니다. 코드가 틀렸거나 이미 사용·재발급·만료되었을 수 있습니다. 연결 오류라면 같은 브라우저에서 다시 시도해 주세요.';}finally{busy=false;submit.disabled=false;}});
+ const form=el('form'),label=el('label','복구 코드','form-field'),input=el('input');input.type='password';input.name='recovery_code';input.autocomplete='off';input.required=true;input.maxLength=120;input.minLength=40;input.pattern='[-_.A-Za-z0-9]{40,120}';label.append(input);const error=el('p',null,'form-error');error.setAttribute('role','alert');const submit=el('button','접수 불러오기','primary');submit.type='submit';form.append(label,error,submit);
+ form.addEventListener('submit',async event=>{event.preventDefault();if(busy)return;busy=true;submit.disabled=true;error.textContent='';try{const current=await api('recover',{code:input.value.trim()});if(epoch!==dialogEpoch)return;form.reset();setReceipt(current.receipt);$('#messages').replaceChildren();finishEntry('saved',null,true);say('접수를 복구했습니다. 다른 브라우저에서 다시 복구하려면 접수 관리에서 새 코드를 발급해 주세요.');}catch{error.textContent='접수를 복구하지 못했습니다. 코드가 틀렸거나 이미 사용·재발급·만료되었을 수 있습니다. 연결 오류라면 같은 브라우저에서 다시 시도해 주세요.';}finally{busy=false;submit.disabled=false;}});
  body.append(form,el('p','코드를 잃어버렸거나 미리 발급하지 않았다면 이 방법으로 복구할 수 없습니다. 현재 브라우저에서 조회가 가능할 때 발급해 보관해 주세요.'));if(!dialog.open)dialog.showModal();input.focus();
 }
 
@@ -231,6 +234,7 @@ function appendMessageFeedback(row,assistantText,userText){
     choices.append(button(label,()=>{
       qualityRecorder.add({reason:label,userText,assistantText,context:qualityContext()});
       qualityMetrics.feedback(reason);
+      api('quality',{outcome:'feedback',intent:'answer-feedback',selectedCount:state.selected.length,feedbackReason:reason}).catch(()=>{});
       details.replaceChildren(el('span','개선 항목에 담았습니다.','message-feedback-done'));
       run({action:{repeat:'repairRepeat',misread:'repairMisread',insufficient:'repairInsufficient',recommendation:'repairRecommendation'}[reason]});
     }));
@@ -322,7 +326,7 @@ function renderActions(out = {}) {
   if(entryMode==='waiting'){actions.append(button('고객정보 확인하기',openConsent,'primary'));return;}
 
   if(out.handoff) {
-    actions.append(button(receipt?.status==='stored'?'상담 접수 상태 확인':'외부 검토 안내',()=>say('현재 외부 검토 사이트에서는 실제 상담 접수가 지원되지 않습니다. 상품 질문과 주소 입력을 테스트해 주세요.'),'primary'));
+    actions.append(button(receipt?.status==='stored'?'상담 접수 상태 확인':'외부 검토 안내',receipt?.status==='stored'?showReceipt:()=>say('현재 외부 검토 사이트에서는 실제 상담 접수가 지원되지 않습니다. 상품 질문과 주소 입력을 테스트해 주세요.'),'primary'));
     if(state.filters.category) actions.append(button('상품 상담 이어가기',()=>run({action:'resume'})));
     return;
   }
@@ -369,23 +373,31 @@ function run(input) {
   if (typeof input.text==='string' && input.text.trim()) say(input.text, 'user');
   else if (out.requestSummary) say(out.requestSummary, 'user');
   state = out.state; renderFilters(); say(out.reply);
-  if(typeof input.text==='string'&&input.text.trim())qualityMetrics.observe({outcome:out.outcome,intent:out.intent,selectedCount:state.selected.length});
+  if(out.manageReceipt&&receipt?.status==='stored')showReceipt();
+  if(typeof input.text==='string'&&input.text.trim()){
+    const metric={outcome:out.outcome||'responded',intent:out.intent||'unknown',selectedCount:state.selected.length};
+    qualityMetrics.observe(metric);api('quality',metric).catch(()=>{});
+  }
   if(out.siteSources?.length){const box=el('div',null,'answer-sources');for(const source of out.siteSources){const a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';const row=el('p');row.append(a);box.append(row);}$('#messages').lastElementChild.append(box);}
   if(out.sources?.length){const box=el('details',null,'answer-sources');box.append(el('summary','확인한 안내 근거'));for(const source of out.sources){const row=el('p'),a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';row.append(a,el('small',source.topic+' · '+source.scope+' · 적용 종료 '+new Date(source.validUntil).toLocaleDateString('ko-KR')));box.append(row);}$('#messages').lastElementChild.append(box);}
   // Customer messages remain in this page only, not storage, analytics or external/model APIs.
   if ('cards' in out) {const scroll=$('#results').scrollTop;recommendationView=!!out.recommendation;renderCards(out.cards, out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
   if(!available)showCatalogUnavailable();
   renderBrowse(); renderActions(out);
+  if(out.endConversation){$('#query').disabled=true;$('#composer button').disabled=true;$('#actions').replaceChildren(button('상담 다시 시작',()=>finishEntry(receipt?.status==='stored'?'saved':'review'),'primary'));}
   $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'상담할 상품은 최대 3개까지 담을 수 있어요. 상품 하나를 빼고 다시 선택해 주세요.':'';
   if (out.comparison || ['sort','previous','first','more'].includes(input.action)) setPanel('products');
   if (input.action === 'reset' || input.action === 'consultSelection') setPanel('chat');
   if (out.consent) openConsent();
 }
 async function api(path,body){
- if(path==='status')return {available:false,mode:'public-preview'};
- if(path==='resume')return {receipt:null};
- if(path==='cancel'||path==='end-session')return {status:'cancelled'};
- throw Error('PUBLIC_REVIEW_NO_INTAKE');
+ try{return await clientApi.api(path,body);}
+ catch(error){
+  if(error.message==='API_NOT_CONFIGURED'&&path==='status')return {available:false,mode:'public-preview'};
+  if(error.message==='API_NOT_CONFIGURED'&&path==='resume')return {receipt:null};
+  if(error.message==='API_NOT_CONFIGURED'&&(path==='cancel'||path==='end-session'))return {status:'cancelled'};
+  throw error;
+ }
 }
 function appendPartnerDisclosure(body,n){
   const section=el('section',null,'partner-disclosure');
@@ -447,7 +459,7 @@ async function openConsent(){
   const transfer=n.transfer?checkbox('[필수] 개인정보 제3자 제공 안내를 확인하고 동의합니다.','agree-third-party'):null;
   const age=checkbox('만 14세 이상입니다.','age-check');
   const next=button('동의하고 고객정보 입력',()=>{
-   if(collection.input.checked&&(!transfer||transfer.input.checked)&&age.input.checked)renderLead({required:true,collectionUse:true,thirdParty:!!transfer,over14:true,policyVersion:n.version});
+   if(collection.input.checked&&(!transfer||transfer.input.checked)&&age.input.checked)renderLead({required:true,collectionUse:true,thirdParty:!!transfer,over14:true,policyVersion:n.version,partnerRegistryVersion:n.partnerRegistryVersion});
   },'primary');next.disabled=true;
   const update=()=>{next.disabled=!collection.input.checked||!!transfer&&!transfer.input.checked||!age.input.checked;};
   collection.input.addEventListener('change',update);transfer?.input.addEventListener('change',update);age.input.addEventListener('change',update);
@@ -479,7 +491,7 @@ function renderLead(choices) {
   setEntryStep('information'); $('#consent-title').textContent='고객정보 확인';
   const body = $('#consent-body'); body.replaceChildren();
   const testing=offer?.testOnly===true;
-  body.append(el('p','상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 정보 확인이 완료되면 상담을 시작합니다. 검토용 입력값은 서버에 저장하지 않습니다.'));
+  body.append(el('p',serviceMode==='operational'?'상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 접수 후 배정된 제휴 총판이 상담을 이어갑니다.':'상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 검토용 입력값은 서버에 저장하지 않습니다.'));
   const form = el('form'); form.autocomplete = 'off';
   const fields = [
     ['name','이름',null], ['phone','연락처',null],
@@ -497,13 +509,22 @@ function renderLead(choices) {
   if (state.selected.length || state.unresolved.length) body.append(el('p','고른 상품과 추가 확인 항목은 화면에 유지됩니다. 이번 접수에는 위에서 고지한 항목만 저장합니다.', 'banner'));
   const error = el('p',null,'form-error'); error.setAttribute('role','alert');
   const submit = el('button','정보 확인 후 상담 시작','primary'); submit.type = 'submit'; form.append(error, submit);
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
+    if(busy)return;
     if(!choices.required||!choices.over14)return;
     const name=form.elements.name.value.trim(),phone=form.elements.phone.value.replace(/\D/g,'');
     if(name.length<2||!/^01[016789]\d{7,8}$/.test(phone)){error.textContent='이름을 두 글자 이상 입력하고 연락처를 확인해 주세요.';return;}
-    if(!addressPicker.value()){error.textContent='주소를 검색하거나 설치 주소 미정을 선택해 주세요.';return;}
-    form.reset();finishEntry('review');
+    const address=addressPicker.value();
+    if(!address){error.textContent='주소를 검색하거나 설치 주소 미정을 선택해 주세요.';return;}
+    if(serviceMode!=='operational'){form.reset();finishEntry('review');return;}
+    busy=true;submit.disabled=true;error.textContent='';
+    try{
+      const result=await api('intake',{fields:{name,phone,address},consent:{collectionUse:choices.collectionUse===true,thirdParty:choices.thirdParty===true,over14:choices.over14===true,policyVersion:choices.policyVersion,partnerRegistryVersion:choices.partnerRegistryVersion},selectedProducts:state.selected,unresolved:state.unresolved.map(value=>typeof value==='string'?value:value?.topic||value?.id||'').filter(Boolean),sourceUrl:location.href});
+      setReceipt(result.receipt);form.reset();finishEntry('saved');
+    }catch(errorValue){
+      error.textContent=['POLICY_VERSION_CHANGED','PARTNER_REGISTRY_CHANGED'].includes(errorValue.message)?'안내 내용이 갱신되었습니다. 창을 닫고 최신 개인정보 안내를 다시 확인해 주세요.':'접수를 저장하지 못했습니다. 입력값은 전송되지 않았거나 저장이 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.';
+    }finally{busy=false;submit.disabled=false;}
   });
   if(testing){body.append(el('p','테스트고객A와 010-0000-0001 같은 가상 정보로 접수 기능을 시험해 주세요.','banner'));body.append(button('테스트 정보 채우기',()=>{form.elements.name.value='테스트고객A';form.elements.phone.value='010-0000-0001';form.elements.address.value='가상시 테스트로 123, 시험동 101호';},'secondary'));}
   body.append(form); form.querySelector('input').focus();
@@ -537,6 +558,7 @@ window.addEventListener('pageshow',event=>{if(event.persisted){setReceipt(null);
 
 $('#retry-catalog').addEventListener('click',()=>catalogLoader.refresh());
 refreshKnowledge();
-function primeConsultationData(){if(consultationDataPrimed)return;consultationDataPrimed=true;loadSiteData();loadPartnerRegistry();catalogLoader.refresh();}
+async function loadBenefits(){if(benefitRequest)return benefitRequest;benefitRequest=fetch('/ra-preview/chatbot/api/benefits.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{validateBenefitFeed(data);benefitFeed=data;if(catalogMetadata.status==='ready')catalogChanged(catalogMetadata);return data;}).catch(()=>null).finally(()=>{benefitRequest=null;});return benefitRequest;}
+function primeConsultationData(){if(consultationDataPrimed)return;consultationDataPrimed=true;loadSiteData();loadPartnerRegistry();loadBenefits();catalogLoader.refresh();}
 function maybeRefreshCatalog(force=false){if(!consultationDataPrimed)return;const value=catalogLoader.checkExpiry();if(value.status!=='loading'&&(value.status!=='ready'?(force||Date.now()>=nextCatalogRetry):Date.now()-value.checkedAt>=300000))catalogLoader.refresh();}
 window.addEventListener('online',()=>maybeRefreshCatalog(true));window.addEventListener('focus',()=>maybeRefreshCatalog());document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeRefreshCatalog();});setInterval(()=>{catalogLoader.checkExpiry();if(!document.hidden)maybeRefreshCatalog();},1000);
