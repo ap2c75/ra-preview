@@ -50,7 +50,7 @@ export function interpret(text,previous) {
   patch.excludedTerms=unique([...(s.filters.excludedTerms||[]),...terms.filter(m=>m.negative).map(m=>m.value)]).filter(v=>v!==term);
   if(!term&&patch.excludedTerms.includes(s.filters.term))patch.term=null;
  }
- const noPreference=/^(없어요|없어|없습니다|상관없어요|상관없어|아무거나|아니요|아뇨|딱히요|딱히 없어요|아직\s*없어요|특별히\s*없어요)[.!~\s]*$/.test(text);
+ const noPreference=/^(없어요|없어|없습니다|상관없어요|상관없어|아무거나(?:\s*(?:괜찮아요?|좋아요?|해주세요))?|아니요|아뇨|딱히요|딱히 없어요|아직\s*없어요|특별히\s*없어요)[.!~\s]*$/.test(text);
  const anyBrand=/브랜드.*(전체|상관없|없어|없습니다)|모든 브랜드/.test(text)||(s.awaiting==='brand'&&noPreference);
  const anyTerm=/약정.*(전체|상관없)/.test(text)||(s.awaiting==='term'&&noPreference);
  if(anyBrand){patch.brand=null;patch.maker=null;patch.brands=[];patch.excludedBrands=[];s.preferences.brandAny=true;}
@@ -82,11 +82,12 @@ export function interpret(text,previous) {
  return {state:clarification?structuredClone(previous):s,patch:clarification?{}:patch,changed:!clarification&&Object.keys(patch).length>0,anyBrand,anyTerm,clarification};
 }
 export function referenceAction(text,visibleCodes=[]) {
- if(!/담아|담을|선택|빼|제외|비교/.test(text))return null;
- const m=text.match(/(첫|한|두|둘|세|셋|네|넷|\d+)\s*(?:번째|번)(?:\s*제품)?/);
- if(!m)return /(?:그거|이거|저거|아까\s*것).*(?:담아|선택|빼)/.test(text)?{clarification:'어떤 제품인지 확인해 주세요. 상품 번호를 말씀하시거나 비교 버튼을 눌러주세요.'}:null;
+ if(!/담아|담을|선택|빼|제외|비교|상담|진행|이걸로|할게|정했/.test(text))return null;
+ const references=[...text.matchAll(/(첫|한|두|둘|세|셋|네|넷|\d+)\s*(?:번째|번)(?:\s*제품)?/g)],m=references.at(-1);
+ if(!m)return /(?:그거|이거|저거|이걸로|아까\s*것).*(?:담아|선택|빼|상담|진행|할게)/.test(text)?{clarification:'어떤 제품인지 확인해 주세요. 상품 번호를 말씀하시거나 상품 카드의 상담 버튼을 눌러주세요.'}:null;
  const n=({첫:1,한:1,두:2,둘:2,세:3,셋:3,네:4,넷:4}[m[1]]??Number(m[1]));
  if(!visibleCodes[n-1])return {clarification:'현재 표시된 상품에 해당 번호가 없어요. 상품 목록의 번호를 다시 확인해 주세요.'};
- return {action:'select',code:visibleCodes[n-1],selectionMode:/빼|제외/.test(text)?'remove':'add'};
+ const tail=text.slice((m.index||0)+m[0].length);
+ return {action:'select',code:visibleCodes[n-1],selectionMode:/빼|제외/.test(tail)?'remove':'add'};
 }
 export const asksReason=text=>/왜.*(?:추천|제품|보여)|추천.*(?:이유|근거)|선정.*기준/.test(text);

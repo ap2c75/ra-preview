@@ -4,7 +4,7 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=recommend-public-20260910-2';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-1';
 
 let siteData=null;
 fetch('/ra-preview/chatbot/site-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1')siteData=d;}).catch(()=>{siteData=null;});

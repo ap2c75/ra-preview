@@ -1,8 +1,8 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
 import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,asksReason} from '/ra-preview/chatbot/language.mjs';
-import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs';
+import {normalizeText,interpret,referenceAction,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-1';
+import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-1';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
 const UNKNOWN=TOPICS.map(f=>({id:f.id,match:f.match,what:f.what,fact:f}));
@@ -11,7 +11,7 @@ import { toCategory } from '/ra-preview/chatbot/taxonomy.mjs';
 import { mask } from '/ra-preview/chatbot/detect.mjs';
 
 const norm = v => String(v ?? '').replace(/\s+/g, '').toLowerCase();
-export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [], recommendedCodes: [] });
+export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [], recommendedCodes: [], reprompt: null });
 export const filterLabels = f => [f.category, f.model && `모델 ${f.model}`, f.brand, f.brands?.join(' · '), ...(f.excludedBrands||[]).map(b=>b+' 제외'), f.excludeIce&&'얼음 제외', ...(f.excludedTerms||[]).map(n=>n+'개월 제외'), ...(f.excludedCare||[]).map(v=>(v==='visit'?'방문관리':'자가관리')+' 제외'), f.maker, f.term && `${f.term}개월`, f.feature === 'ice' && '얼음', f.care === 'visit' && '방문관리', f.care === 'self' && '자가관리', f.budget && `월 ${f.budget.toLocaleString('ko-KR')}원 이하`].filter(Boolean);
 function eligibleOptions(t, f) {
   return (t.options || [{ fee: t.fee }]).filter(o => {
@@ -86,7 +86,8 @@ function respondCatalog(previous, input, catalog) {
   const s = structuredClone(previous || initialState());
   s.preferences ||= {}; s.awaiting ??= null;
   const text = String(input.text || '').trim().slice(0, 500);
-  const recommendationRequested=/추천|골라(?:줘|주세요)?|뭐가\s*좋|어떤(?:게|것이)\s*좋/.test(text);
+  const repeatedQuestionRepair=/(?:왜\s*)?(?:또|자꾸).{0,12}(?:같은|똑같은|반복|물어|묻)|(?:같은|똑같은).{0,8}(?:질문|말).{0,8}(?:또|자꾸|반복)|아까\s*(?:말|답)했(?:잖|는데)/.test(text);
+  const recommendationRequested=/추천|골라(?:줘|주세요)?|뭐가\s*좋|어떤(?:게|것이)\s*좋|알아서|그냥.{0,8}(?:골라|보여|추천)|네가.{0,8}(?:골라|추천)/.test(text)||(repeatedQuestionRepair&&!!s.filters.category);
   const safety = mask(text, { profile: 'storage' });
   let requestSummary = null;
   const result = (reply, extra = {}) => ({ state:s, reply, requestSummary, ...extra });
@@ -163,14 +164,27 @@ function respondCatalog(previous, input, catalog) {
   }
   const {patch:next={},changed=false,anyBrand=false,anyTerm=false}=input.parsed||{};
   if(recommendationRequested&&s.filters.category&&!s.filters.brand&&!s.filters.brands?.length&&!s.filters.maker){s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;}
-  const wantsResults=changed || ['resume','more','previous','first','sort'].includes(input.action) || /추천|상품|다시 보기|보여|얼마|비교/.test(text);
+  const wantsResults=changed || ['resume','more','previous','first','sort'].includes(input.action) || /추천|상품|다시 보기|보여|얼마|비교/.test(text) || repeatedQuestionRepair;
   if(!wantsResults) {
-    const guide=guidance(s,catalog);
-    return result('조금만 더 알려주시겠어요?\n'+guide.question,guide);
+    const waiting=s.awaiting,guide=guidance(s,catalog);
+    if(waiting&&waiting===s.awaiting){
+      const count=s.reprompt?.key===waiting?s.reprompt.count+1:1;s.reprompt={key:waiting,count};
+      if(waiting==='brand'){
+        if(count>=2){s.preferences.brandAny=true;s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;const all=cardsFor(catalog,s.filters),cards=recommendationsByBrand(all);s.recommendedCodes=cards.map(card=>card.code);return result('선호 브랜드는 선택 사항이라 건너뛰고, 서로 다른 브랜드에서 바로 골라봤어요.\n마음에 드는 상품 하나만 담아도 상담을 이어갈 수 있어요.',{cards,total:cards.length,page:1,pages:1,start:1,end:cards.length,previous:false,more:false,recommendation:true});}
+        return result('선호 브랜드가 없거나 잘 모르셔도 괜찮아요. 제가 서로 다른 세 브랜드에서 바로 골라드릴 수도 있어요.',{...guide,suggestions:['추천해주세요','브랜드 상관없어요']});
+      }
+      if(waiting==='term'){
+        if(count>=2){s.preferences.termAny=true;s.awaiting=null;s.reprompt=null;const all=cardsFor(catalog,s.filters),page=pageData(all,s);return result('약정 기간은 선택 사항이라 건너뛰고 현재 조건의 상품부터 보여드릴게요. 상품 카드에서 기간별 월요금을 비교할 수 있어요.',page);}
+        return result('약정 기간을 아직 정하지 않으셨다면 전체 기간을 함께 볼 수 있어요.',{...guide,suggestions:['약정 상관없어요']});
+      }
+    }
+    s.reprompt=null;
+    return result('말씀하신 내용을 상품 조건으로 연결하지 못했어요. 제품 종류나 원하는 조건을 편하게 말씀해 주세요.',{...guide,suggestions:guide.suggestions||[]});
   }
+  s.reprompt=null;
   requestSummary = ['previous','first','sort'].includes(input.action) ? ({previous:'이전 상품 보기',first:'첫 상품 보기',sort:SORTS[validSort(input.sort)]})[input.action] : input.action==='resume' ? '보던 상품 이어 보기' : input.action==='more' ? '다른 상품도 보기' :
     anyBrand ? '브랜드는 상관없어요' : anyTerm ? '약정은 상관없어요' : filterLabels(next).join(' · ') || '조건 변경';
-  if(!s.filters.category&&!s.filters.model) return result('먼저 어떤 제품이 필요한지 알려주시겠어요?',{...guidance(s,catalog),needsReview:true});
+  if(!s.filters.category&&!s.filters.model) return result(repeatedQuestionRepair?'같은 질문을 반복했다면 죄송해요. 먼저 필요한 제품 종류만 알려주시면, 이미 답한 내용을 다시 묻지 않고 이어갈게요.':'먼저 어떤 제품이 필요한지 알려주시겠어요?',{...guidance(s,catalog),needsReview:true});
   const all=cardsFor(catalog,s.filters);
   s.selected=s.selected.filter(code=>all.some(c=>c.code===code));
   s.view='list';
@@ -190,7 +204,7 @@ function respondCatalog(previous, input, catalog) {
   if(!all.length) return result('말씀하신 조건으로는 맞는 상품을 찾지 못했어요.\n브랜드나 약정 기간을 조금 넓혀볼까요?',{cards:[],total:0,more:false});
   const guide=guidance(s,catalog);
   let lead;
-  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n');lead=(s.filters.category||'해당 카테고리')+'에서 서로 다른 브랜드 상품을 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.\n마음에 드는 상품 하나만 담아도 바로 상담을 이어갈 수 있어요.';}
+  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n');lead=(repeatedQuestionRepair?'같은 질문을 반복했네요. 이미 확인한 조건은 그대로 두고 추가 질문은 건너뛸게요.\n':'')+(s.filters.category||'해당 카테고리')+'에서 서로 다른 브랜드 상품을 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.\n마음에 드는 상품 하나만 담아도 바로 상담을 이어갈 수 있어요.';}
   else if(input.action==='more') lead=s.offset===previous.offset?'마지막 페이지예요. 이전 상품으로 돌아가거나 조건을 바꿔보세요.':'다음 상품을 가져왔어요.';
   else if(input.action==='previous')lead=s.offset===previous.offset?'첫 페이지예요.':'이전 상품으로 돌아왔어요.';
   else if(input.action==='first')lead='첫 페이지로 돌아왔어요.';

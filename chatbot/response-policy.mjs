@@ -25,8 +25,8 @@ export function trackOutcome(out, intent, unresolved = false, context = {}) {
     const count = s.failures?.topic === topic ? s.failures.count + 1 : 1;
     s.failures = {topic, count:Math.min(count,3)};
     s.quality.unresolved++;
-    if (count >= 3) {
-      out.reply = '같은 안내를 반복해 드렸네요. 여기서는 확인이 더 어려워 상담 신청 안내를 도와드릴게요.\n'+handoffReply(context);
+    if (count >= 2) {
+      out.reply = '같은 확인 필요 안내를 반복하지 않을게요. 현재 자료만으로 확정할 수 없어 담당자 확인이 필요합니다.\n'+handoffReply(context);
       out.handoff = true; out.suggestions = []; out.resume = false;
     }
   } else { s.failures = null; if (!out.handoff) s.quality.responded++; }
