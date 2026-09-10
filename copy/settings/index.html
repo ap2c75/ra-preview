@@ -191,6 +191,105 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
 .todo-page .back{display:inline-block;margin-top:18px;font-size:12.5px;color:var(--accent);
   text-decoration:underline;text-underline-offset:3px}
 
+/* ── 화면 공통 부품 ─────────────────────────────────────────── */
+.kicker2{font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--accent);
+  margin:0 0 7px}
+.subnote{font-size:11.5px;color:var(--faint);margin:5px 0 0}
+.tabs2{display:flex;gap:4px;flex-wrap:wrap;margin:18px 0 0;border-bottom:1px solid var(--line);
+  padding-bottom:0}
+.tabs2 button{border:1px solid transparent;border-bottom:0;background:transparent;
+  padding:8px 13px;font-size:12.5px;color:var(--muted);cursor:pointer;border-radius:8px 8px 0 0;
+  position:relative;top:1px}
+.tabs2 button:hover{color:var(--ink2);background:var(--line2)}
+.tabs2 button[aria-selected="true"]{background:var(--card);border-color:var(--line);
+  color:var(--accent);font-weight:600}
+.bannernote{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);
+  border-radius:10px;padding:10px 13px;font-size:12px;margin:16px 0 0;line-height:1.6}
+
+.filters{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  align-items:end;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:14px 15px;margin:16px 0 0}
+.filters .f{min-width:0}
+.filters .f.wide{grid-column:span 2}
+.filters label{display:block;font-size:11.5px;color:var(--muted);margin:0 0 6px;font-weight:600}
+.filters input,.filters select{width:100%;height:36px;border:1px solid var(--line);
+  border-radius:8px;padding:0 10px;font:inherit;font-size:12.5px;background:#fff;color:var(--ink)}
+.filters .chk{display:flex;align-items:center;gap:7px;height:36px;font-size:12.5px;
+  color:var(--ink2)}
+.filters .chk input{width:15px;height:15px}
+.filters .btns{display:flex;gap:7px}
+.filters .btns button{height:36px;padding:0 15px;border-radius:8px;font-size:12.5px;
+  cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink2)}
+.filters .btns button.go{background:var(--accent);border-color:var(--accent);color:#fff;
+  font-weight:600}
+details.more{margin:10px 0 0;border-top:1px dashed var(--line);padding-top:11px;
+  grid-column:1/-1}
+details.more summary{cursor:pointer;font-size:12.5px;color:var(--ink2);font-weight:600;
+  list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"▸ ";color:var(--faint)}
+details.more[open] summary::before{content:"▾ "}
+details.more summary em{font-style:normal;font-weight:400;color:var(--faint);
+  font-size:11.5px;margin-left:7px}
+details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
+
+.cohort{display:flex;align-items:center;gap:11px;margin-top:15px;font-size:12.5px}
+.cohort .nm{font-weight:700;min-width:34px}
+.cohort .ed{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11px;
+  color:var(--muted);background:var(--card);cursor:pointer}
+.cohort .track{flex:1;height:11px;border-radius:999px;background:var(--line2);overflow:hidden}
+.cohort .track i{display:block;height:100%;background:var(--blue)}
+.cohort .n{font-weight:700;white-space:nowrap}
+.cohort .n em{font-style:normal;font-weight:500;color:var(--muted);font-size:11.5px}
+
+.states{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.states div{border:1px solid var(--line2);border-radius:10px;padding:10px 11px;background:#fcfdfe}
+.states .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.states .k i{width:6px;height:6px;border-radius:999px;display:block}
+.states .v{font-size:15px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.states .v em{font-style:normal;font-size:11px;color:var(--muted);font-weight:500;margin-left:3px}
+.panelfoot{display:grid;gap:8px;margin-top:12px}
+.panelfoot div{display:flex;align-items:center;background:#f6f9fb;border-radius:9px;
+  padding:9px 12px;font-size:12.5px;color:var(--ink2)}
+.panelfoot b{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+
+.share{display:grid;gap:10px;margin-top:15px}
+.share .row{display:grid;grid-template-columns:78px 1fr 92px;align-items:center;gap:10px;
+  font-size:12px}
+.share .track{height:9px;border-radius:999px;background:var(--line2);overflow:hidden}
+.share .track i{display:block;height:100%}
+.share .val{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.share .val em{font-style:normal;font-weight:500;color:var(--muted);margin-left:3px}
+.emptypanel{margin-top:16px;border:1px dashed var(--line);border-radius:10px;padding:20px;
+  text-align:center;color:var(--faint);font-size:12.5px}
+
+.pager{display:flex;gap:5px;justify-content:center;margin-top:14px}
+.pager button{border:1px solid var(--line);background:var(--card);border-radius:7px;
+  min-width:32px;height:32px;padding:0 9px;font-size:12px;color:var(--ink2);cursor:pointer}
+.pager button[aria-current]{background:var(--accent);border-color:var(--accent);color:#fff;
+  font-weight:700}
+
+/* 설정 화면 */
+.sgrid{display:grid;gap:12px;grid-template-columns:1fr 1fr;margin-top:16px}
+.sgrid .box{margin:0}
+.sgrid .full{grid-column:1/-1}
+.sbox h3{font-size:13.5px;margin:0 0 5px;font-weight:700}
+.sbox p{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
+.radios{display:flex;gap:14px;margin:0 0 12px;font-size:12.5px}
+.radios label{display:inline-flex;align-items:center;gap:6px;color:var(--ink2)}
+.keyrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line2);
+  border-radius:10px;padding:10px 12px;margin-top:8px;background:#fcfdfe;flex-wrap:wrap}
+.keyrow .nm{font-weight:700;font-size:12.5px;min-width:76px}
+.keyrow .mask{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--ink2);
+  background:var(--line2);border-radius:6px;padding:2px 7px}
+.keyrow .st{font-size:11.5px;font-weight:600}
+.keyrow .st.on{color:#15803d} .keyrow .st.off{color:#9a3412}
+.keyrow .meta{font-size:11px;color:var(--muted);margin-left:auto;text-align:right;
+  font-variant-numeric:tabular-nums}
+.keyrow .acts{display:flex;gap:5px}
+.keyrow .acts button{border:1px solid var(--line);background:var(--card);border-radius:6px;
+  font-size:11px;padding:3px 9px;color:var(--muted);cursor:not-allowed}
+
 /* ── 로그인 (원본 /login.php) ───────────────────────────────
    🔴 원본은 모서리가 각지고 버튼이 새까맣다. 대시보드와 결이 다르다 —
       우리가 통일하지 않는다. 원본이 그렇다는 것이 보여야 한다. */
@@ -266,32 +365,123 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
     <nav class="nav">
       <div class="grp"><span class="dots">⋮</span>폴더 백선생<span class="chev">⌄</span></div>
       <a href="../"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg><span>대시보드</span></a>
-      <a href="../board-notices/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8"/></svg><span>정책공지</span><span class="todo">미확인</span></a>
+      <a href="../board-notices/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8"/></svg><span>정책공지</span></a>
       <div class="grp"><span class="dots">⋮</span>수강생<span class="chev">⌄</span></div>
-      <a href="../members/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9"/></svg><span>수강생관리</span><span class="todo">미확인</span></a>
-      <a href="../landings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg><span>랜딩관리</span><span class="todo">미확인</span></a>
+      <a href="../members/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9"/></svg><span>수강생관리</span></a>
+      <a href="../landings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg><span>랜딩관리</span></a>
       <div class="grp"><span class="dots">⋮</span>영업 관리<span class="chev">⌄</span></div>
-      <a href="../leads/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>고객목록</span><span class="todo">미확인</span></a>
-      <a href="../revenue/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>수익현황</span><span class="todo">미확인</span></a>
-      <a href="../ranking/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3M9 19h6M12 14v5"/></svg><span>순위현황</span><span class="todo">미확인</span></a>
+      <a href="../leads/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>고객목록</span></a>
+      <a href="../revenue/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>수익현황</span></a>
+      <a href="../ranking/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3M9 19h6M12 14v5"/></svg><span>순위현황</span></a>
       <div class="grp"><span class="dots">⋮</span>정보·설정<span class="chev">⌄</span></div>
-      <a href="../settings/" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12l2-1-1-3-2 .4a7 7 0 0 0-2-1.2L15.6 5h-3.2l-.4 2.2a7 7 0 0 0-2 1.2L8 8l-1 3 2 1-2 1 1 3 2-.4a7 7 0 0 0 2 1.2l.4 2.2h3.2l.4-2.2a7 7 0 0 0 2-1.2l2 .4 1-3z"/></svg><span>운영·AI 설정</span><span class="todo">미확인</span></a>
-      <a href="../audit/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>감사기록</span><span class="todo">미확인</span></a>
+      <a href="../settings/" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12l2-1-1-3-2 .4a7 7 0 0 0-2-1.2L15.6 5h-3.2l-.4 2.2a7 7 0 0 0-2 1.2L8 8l-1 3 2 1-2 1 1 3 2-.4a7 7 0 0 0 2 1.2l.4 2.2h3.2l.4-2.2a7 7 0 0 0 2-1.2l2 .4 1-3z"/></svg><span>운영·AI 설정</span></a>
+      <a href="../audit/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>감사기록</span></a>
     </nav>
     <div class="out"><a href="../login/"><button type="button">로그아웃</button></a></div>
   </aside>
   <div class="main">
-    <div class="panel todo-page">
-      <h1>운영·AI 설정</h1>
-      <p class="lead">원본: <code>/admin/settings.php</code></p>
-      <div class="card">
-        <b>이 화면은 아직 카피하지 못했습니다.</b><br>
-        원본을 열람하려다 브라우저가 하위 페이지 이동을 막았습니다.
-        <b>원본을 못 본 화면은 지어내지 않습니다</b> — 「완전 동일하게」가 요청이었는데
-        그럴듯하게 만들어 두면 나중에 원본과 대조할 때 무엇이 진짜인지 알 수 없게 됩니다.
+    <div class="panel page">
+      <div class="head">
+        <div class="t">
+          <div class="kicker2">관리자 설정</div>
+          <h1>운영·AI 설정</h1>
+          <p>상담 연결, 외부 연동, AI 기능과 사용 현황을 관리합니다.</p>
+          <p class="subnote">변경한 항목만 개별 저장됩니다.</p>
+        </div>
       </div>
-      <a class="back" href="../">← 대시보드로</a>
+      <div class="tabs2" role="tablist"><button type="button" role="tab" aria-selected="true">기본 연결</button><button type="button" role="tab" aria-selected="false">개인정보 동의</button><button type="button" role="tab" aria-selected="false">상품 설문</button><button type="button" role="tab" aria-selected="false">API 키</button><button type="button" role="tab" aria-selected="false">기능·한도</button><button type="button" role="tab" aria-selected="false">회원별 한도</button><button type="button" role="tab" aria-selected="false">기준자료</button><button type="button" role="tab" aria-selected="false">사용 기록</button></div>
+      <div class="sgrid">
+        <div class="box sbox">
+          <h3>랜딩 상담 연결</h3><p>고객에게 표시할 방법</p>
+          <div class="radios"><label><input type="radio" name="ch" checked disabled>전화 상담</label>
+            <label><input type="radio" name="ch" disabled>카카오톡 상담</label></div>
+          <div class="filters" style="border:0;padding:0;margin:0;background:transparent">
+            <div class="f"><label>전화 연결 번호</label><input type="tel" disabled></div>
+            <div class="f"><label>카카오톡 상담 링크</label><input placeholder="https://" disabled></div>
+          </div>
+        </div>
+        <div class="box sbox">
+          <h3>원앤원 외부연동</h3>
+          <p>수강생의 Instagram · Facebook 연결을 운영 계정 하나로 제공합니다. 각 수강생이 처음 연결할 때 전용 프로필이 생성됩니다.</p>
+          <div class="panelfoot">
+            <div>일반 수강생<b>32명</b></div>
+            <div>프로필<b>3 / 25개 · professional</b></div>
+          </div>
+          <div class="sample" style="margin-top:12px">집계 제외 계정이 3개 있습니다 (테스트 계정). <b>수강생 목록은 같은 기준을 쓰지 않습니다</b> — 그래서 35명과 32명이 갈립니다.</div>
+        </div>
+        <div class="box sbox full">
+          <h3>Meta 공식 연동</h3>
+          <p>쓰레드는 Meta 공식 연동을 사용하고, 인스타그램·페이스북은 위의 원앤원 외부연동을 사용합니다. 앱 설정은 기본 마스킹됩니다.</p>
+          <div class="keyrow"><span class="nm">Facebook 앱 ID</span><span class="mask">11002••••8098</span><span class="st on">등록됨</span><span class="meta">🔴 카피본에서는 원문을 열지 않습니다</span></div>
+          <div class="keyrow"><span class="nm">Threads 앱 ID</span><span class="mask">17109••••1158</span><span class="st on">등록됨</span><span class="meta">🔴 카피본에서는 원문을 열지 않습니다</span></div>
+        </div>
+        <div class="box sbox full">
+          <h3>API 키</h3>
+          <p>제공사 · 구분 이름 · 키를 등록합니다. 등록된 키는 기본 마스킹됩니다.</p>
+          <div class="keyrow"><span class="nm">Gemini · 1</span><span class="mask">AIzaS••••Zb_4</span><span class="st on">사용 중 · valid</span><span class="meta">성공 488회 · 실패 9회<br>최근 사용 2026. 09. 10. 11:20</span><span class="acts"><button type="button">테스트</button><button type="button">중지</button><button type="button">삭제</button></span></div>
+          <div class="keyrow"><span class="nm">Gemini · 2</span><span class="mask">AIzaS••••qOy4</span><span class="st on">사용 중 · valid</span><span class="meta">성공 216회 · 실패 2회<br>최근 사용 2026. 09. 10. 18:14</span><span class="acts"><button type="button">테스트</button><button type="button">중지</button><button type="button">삭제</button></span></div>
+          <div class="keyrow"><span class="nm">Gemini · 3</span><span class="mask">AQ.Ab••••QcRA</span><span class="st off">비활성 · 실패</span><span class="meta">성공 99회 · 실패 60회<br>최근 사용 2026. 09. 04. 07:51</span><span class="acts"><button type="button">테스트</button><button type="button">사용</button><button type="button">삭제</button></span></div>
+          <div class="keyrow"><span class="nm">OpenAI · 1</span><span class="mask">sk-pr••••oZ4A</span><span class="st on">사용 중 · valid</span><span class="meta">성공 284회 · 실패 0회<br>최근 사용 2026. 09. 10. 18:13</span><span class="acts"><button type="button">테스트</button><button type="button">중지</button><button type="button">삭제</button></span></div>
+          <div class="keyrow"><span class="nm">OpenAI · 2</span><span class="mask">sk-pr••••7q8A</span><span class="st on">사용 중 · valid</span><span class="meta">—</span><span class="acts"><button type="button">테스트</button><button type="button">중지</button><button type="button">삭제</button></span></div>
+          <div class="sample" style="margin-top:12px">🔴 <b>이 키들은 원본에서 실제로 돌고 있습니다.</b> 오늘도 사용됐습니다(09-10 18:13 · 18:14). 값은 마스킹된 앞뒤만 옮겼습니다.</div>
+        </div>
+        <div class="box sbox full">
+          <h3>상품별 설문 — 인터넷 · v1 · 사용 중</h3>
+          <p>질문 7개 · 적용 랜딩 34개 · 접수 이력 103건 · 이 버전은 보존되며 수정할 수 없습니다.</p>
+          <div class="tscroll"><table>
+            <thead><tr><th>항목키</th><th>질문</th><th>입력 방식</th><th>선택지</th><th>상태</th></tr></thead>
+            <tbody>
+          <tr><td class="num">place_type</td><td>인터넷을 설치할 장소는 어디인가요?</td><td>선택 목록</td><td>가정, 매장, 사무실, 기타</td><td><span class="pill s2">보존됨</span></td></tr>
+          <tr><td class="num">region</td><td>설치할 지역을 알려주세요.</td><td>한 줄 입력</td><td><span class="none">—</span></td><td><span class="pill s2">보존됨</span></td></tr>
+          <tr><td class="num">current_carrier</td><td>현재 사용 중인 인터넷 통신사가 있나요?</td><td>선택 목록</td><td>KT, SK브로드밴드, LG유플러스, 지역인터넷, 사용 안 함, 잘 모름</td><td><span class="pill s2">보존됨</span></td></tr>
+          <tr><td class="num">consult_reason</td><td>어떤 상황으로 상담이 필요한가요?</td><td>선택 목록</td><td>신규설치, 통신사변경, 이전설치, 요금상담</td><td><span class="pill s2">보존됨</span></td></tr>
+          <tr><td class="num">speed</td><td>원하는 인터넷 속도가 있나요?</td><td>선택 목록</td><td>100메가, 500메가, 1기가, 잘 모름</td><td><span class="pill s2">보존됨</span></td></tr>
+          <tr><td class="num">install_timing</td><td>설치를 원하는 시기는 언제인가요?</td><td>선택 목록</td><td>가능한 빨리, 1주 이내, 1개월 이내, 상담 후 결정</td><td><span class="pill s2">보존됨</span></td></tr>
+          <tr><td class="num">note</td><td>추가로 전달할 내용이 있나요?</td><td>여러 줄 입력</td><td><span class="none">—</span></td><td><span class="pill s2">보존됨</span></td></tr>
+            </tbody></table></div>
+        </div>
+      </div>
+      <div class="fixbar">
+        <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
+          고친 곳 · 짚은 곳 (5)</button>
+        <span>⏳ 표시는 <b>고치지 않고 짚어만 둔 것</b>입니다 — 원본 그대로 뒀습니다.</span>
+      </div>
+      <div class="fixes" id="fixlist" hidden>
+      <div class="fix"><h3>로딩 문구</h3><dl><dt>원본</dt><dd class="was">「정보를 불러오는 중입니다.」가 사라지지 않는다</dd><dt>카피본</dt><dd>걷어냈다 — 화면이 처음부터 보인다</dd><dt>이유</dt><dd class="why">실제 화면은 그 아래 이미 다 그려져 있었다. 덮개만 안 걷힌 것이다. 8화면 전부 같은 증상이고, 브라우저가 두 번 멎었다.</dd></dl></div>
+      <div class="fix"><h3>🔴 API 키가 이미 돌고 있다</h3><dl><dt>원본</dt><dd class="was">Gemini 3개 · OpenAI 2개가 등록돼 있고 오늘도 썼다 (09-10 18:13, 18:14)</dd><dt>카피본</dt><dd>그대로 옮겼다 — 키 값은 마스킹된 상태만</dd><dt>이유</dt><dd class="why">🔴 우리가 다뿌려의 **P0 블로커**로 잡아 둔 「LLM 키(계약 필요)」가 **고객사에 이미 있다.** 새로 계약할 필요가 없을 수 있다.</dd></dl></div>
+      <div class="fix"><h3>🔴 Meta 앱도 이미 있다</h3><dl><dt>원본</dt><dd class="was">Facebook 앱 ID · Threads 앱 ID가 등록돼 있다</dd><dt>카피본</dt><dd>그대로 옮겼다 — 마스킹된 상태만</dd><dt>이유</dt><dd class="why">🔴 다뿌려 P0 「Meta 앱·온보딩」도 이미 있다.</dd></dl></div>
+      <div class="fix"><h3>⏳ 키를 눈 아이콘으로 원문 노출한다</h3><dl><dt>원본</dt><dd class="was">「보기」를 누르면 API 키·앱 시크릿 원문이 화면에 뜬다 — 원본 그대로 뒀다</dd><dt>카피본</dt><dd>카피본에서는 열리지 않는다</dd><dt>이유</dt><dd class="why">🔴 그 열람이 감사기록에 남는지 확인되지 않았다. 남지 않는다면 키가 언제 누구에게 보였는지 아무도 모른다.</dd></dl></div>
+      <div class="fix"><h3>⏳ 상품이 3종이다</h3><dl><dt>원본</dt><dd class="was">인터넷 · CCTV · 포스+테이블오더 — 원본 그대로 뒀다</dd><dt>카피본</dt><dd>고치지 않았다. 짚어만 둔다</dd><dt>이유</dt><dd class="why">🔴 우리가 만든 랜딩 카탈로그는 렌탈 상품 1,706종(정수기·매트리스…)이다. **이 시스템과 상품 축이 다르다.** 어느 쪽이 이 건의 범위인지 확인이 필요하다.</dd></dl></div>
+      </div>
+      <p class="subnote">원본: <code>/admin/settings.php</code></p>
     </div>
+<script>
+(function () {
+  var t = document.getElementById("fixtoggle"), l = document.getElementById("fixlist");
+  t.addEventListener("click", function () {
+    var open = l.hidden; l.hidden = !open;
+    t.setAttribute("aria-expanded", String(open));
+    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (5)";
+  });
+  document.querySelectorAll("[data-reveal]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var i = b.getAttribute("data-reveal");
+      var cell = document.querySelector('[data-tel="' + i + '"]');
+      var shown = b.textContent === "가리기";
+      cell.textContent = shown ? ["010-****-4417","010-****-9012","010-****-3355","010-****-7788","010-****-2266","010-****-5501"][i]
+        : ["010-1234-4417","010-1234-9012","010-1234-3355","010-1234-7788","010-1234-2266","010-1234-5501"][i];
+      b.textContent = shown ? "보기" : "가리기";
+      if (!shown) console.info("[감사기록] 연락처 열람 — 행 " + i);
+    });
+  });
+  document.querySelectorAll(".tabs2 button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      b.parentNode.querySelectorAll("button").forEach(function (x) {
+        x.setAttribute("aria-selected", String(x === b)); });
+    });
+  });
+})();
+</script>
   </div>
 </div>
 </body></html>

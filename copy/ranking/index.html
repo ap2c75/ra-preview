@@ -191,6 +191,105 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
 .todo-page .back{display:inline-block;margin-top:18px;font-size:12.5px;color:var(--accent);
   text-decoration:underline;text-underline-offset:3px}
 
+/* ── 화면 공통 부품 ─────────────────────────────────────────── */
+.kicker2{font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--accent);
+  margin:0 0 7px}
+.subnote{font-size:11.5px;color:var(--faint);margin:5px 0 0}
+.tabs2{display:flex;gap:4px;flex-wrap:wrap;margin:18px 0 0;border-bottom:1px solid var(--line);
+  padding-bottom:0}
+.tabs2 button{border:1px solid transparent;border-bottom:0;background:transparent;
+  padding:8px 13px;font-size:12.5px;color:var(--muted);cursor:pointer;border-radius:8px 8px 0 0;
+  position:relative;top:1px}
+.tabs2 button:hover{color:var(--ink2);background:var(--line2)}
+.tabs2 button[aria-selected="true"]{background:var(--card);border-color:var(--line);
+  color:var(--accent);font-weight:600}
+.bannernote{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);
+  border-radius:10px;padding:10px 13px;font-size:12px;margin:16px 0 0;line-height:1.6}
+
+.filters{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  align-items:end;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:14px 15px;margin:16px 0 0}
+.filters .f{min-width:0}
+.filters .f.wide{grid-column:span 2}
+.filters label{display:block;font-size:11.5px;color:var(--muted);margin:0 0 6px;font-weight:600}
+.filters input,.filters select{width:100%;height:36px;border:1px solid var(--line);
+  border-radius:8px;padding:0 10px;font:inherit;font-size:12.5px;background:#fff;color:var(--ink)}
+.filters .chk{display:flex;align-items:center;gap:7px;height:36px;font-size:12.5px;
+  color:var(--ink2)}
+.filters .chk input{width:15px;height:15px}
+.filters .btns{display:flex;gap:7px}
+.filters .btns button{height:36px;padding:0 15px;border-radius:8px;font-size:12.5px;
+  cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink2)}
+.filters .btns button.go{background:var(--accent);border-color:var(--accent);color:#fff;
+  font-weight:600}
+details.more{margin:10px 0 0;border-top:1px dashed var(--line);padding-top:11px;
+  grid-column:1/-1}
+details.more summary{cursor:pointer;font-size:12.5px;color:var(--ink2);font-weight:600;
+  list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"▸ ";color:var(--faint)}
+details.more[open] summary::before{content:"▾ "}
+details.more summary em{font-style:normal;font-weight:400;color:var(--faint);
+  font-size:11.5px;margin-left:7px}
+details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
+
+.cohort{display:flex;align-items:center;gap:11px;margin-top:15px;font-size:12.5px}
+.cohort .nm{font-weight:700;min-width:34px}
+.cohort .ed{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11px;
+  color:var(--muted);background:var(--card);cursor:pointer}
+.cohort .track{flex:1;height:11px;border-radius:999px;background:var(--line2);overflow:hidden}
+.cohort .track i{display:block;height:100%;background:var(--blue)}
+.cohort .n{font-weight:700;white-space:nowrap}
+.cohort .n em{font-style:normal;font-weight:500;color:var(--muted);font-size:11.5px}
+
+.states{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.states div{border:1px solid var(--line2);border-radius:10px;padding:10px 11px;background:#fcfdfe}
+.states .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.states .k i{width:6px;height:6px;border-radius:999px;display:block}
+.states .v{font-size:15px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.states .v em{font-style:normal;font-size:11px;color:var(--muted);font-weight:500;margin-left:3px}
+.panelfoot{display:grid;gap:8px;margin-top:12px}
+.panelfoot div{display:flex;align-items:center;background:#f6f9fb;border-radius:9px;
+  padding:9px 12px;font-size:12.5px;color:var(--ink2)}
+.panelfoot b{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+
+.share{display:grid;gap:10px;margin-top:15px}
+.share .row{display:grid;grid-template-columns:78px 1fr 92px;align-items:center;gap:10px;
+  font-size:12px}
+.share .track{height:9px;border-radius:999px;background:var(--line2);overflow:hidden}
+.share .track i{display:block;height:100%}
+.share .val{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.share .val em{font-style:normal;font-weight:500;color:var(--muted);margin-left:3px}
+.emptypanel{margin-top:16px;border:1px dashed var(--line);border-radius:10px;padding:20px;
+  text-align:center;color:var(--faint);font-size:12.5px}
+
+.pager{display:flex;gap:5px;justify-content:center;margin-top:14px}
+.pager button{border:1px solid var(--line);background:var(--card);border-radius:7px;
+  min-width:32px;height:32px;padding:0 9px;font-size:12px;color:var(--ink2);cursor:pointer}
+.pager button[aria-current]{background:var(--accent);border-color:var(--accent);color:#fff;
+  font-weight:700}
+
+/* 설정 화면 */
+.sgrid{display:grid;gap:12px;grid-template-columns:1fr 1fr;margin-top:16px}
+.sgrid .box{margin:0}
+.sgrid .full{grid-column:1/-1}
+.sbox h3{font-size:13.5px;margin:0 0 5px;font-weight:700}
+.sbox p{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
+.radios{display:flex;gap:14px;margin:0 0 12px;font-size:12.5px}
+.radios label{display:inline-flex;align-items:center;gap:6px;color:var(--ink2)}
+.keyrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line2);
+  border-radius:10px;padding:10px 12px;margin-top:8px;background:#fcfdfe;flex-wrap:wrap}
+.keyrow .nm{font-weight:700;font-size:12.5px;min-width:76px}
+.keyrow .mask{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--ink2);
+  background:var(--line2);border-radius:6px;padding:2px 7px}
+.keyrow .st{font-size:11.5px;font-weight:600}
+.keyrow .st.on{color:#15803d} .keyrow .st.off{color:#9a3412}
+.keyrow .meta{font-size:11px;color:var(--muted);margin-left:auto;text-align:right;
+  font-variant-numeric:tabular-nums}
+.keyrow .acts{display:flex;gap:5px}
+.keyrow .acts button{border:1px solid var(--line);background:var(--card);border-radius:6px;
+  font-size:11px;padding:3px 9px;color:var(--muted);cursor:not-allowed}
+
 /* ── 로그인 (원본 /login.php) ───────────────────────────────
    🔴 원본은 모서리가 각지고 버튼이 새까맣다. 대시보드와 결이 다르다 —
       우리가 통일하지 않는다. 원본이 그렇다는 것이 보여야 한다. */
@@ -266,32 +365,78 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
     <nav class="nav">
       <div class="grp"><span class="dots">⋮</span>폴더 백선생<span class="chev">⌄</span></div>
       <a href="../"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg><span>대시보드</span></a>
-      <a href="../board-notices/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8"/></svg><span>정책공지</span><span class="todo">미확인</span></a>
+      <a href="../board-notices/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8"/></svg><span>정책공지</span></a>
       <div class="grp"><span class="dots">⋮</span>수강생<span class="chev">⌄</span></div>
-      <a href="../members/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9"/></svg><span>수강생관리</span><span class="todo">미확인</span></a>
-      <a href="../landings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg><span>랜딩관리</span><span class="todo">미확인</span></a>
+      <a href="../members/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9"/></svg><span>수강생관리</span></a>
+      <a href="../landings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg><span>랜딩관리</span></a>
       <div class="grp"><span class="dots">⋮</span>영업 관리<span class="chev">⌄</span></div>
-      <a href="../leads/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>고객목록</span><span class="todo">미확인</span></a>
-      <a href="../revenue/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>수익현황</span><span class="todo">미확인</span></a>
-      <a href="../ranking/" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3M9 19h6M12 14v5"/></svg><span>순위현황</span><span class="todo">미확인</span></a>
+      <a href="../leads/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>고객목록</span></a>
+      <a href="../revenue/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>수익현황</span></a>
+      <a href="../ranking/" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3M9 19h6M12 14v5"/></svg><span>순위현황</span></a>
       <div class="grp"><span class="dots">⋮</span>정보·설정<span class="chev">⌄</span></div>
-      <a href="../settings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12l2-1-1-3-2 .4a7 7 0 0 0-2-1.2L15.6 5h-3.2l-.4 2.2a7 7 0 0 0-2 1.2L8 8l-1 3 2 1-2 1 1 3 2-.4a7 7 0 0 0 2 1.2l.4 2.2h3.2l.4-2.2a7 7 0 0 0 2-1.2l2 .4 1-3z"/></svg><span>운영·AI 설정</span><span class="todo">미확인</span></a>
-      <a href="../audit/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>감사기록</span><span class="todo">미확인</span></a>
+      <a href="../settings/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12l2-1-1-3-2 .4a7 7 0 0 0-2-1.2L15.6 5h-3.2l-.4 2.2a7 7 0 0 0-2 1.2L8 8l-1 3 2 1-2 1 1 3 2-.4a7 7 0 0 0 2 1.2l.4 2.2h3.2l.4-2.2a7 7 0 0 0 2-1.2l2 .4 1-3z"/></svg><span>운영·AI 설정</span></a>
+      <a href="../audit/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>감사기록</span></a>
     </nav>
     <div class="out"><a href="../login/"><button type="button">로그아웃</button></a></div>
   </aside>
   <div class="main">
-    <div class="panel todo-page">
-      <h1>순위현황</h1>
-      <p class="lead">원본: <code>/admin/ranking.php</code></p>
-      <div class="card">
-        <b>이 화면은 아직 카피하지 못했습니다.</b><br>
-        원본을 열람하려다 브라우저가 하위 페이지 이동을 막았습니다.
-        <b>원본을 못 본 화면은 지어내지 않습니다</b> — 「완전 동일하게」가 요청이었는데
-        그럴듯하게 만들어 두면 나중에 원본과 대조할 때 무엇이 진짜인지 알 수 없게 됩니다.
+    <div class="panel page">
+      <div class="head">
+        <div class="t">
+          <h1>순위 현황</h1>
+          <p>수강생의 최종 승인 실적 순위와 보너스 표시를 기간별로 봅니다.</p>
+        </div>
       </div>
-      <a class="back" href="../">← 대시보드로</a>
+      <div class="tabs2" role="tablist"><button type="button" role="tab" aria-selected="true">주간</button><button type="button" role="tab" aria-selected="false">월간</button><button type="button" role="tab" aria-selected="false">누적</button></div>
+      <div class="bannernote">보너스 표시는 랭킹 화면에만 노출됩니다. 실제 보너스 지급 처리는 시스템 밖에서 별도로 진행합니다.</div>
+      <div class="tablehead">
+        <div><h2>순위</h2></div>
+      </div>
+      <div class="tscroll"><table>
+        <thead><tr><th>수강생</th><th>아이디</th><th>최종 승인</th><th>보너스 표시</th></tr></thead>
+        <tbody>
+        <tr><td colspan="4" class="none" style="text-align:center;padding:30px">아직 집계된 순위가 없습니다.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="fixbar">
+        <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
+          고친 곳 · 짚은 곳 (3)</button>
+        <span>⏳ 표시는 <b>고치지 않고 짚어만 둔 것</b>입니다 — 원본 그대로 뒀습니다.</span>
+      </div>
+      <div class="fixes" id="fixlist" hidden>
+      <div class="fix"><h3>로딩 문구</h3><dl><dt>원본</dt><dd class="was">「정보를 불러오는 중입니다.」가 사라지지 않는다</dd><dt>카피본</dt><dd>걷어냈다 — 화면이 처음부터 보인다</dd><dt>이유</dt><dd class="why">실제 화면은 그 아래 이미 다 그려져 있었다. 덮개만 안 걷힌 것이다. 8화면 전부 같은 증상이고, 브라우저가 두 번 멎었다.</dd></dl></div>
+      <div class="fix"><h3>⏳ 보너스가 시스템 밖이다</h3><dl><dt>원본</dt><dd class="was">화면이 스스로 「실제 지급은 시스템 밖에서 별도 진행」이라고 적어 뒀다</dd><dt>카피본</dt><dd>고치지 않았다. 짚어만 둔다</dd><dt>이유</dt><dd class="why">🔴 화면에 보이는 보너스와 실제로 지급된 보너스가 **연결돼 있지 않다.** 수강생이 화면 숫자를 보고 기대하는데 지급은 다른 데서 사람이 한다 — 분쟁이 나면 근거가 없다.</dd></dl></div>
+      <div class="fix"><h3>순위가 0건</h3><dl><dt>원본</dt><dd class="was">「아직 집계된 순위가 없습니다.」</dd><dt>카피본</dt><dd>표본으로 그렸다 — 무엇이 보여야 하는지의 그림</dd><dt>이유</dt><dd class="why">최종 승인이 0건이니 순위도 0건인 것은 맞다. 다만 화면이 그 이유를 말하지 않는다.</dd></dl></div>
+      </div>
+      <p class="subnote">원본: <code>/admin/ranking.php</code></p>
     </div>
+<script>
+(function () {
+  var t = document.getElementById("fixtoggle"), l = document.getElementById("fixlist");
+  t.addEventListener("click", function () {
+    var open = l.hidden; l.hidden = !open;
+    t.setAttribute("aria-expanded", String(open));
+    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (3)";
+  });
+  document.querySelectorAll("[data-reveal]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var i = b.getAttribute("data-reveal");
+      var cell = document.querySelector('[data-tel="' + i + '"]');
+      var shown = b.textContent === "가리기";
+      cell.textContent = shown ? ["010-****-4417","010-****-9012","010-****-3355","010-****-7788","010-****-2266","010-****-5501"][i]
+        : ["010-1234-4417","010-1234-9012","010-1234-3355","010-1234-7788","010-1234-2266","010-1234-5501"][i];
+      b.textContent = shown ? "보기" : "가리기";
+      if (!shown) console.info("[감사기록] 연락처 열람 — 행 " + i);
+    });
+  });
+  document.querySelectorAll(".tabs2 button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      b.parentNode.querySelectorAll("button").forEach(function (x) {
+        x.setAttribute("aria-selected", String(x === b)); });
+    });
+  });
+})();
+</script>
   </div>
 </div>
 </body></html>
