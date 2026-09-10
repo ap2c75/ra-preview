@@ -373,7 +373,10 @@ async function openConsent(){
  body.append(el('p','원활한 상담을 위해 고객님의 정보 확인부터 진행하겠습니다. 아래 안내를 확인해 주세요.'));
  body.append(el('p','고객사 검토용 사이트입니다. 입력 항목과 상담 흐름을 테스트하며, 실제 상담 접수·서버 저장·총판 전달은 하지 않습니다. 가상 이름과 테스트 연락처를 사용해 주세요.','banner'));
  const dl=el('dl',null,'notice');
- for(const [k,v] of [['서비스 운영 주체','브로씨앤씨'],['입력 항목','이름, 연락처, 설치 주소 또는 설치 주소 미정'],['이용 목적','고객정보 확인 및 렌탈 상담 화면 흐름 검토'],['보관 및 전달','입력값은 현재 입력 화면에서만 처리합니다. 상담 시작·창 닫기·새로고침 시 지우며 서버 저장, 총판 제공, 광고 활용은 하지 않습니다.'],['주소 검색','주소 검색어는 카카오 우편번호 서비스로 전송됩니다. 공개된 건물 주소로 테스트해 주세요.'],['동의 거부','동의하지 않으면 고객정보 입력 단계로 진행하지 않습니다. 창을 닫을 수 있습니다.']])dl.append(el('dt',k),el('dd',v));
+ const controller=el('dd','브로씨앤씨 및 제휴총판');
+ appendPartnerDisclosure(controller,{partners:[],relationship:'third_party'});
+ dl.append(el('dt','수집·이용 주체'),controller);
+ for(const [k,v] of [['입력 항목','이름, 연락처, 설치 주소 또는 설치 주소 미정'],['이용 목적','고객정보 확인 및 렌탈 상담 화면 흐름 검토'],['보관 및 전달','입력값은 현재 입력 화면에서만 처리합니다. 상담 시작·창 닫기·새로고침 시 지우며 서버 저장, 총판 제공, 광고 활용은 하지 않습니다.'],['주소 검색','주소 검색어는 카카오 우편번호 서비스로 전송됩니다. 공개된 건물 주소로 테스트해 주세요.'],['동의 거부','동의하지 않으면 고객정보 입력 단계로 진행하지 않습니다. 창을 닫을 수 있습니다.']])dl.append(el('dt',k),el('dd',v));
  body.append(dl);
  const agree=checkbox('[필수] 위 개인정보 입력·이용 안내를 확인하고 동의합니다.','agree-required'),age=checkbox('만 14세 이상입니다.','age-check');
  const next=button('동의하고 고객정보 입력',()=>{if(agree.input.checked&&age.input.checked)renderLead({required:true,over14:true});},'primary');next.disabled=true;

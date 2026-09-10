@@ -12,7 +12,11 @@ export function mountAddressPicker(form,base){
  const close=()=>{nonce='';if(timer)clearInterval(timer);timer=null;try{popup?.close();}catch{}popup=null;};
  search.onclick=()=>{
   close();nonce=crypto.randomUUID();
-  popup=window.open(popupOrigin+'/ra-preview/chatbot/address-popup.html#'+nonce,'somun_address_'+nonce.replaceAll('-',''),'');
+  const width=500,height=700;
+  const left=Math.max(0,Math.round((window.screenX||0)+((window.outerWidth||width)-width)/2));
+  const top=Math.max(0,Math.round((window.screenY||0)+((window.outerHeight||height)-height)/2));
+  const features=`popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`;
+  popup=window.open(popupOrigin+'/ra-preview/chatbot/address-popup.html#'+nonce,'somun_address_'+nonce.replaceAll('-',''),features);
   if(!popup){nonce='';help.textContent='팝업이 차단되었습니다. 이 사이트의 팝업을 허용한 뒤 주소 검색을 다시 눌러 주세요.';return;}
   help.textContent='검색창에서 주소를 선택해 주세요.';
   timer=setInterval(()=>{if(popup?.closed){close();help.textContent='주소 검색창을 닫았습니다. 주소 검색을 다시 누르면 열립니다.';}},500);
