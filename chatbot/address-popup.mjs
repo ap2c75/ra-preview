@@ -1,0 +1,11 @@
+document.querySelector('#retry').onclick=()=>location.reload();
+const parentOrigin=location.protocol+'//'+location.host;
+const nonce=location.hash.slice(1),status=document.querySelector('#status');
+let ready=false;
+const fail=()=>{if(ready)return;status.hidden=false;status.textContent='주소 검색 서비스에 연결하지 못했습니다. 네트워크 또는 브라우저에서 연결을 제한할 수 있습니다. 다시 연결하거나 창을 닫고 설치 주소 미정을 선택할 수 있어요.';};
+const timer=setTimeout(fail,8000);
+window.addEventListener('pagehide',()=>clearTimeout(timer),{once:true});
+const script=document.createElement('script');script.src='https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';script.referrerPolicy='no-referrer';
+script.onerror=()=>{clearTimeout(timer);fail();};
+script.onload=()=>{try{const Postcode=window.kakao?.Postcode||window.daum?.Postcode;if(!Postcode)throw Error();new Postcode({width:'100%',height:'100%',oncomplete:data=>{const address=data.userSelectedType==='R'?data.roadAddress:data.jibunAddress;if(!window.opener){status.hidden=false;status.textContent='상담창에서 주소 검색을 다시 열어 주세요.';return;}window.opener.postMessage({type:'postcode:selected',nonce,address,zonecode:data.zonecode},parentOrigin);status.hidden=false;status.textContent='선택한 주소를 상담창에 입력했습니다.';},onresize:()=>{ready=true;clearTimeout(timer);status.hidden=true;document.querySelector('#retry').hidden=true;}}).embed(document.querySelector('#search'));}catch{script.onerror();}};
+if(window.opener&&/^[a-f0-9-]{36}$/.test(nonce))document.head.append(script);else status.textContent='상담창의 주소 검색 버튼으로 열어 주세요.';
