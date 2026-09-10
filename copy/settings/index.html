@@ -442,6 +442,18 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
         </div>
 
         <div class="box sbox full">
+          <h3>AI 기준자료 <span style="color:var(--accent)">57건</span></h3>
+          <p>랜딩을 자동 생성할 때 AI 가 재료로 쓰는 자료입니다. 상품 3종 × (혜택 1 + 가격 3 + <b>후기 15</b>) = 57건.</p>
+          <div class="mets">
+            <div class="met"><div class="k"><i style="background:var(--green)"></i>혜택</div><div class="v">3건<em>무료 설치 상담</em></div></div>
+            <div class="met"><div class="k"><i style="background:var(--blue)"></i>가격</div><div class="v">9건<em>매장 기본 구성 · 사무실·창고 구성 · 주택·원룸 구성 · 가정용 인터넷 …</em></div></div>
+            <div class="met"><div class="k"><i style="background:var(--amber)"></i>후기</div><div class="v">45건<em>김도윤 · 박서연 · 이준호 · 최유진 …</em></div></div>
+            <div class="met"><div class="k"><i style="background:var(--gray)"></i>수정일</div><div class="v">2026. 08. 01. 18건 · 2026. 08. 02. 39건<em>이틀 만에 전부 등록됐습니다</em></div></div>
+          </div>
+          <div class="sample" style="margin-top:12px">🔴 <b>후기가 상품마다 정확히 15개씩</b> 딱 떨어집니다 (김도윤 · 박서연 · 이준호 · 최유진 …). 실제 고객 후기는 이렇게 나오지 않습니다. ⏳ <b>이 후기가 실제 고객의 것인지 확인이 필요합니다</b> — 판정은 하지 않습니다.</div>
+        </div>
+
+        <div class="box sbox full">
           <h3>기능·한도 <span style="color:var(--accent)">15종</span></h3>
           <p>기능을 선택하면 제공사, 사용 여부, 한도와 비용 기준을 수정할 수 있습니다. 🔴 <b>다뿌려 것은 4개</b>입니다 — 나머지는 랜딩 생성과 후킹자판기입니다.</p>
           <div class="tscroll"><table>
@@ -495,7 +507,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
       </div>
       <div class="fixbar">
         <button type="button" id="fixtoggle" aria-expanded="false" aria-controls="fixlist">
-          고친 곳 · 짚은 곳 (9)</button>
+          고친 곳 · 짚은 곳 (10)</button>
         <span>⏳ 표시는 <b>고치지 않고 짚어만 둔 것</b>입니다 — 원본 그대로 뒀습니다.</span>
       </div>
       <div class="fixes" id="fixlist" hidden>
@@ -507,6 +519,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
       <div class="fix"><h3>🔴 실패에도 돈이 나간다</h3><dl><dt>원본</dt><dd class="was">요청 881 · 완료 598 · **실패 175(19.9%)** · 예상 비용 US$103.01</dd><dt>카피본</dt><dd>실패 건수와 비용을 나란히 적는다</dd><dt>이유</dt><dd class="why">🔴 `gpt-image-2`는 **7건 요청 · 완료 0건**인데 **US$9.81**이 붙었다. 랜딩 포트폴리오 이미지는 212건 중 93건(44%), 랜딩 대표이미지는 305건 중 71건(23%) 실패. **비용의 95%가 이미지 생성**($98.2/$103.0)인데 실패율이 가장 높은 것도 이미지다.</dd></dl></div>
       <div class="fix"><h3>🔴 한도가 「무제한」인 기능이 3개</h3><dl><dt>원본</dt><dd class="was">다뿌려 기사 이미지 · 후킹자판기 · 후킹자판기 이미지 = 무제한</dd><dt>카피본</dt><dd>무제한을 붉게 표시했다</dd><dt>이유</dt><dd class="why">🔴 이미지 생성이 비용의 95%인데 이미지 기능 둘이 **무제한**이다. 수강생 32명이 쓰는 구조에서 상한이 없으면 비용이 어디까지 갈지 아무도 모른다.</dd></dl></div>
       <div class="fix"><h3>🔴 설정한 모델과 실제 호출 모델이 다르다</h3><dl><dt>원본</dt><dd class="was">기능·한도: 「다뿌려 기사 이미지 = gemini-3.6-flash」 / 사용 기록: 「dapuryeo_article_image = gemini-3-pro-image」</dd><dt>카피본</dt><dd>둘을 나란히 적어 어긋난 것이 보이게 했다</dd><dt>이유</dt><dd class="why">🔴 설정에서 싼 모델을 골라 뒀는데 실제로는 비싼 모델로 나갔다. 설정 화면이 실제 동작을 반영하지 않으면 **비용을 줄이려고 설정을 바꿔도 소용이 없다.**</dd></dl></div>
+      <div class="fix"><h3>🔴 랜딩 「후기」가 미리 만들어져 있다</h3><dl><dt>원본</dt><dd class="was">기준자료 57건 = 상품 3종 × (혜택 1 + 가격 3 + **후기 15**). 후기 45건 제목이 전부 사람 이름(김도윤·박서연·이준호…)이고, 수정일이 2026-08-01 18건 / 08-02 39건 — **이틀 만에 전부**</dd><dt>카피본</dt><dd>구분과 건수를 그대로 옮기고, 날짜가 한 곳에 몰린 것을 표시했다</dd><dt>이유</dt><dd class="why">🔴 후기가 상품마다 **정확히 15개씩** 딱 떨어진다. 실제 고객 후기는 이렇게 나오지 않는다. ⏳ 이 후기가 실제 고객의 것인지 **확인이 필요하다.** 지어낸 후기를 랜딩에 싣는 것은 거짓·과장 광고 문제로 이어질 수 있다 — 판정은 하지 않는다. 확인부터 한다.</dd></dl></div>
       <div class="fix"><h3>⏳ 상품이 3종이다</h3><dl><dt>원본</dt><dd class="was">인터넷 · CCTV · 포스+테이블오더 — 원본 그대로 뒀다</dd><dt>카피본</dt><dd>고치지 않았다. 짚어만 둔다</dd><dt>이유</dt><dd class="why">🔴 우리가 만든 랜딩 카탈로그는 렌탈 상품 1,706종(정수기·매트리스…)이다. **이 시스템과 상품 축이 다르다.** 어느 쪽이 이 건의 범위인지 확인이 필요하다.</dd></dl></div>
       </div>
       <p class="subnote">원본: <code>/admin/settings.php</code></p>
@@ -517,7 +530,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
   t.addEventListener("click", function () {
     var open = l.hidden; l.hidden = !open;
     t.setAttribute("aria-expanded", String(open));
-    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (9)";
+    t.textContent = open ? "접기" : "고친 곳 · 짚은 곳 (10)";
   });
   document.querySelectorAll("[data-reveal]").forEach(function (b) {
     b.addEventListener("click", function () {
