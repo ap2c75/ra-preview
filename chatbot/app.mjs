@@ -4,7 +4,7 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=recommend-public-20260910-1';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=recommend-public-20260910-2';
 
 let siteData=null;
 fetch('/ra-preview/chatbot/site-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1')siteData=d;}).catch(()=>{siteData=null;});
@@ -19,7 +19,7 @@ const el = (tag, text, className) => { const n = document.createElement(tag); if
 let state = initialState(), busy = false, dialogEpoch = 0, offer = null, receipt = null;
 const money = n => Number(n).toLocaleString('ko-KR') + '원';
 const emptyContent = $('#results').cloneNode(true);
-let visibleCards = 0;
+let visibleCards = 0, recommendationView = false;
 
 let entryMode = 'waiting', serviceMode='preview';
 let nextCatalogRetry=0;
@@ -218,14 +218,14 @@ function renderBrowse() {
   if(!catalogReady()){$('#browse-toolbar').hidden=true;$('#product-pagination').hidden=true;$('#selection-tray').hidden=true;return;}
   const all=cardsFor(SAMPLE_PRODUCTS,state.filters),page=pageData(all,state),comparison=state.view==='compare';
   const active=entryMode!=='waiting'&&visibleCards>0;
-  $('#browse-toolbar').hidden=!active;
+  $('#browse-toolbar').hidden=!active||recommendationView;
   $('#product-sort').value=validSort(state.sort); $('#product-sort').disabled=comparison;
   $('#back-to-list').hidden=!comparison;
-  $('#product-pagination').hidden=!active||comparison;
+  $('#product-pagination').hidden=!active||comparison||recommendationView;
   $('#first-products').disabled=!page.previous; $('#previous-products').disabled=!page.previous; $('#next-products').disabled=!page.more;
   $('#product-page').textContent=page.page+' / '+page.pages;
   $('#product-page').setAttribute('aria-label',page.pages+'페이지 중 '+page.page+'페이지');
-  if(active&&!comparison)$('#result-count').textContent=page.total+'개 중 '+page.start+'–'+page.end;
+  if(active&&!comparison)$('#result-count').textContent=recommendationView?visibleCards+'개 추천':page.total+'개 중 '+page.start+'–'+page.end;
   const selected=state.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
   $('#selection-tray').hidden=entryMode==='waiting'||!selected.length;
   $('#selection-summary').textContent='담은 상품 '+selected.length+' / 3';
@@ -314,7 +314,7 @@ function run(input) {
   if(out.siteSources?.length){const box=el('div',null,'answer-sources');for(const source of out.siteSources){const a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';const row=el('p');row.append(a);box.append(row);}$('#messages').lastElementChild.append(box);}
   if(out.sources?.length){const box=el('details',null,'answer-sources');box.append(el('summary','확인한 안내 근거'));for(const source of out.sources){const row=el('p'),a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';row.append(a,el('small',source.topic+' · '+source.scope+' · 적용 종료 '+new Date(source.validUntil).toLocaleDateString('ko-KR')));box.append(row);}$('#messages').lastElementChild.append(box);}
   // Customer messages remain in this page only, not storage, analytics or external/model APIs.
-  if ('cards' in out) {const scroll=$('#results').scrollTop;renderCards(out.cards, out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
+  if ('cards' in out) {const scroll=$('#results').scrollTop;recommendationView=!!out.recommendation;renderCards(out.cards, out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
   if(!available)showCatalogUnavailable();
   renderBrowse(); renderActions(out);
   $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'상담할 상품은 최대 3개까지 담을 수 있어요. 상품 하나를 빼고 다시 선택해 주세요.':'';

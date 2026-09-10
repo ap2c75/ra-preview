@@ -11,7 +11,7 @@ import { toCategory } from '/ra-preview/chatbot/taxonomy.mjs';
 import { mask } from '/ra-preview/chatbot/detect.mjs';
 
 const norm = v => String(v ?? '').replace(/\s+/g, '').toLowerCase();
-export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [] });
+export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [], recommendedCodes: [] });
 export const filterLabels = f => [f.category, f.model && `모델 ${f.model}`, f.brand, f.brands?.join(' · '), ...(f.excludedBrands||[]).map(b=>b+' 제외'), f.excludeIce&&'얼음 제외', ...(f.excludedTerms||[]).map(n=>n+'개월 제외'), ...(f.excludedCare||[]).map(v=>(v==='visit'?'방문관리':'자가관리')+' 제외'), f.maker, f.term && `${f.term}개월`, f.feature === 'ice' && '얼음', f.care === 'visit' && '방문관리', f.care === 'self' && '자가관리', f.budget && `월 ${f.budget.toLocaleString('ko-KR')}원 이하`].filter(Boolean);
 function eligibleOptions(t, f) {
   return (t.options || [{ fee: t.fee }]).filter(o => {
@@ -107,9 +107,12 @@ function respondCatalog(previous, input, catalog) {
   }
   if (input.action === 'select' || input.action === 'clearSelection') {
     const all = cardsFor(catalog,s.filters);
+    const recommended=(s.recommendedCodes||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
     const display = () => s.view==='compare'&&s.selected.length>=2
       ? {cards:s.selected.map(code=>all.find(c=>c.code===code)).filter(Boolean),comparison:true}
-      : (s.view='list',pageData(all,s));
+      : recommended.length
+        ? (s.view='list',{cards:recommended,total:recommended.length,previous:false,more:false,recommendation:true})
+        : (s.view='list',pageData(all,s));
     if(input.action==='clearSelection') {
       s.selected=[]; requestSummary='담은 상품 비우기';
       return result('담은 상품을 비웠어요.',display());
@@ -176,7 +179,8 @@ function respondCatalog(previous, input, catalog) {
   if(input.action==='previous')s.offset-=PAGE_SIZE;
   if(input.action==='first')s.offset=0;
   const recommendations=recommendationRequested?recommendationsByBrand(all):null;
-  if(recommendations)s.offset=0;
+  if(recommendations){s.offset=0;s.recommendedCodes=recommendations.map(card=>card.code);}
+  else s.recommendedCodes=[];
   const page=recommendations?{cards:recommendations,total:recommendations.length,page:1,pages:1,start:1,end:recommendations.length,previous:false,more:false}:pageData(all,s);
   if(s.filters.care||s.filters.excludedCare?.length){
     const unknown=cardsFor(catalog,{...s.filters,care:null,excludedCare:[]}).filter(c=>c.plans.some(p=>p.options.some(o=>o.care==='관리 방식 확인 필요')));
@@ -186,7 +190,7 @@ function respondCatalog(previous, input, catalog) {
   if(!all.length) return result('말씀하신 조건으로는 맞는 상품을 찾지 못했어요.\n브랜드나 약정 기간을 조금 넓혀볼까요?',{cards:[],total:0,more:false});
   const guide=guidance(s,catalog);
   let lead;
-  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n');lead=(s.filters.category||'해당 카테고리')+'에서 서로 다른 브랜드 상품을 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.';}
+  if(recommendationRequested){const list=page.cards.map((card,index)=>(index+1)+'. '+card.brand+' · '+card.name).join('\n');lead=(s.filters.category||'해당 카테고리')+'에서 서로 다른 브랜드 상품을 바로 골라봤어요.\n'+list+'\n현재 공개된 월요금과 등록 혜택 기준이며, 최종 지원 혜택은 상담 시점에 확인해 주세요.\n마음에 드는 상품 하나만 담아도 바로 상담을 이어갈 수 있어요.';}
   else if(input.action==='more') lead=s.offset===previous.offset?'마지막 페이지예요. 이전 상품으로 돌아가거나 조건을 바꿔보세요.':'다음 상품을 가져왔어요.';
   else if(input.action==='previous')lead=s.offset===previous.offset?'첫 페이지예요.':'이전 상품으로 돌아왔어요.';
   else if(input.action==='first')lead='첫 페이지로 돌아왔어요.';
@@ -200,7 +204,7 @@ function respondCatalog(previous, input, catalog) {
   else if(next.term) lead=next.term+'개월 약정으로 찾아봤어요.';
   else if(next.category) lead=next.category+' 알아보고 계시는군요. 조건에 맞는 상품을 찾아봤어요.';
   else lead=changed?'확인된 검색 조건으로 다시 찾아봤어요.':'현재 설정된 조건의 상품을 보여드릴게요.';
-  return result(lead+'\n'+guide.question,{...guide,...page});
+  return result(recommendationRequested?lead:lead+'\n'+guide.question,{...guide,...page,recommendation:recommendationRequested});
 }
 
 // Preserve the entry controller and structured product state; do not call
