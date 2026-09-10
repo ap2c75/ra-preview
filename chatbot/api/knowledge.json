@@ -1,1 +1,44 @@
-{"entries":[]}
+{
+  "entries": [
+    {
+      "id": "install-lead-time",
+      "answer": "설치 시기는 상품과 렌탈사, 설치 지역에 따라 달라집니다. 현재 고객 사이트에도 공통 설치 소요일이 확정되어 있지 않아 신청 단계에서 날짜를 약속할 수 없습니다. 상담 접수 후 담당자가 설치 가능 일정을 확인해 안내합니다.",
+      "scope": {"category": null, "brand": null},
+      "source": {"label": "소문 계약 전 확인", "url": "https://rentalagit-preview.pages.dev/notice/"},
+      "validFrom": "2026-09-10T00:00:00+09:00",
+      "validUntil": "2026-10-10T23:59:59+09:00"
+    },
+    {
+      "id": "install-fee",
+      "answer": "설치비와 등록비는 상품 및 렌탈사 조건에 따라 확인해야 합니다. 현재 고객 사이트에는 모든 상품에 공통으로 적용할 금액이 확정되어 있지 않습니다. 계약 전에 선택한 상품의 설치비·등록비 유무와 금액을 따로 확인해 안내합니다.",
+      "scope": {"category": null, "brand": null},
+      "source": {"label": "소문 계약 전 확인", "url": "https://rentalagit-preview.pages.dev/notice/"},
+      "validFrom": "2026-09-10T00:00:00+09:00",
+      "validUntil": "2026-10-10T23:59:59+09:00"
+    },
+    {
+      "id": "support-warranty",
+      "answer": "무상 A/S 기간과 범위, 소모품 교체 주기는 렌탈사와 상품별 계약서에서 확인해야 합니다. 현재 공통 A/S 조건은 게시 전 확인 단계이므로, 상품을 고르면 해당 렌탈사의 조건을 확인해 안내합니다.",
+      "scope": {"category": null, "brand": null},
+      "source": {"label": "소문 계약 전 확인", "url": "https://rentalagit-preview.pages.dev/notice/"},
+      "validFrom": "2026-09-10T00:00:00+09:00",
+      "validUntil": "2026-10-10T23:59:59+09:00"
+    },
+    {
+      "id": "promo-deadline",
+      "answer": "요금과 혜택의 적용 기간은 현재 고객 사이트에서 공통 마감일을 확정하지 않았습니다. 화면에 보이는 등록 조건도 신청 시점에 유효한지 담당자가 다시 확인해야 합니다.",
+      "scope": {"category": null, "brand": null},
+      "source": {"label": "소문 인터넷·TV 안내", "url": "https://rentalagit-preview.pages.dev/internet/"},
+      "validFrom": "2026-09-10T00:00:00+09:00",
+      "validUntil": "2026-10-10T23:59:59+09:00"
+    },
+    {
+      "id": "escalation-policy",
+      "answer": "상담 신청을 남기면 담당자가 접수 내용을 확인한 뒤 연락합니다. 현재 확정된 운영시간과 평균 대기시간은 게시되어 있지 않아 당일 연락이나 특정 시각을 약속할 수 없습니다.",
+      "scope": {"category": null, "brand": null},
+      "source": {"label": "소문 상담 신청 안내", "url": "https://rentalagit-preview.pages.dev/apply/"},
+      "validFrom": "2026-09-10T00:00:00+09:00",
+      "validUntil": "2026-10-10T23:59:59+09:00"
+    }
+  ]
+}

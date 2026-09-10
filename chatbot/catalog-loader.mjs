@@ -8,7 +8,7 @@ export function validateCatalog(data,now=Date.now()){
  }
  return data;
 }
-export function createCatalogLoader({fetcher=signal=>fetch('/ra-preview/chatbot/api/catalog.json',{cache:'no-store',signal}).then(r=>{if(!r.ok)throw Error('network');return r.json();}),now=Date.now,timeoutMs=10000,onChange=()=>{}}={}){
+export function createCatalogLoader({fetcher=signal=>fetch('/ra-preview/chatbot/api/catalog.json',{cache:'default',signal}).then(r=>{if(!r.ok)throw Error('network');return r.json();}),now=Date.now,timeoutMs=10000,onChange=()=>{}}={}){
  let value={status:'idle',products:[],checkedAt:null},pending=null;
  const emit=next=>{value=next;onChange(value);return value;};
  function checkExpiry(){if(value.status==='ready'&&value.validUntil&&now()>=Date.parse(value.validUntil))emit({...value,status:'expired',products:[]});return value;}

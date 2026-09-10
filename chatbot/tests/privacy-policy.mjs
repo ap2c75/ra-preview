@@ -5,7 +5,7 @@ const partners = [
   {name:'총판 테스트A',purpose:'렌탈 상품 상담, 영업 안내 및 계약 접수',retention:'제공받은 날부터 90일'},
   {name:'총판 테스트B',purpose:'렌탈 상품 상담, 영업 안내 및 계약 접수',retention:'제공받은 날부터 90일'},
 ];
-const ready = {...DEFAULT_POLICY,privacyContact:'privacy@example.com',operationsApproved:true,partnerCompanies:partners};
+const ready = {...DEFAULT_POLICY,privacyContact:'privacy@example.com',operationsApproved:true,partnerRegistryVersion:'2026-09-10-v1',partnerCompanies:partners};
 
 assert.deepEqual(consentRequirements(ready),{collectionUse:true,thirdParty:true,over14:true});
 assert.deepEqual(policyIssues(ready),[]);
@@ -24,6 +24,7 @@ assert.throws(()=>consentEvidence(ready,{collectionUse:true,over14:true}),/THIRD
 const evidence=consentEvidence(ready,{collectionUse:true,thirdParty:true,over14:true},'2026-09-10T01:02:03+09:00');
 assert.equal(evidence.policyVersion,ready.version);
 assert.equal(evidence.agreedAt,'2026-09-09T16:02:03.000Z');
+assert.equal(evidence.partnerRegistryVersion,'2026-09-10-v1');
 assert.deepEqual(evidence.recipients,['총판 테스트A','총판 테스트B']);
 
 assert.deepEqual(validateLead({name:'테스트고객',phone:'010-1234-5678',address:'설치 주소 미정'},{optional:false}),{
@@ -32,4 +33,4 @@ assert.deepEqual(validateLead({name:'테스트고객',phone:'010-1234-5678',addr
 assert.throws(()=>validateLead({name:'테스트고객',phone:'010-1234-5678',address:'직접 입력 주소',current_brand:'브랜드'},{optional:false}),/UNCONSENTED_FIELD/);
 assert.ok(noticeIssues({...n,partners:[]}).includes('partners'));
 
-console.log('privacy policy: 17 assertions passed');
+console.log('privacy policy: 18 assertions passed');
