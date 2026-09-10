@@ -121,6 +121,26 @@ const benefitReference=send(recommended.state,'세 번째 혜택은 뭐예요?')
 assert.equal(benefitReference.state.focusCode,recommended.cards[2].code);
 assert.match(benefitReference.reply,/등록된 혜택|별도 혜택 문구/);
 
+const recommendationReason=send(recommended.state,'왜 이 제품들을 추천했어요?');
+assert.equal(recommendationReason.recommendation,true);
+assert.deepEqual(recommendationReason.cards.map(card=>card.code),recommended.cards.map(card=>card.code));
+assert.match(recommendationReason.reply,/카테고리에 정확히 맞는 상품|등록 할인·혜택과 월요금/);
+const firstRecommendationReason=send(recommended.state,'1번을 추천한 이유가 뭐예요?');
+assert.ok(firstRecommendationReason.reply.includes(recommended.cards[0].name));
+assert.ok(!firstRecommendationReason.reply.includes(recommended.cards[1].name));
+
+const visibleBenefitComparison=send(recommended.state,'셋 중 혜택 좋은 건 뭐예요?');
+assert.equal(visibleBenefitComparison.comparison,true);
+assert.equal(visibleBenefitComparison.cards.length,3);
+assert.match(visibleBenefitComparison.reply,/등록된 혜택 문구를 비교/);
+const visiblePriceComparison=send(recommended.state,'셋 중 월요금 가장 싼 건?');
+assert.equal(visiblePriceComparison.comparison,true);
+assert.equal(visiblePriceComparison.cards.length,3);
+assert.match(visiblePriceComparison.reply,/번이 낮음|동일/);
+const visibleGeneralComparison=send(recommended.state,'세 개 차이를 알려줘');
+assert.equal(visibleGeneralComparison.comparison,true);
+assert.equal(visibleGeneralComparison.cards.length,3);
+
 const directComparison=send(recommended.state,'1번이랑 2번 비교해줘');
 assert.equal(directComparison.comparison,true);
 assert.deepEqual(directComparison.state.selected,[recommended.cards[0].code,recommended.cards[1].code]);
@@ -216,5 +236,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 47 scenarios / 126 assertions passed');
+console.log('conversation regression: 52 scenarios / 139 assertions passed');
 

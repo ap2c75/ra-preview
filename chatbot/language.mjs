@@ -119,7 +119,8 @@ export function referenceComparison(text,{visibleCodes=[],selectedCodes=[],view=
    codes.push(visibleCodes[n-1]);
   }
   codes=[...new Set(codes)];
- } else if(view==='compare'&&visibleCodes.length>=2&&visibleCodes.length<=3) codes=[...visibleCodes];
+ } else if(((visibleCodes.length===3&&/(?:셋|세)\s*(?:개|가지)?\s*(?:중|차이|비교)/.test(text))||(visibleCodes.length===2&&/(?:둘|두)\s*(?:개|가지)?\s*(?:중|차이|비교)/.test(text))||(visibleCodes.length>=2&&visibleCodes.length<=3&&/추천(?:한)?\s*(?:상품|제품).*(?:비교|차이)/.test(text)))) codes=[...visibleCodes];
+ else if(view==='compare'&&visibleCodes.length>=2&&visibleCodes.length<=3) codes=[...visibleCodes];
  else if(selectedCodes.length>=2&&selectedCodes.length<=3) codes=[...selectedCodes];
  if(codes.length<2)return {clarification:'비교할 상품 두 개를 번호로 말씀해 주세요. 예: “1번이랑 2번 비교해줘.”'};
  const criterion=/방문\s*관리|자가\s*관리|셀프\s*관리|관리\s*방식|케어/.test(text)?'care':/혜택|프로모션|할인|지원금/.test(text)?'benefit':/약정|개월/.test(text)?'term':/싼|싸|저렴|낮|가격|요금|얼마/.test(text)?'price':'general';

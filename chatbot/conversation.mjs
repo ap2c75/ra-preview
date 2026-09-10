@@ -1,7 +1,7 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
 import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-6';
+import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-7';
 import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
@@ -74,6 +74,16 @@ function recommendationsByBrand(all,limit=3,excludedCodes=[],category=null){
   }).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||b.value.categoryMatch-a.value.categoryMatch||b.count-a.count||a.value.minFee-b.value.minFee||a.brand.localeCompare(b.brand,'ko')).slice(0,limit).map(item=>item.card);
 }
 const feeLabel=plan=>plan.min===plan.max?`${plan.min.toLocaleString('ko-KR')}원`:`${plan.min.toLocaleString('ko-KR')}~${plan.max.toLocaleString('ko-KR')}원`;
+function recommendationReasonReply(s,catalog,text){
+ const all=cardsFor(catalog,s.filters),recommended=(s.recommendedCodes||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
+ if(!recommended.length)return null;
+ const ordinal=[...text.matchAll(/(첫|한|두|둘|세|셋|\d+)\s*(?:번째|번)/g)].at(-1),number=ordinal?({첫:1,한:1,두:2,둘:2,세:3,셋:3}[ordinal[1]]??Number(ordinal[1])):null;
+ const cards=number?recommended.slice(number-1,number):recommended;
+ if(number&&!cards.length)return {state:s,reply:'현재 추천한 상품에 해당 번호가 없어요. 화면의 상품 번호를 다시 확인해 주세요.',requestSummary:'추천 상품 번호 확인',needsReview:true,suggestions:[]};
+ const detail=cards.map(card=>{const lowest=[...card.plans].sort((a,b)=>a.min-b.min)[0],care=careLabels(card).join('·')||'관리 방식 확인 필요',benefit=benefitLabels(card)[0];return `${recommended.indexOf(card)+1}번 ${card.brand} · ${card.name}: ${lowest.months}개월 월 ${lowest.min.toLocaleString('ko-KR')}원부터 · ${care}${benefit?` · 등록 혜택 ${benefit}`:''}`;});
+ const evidence=cards.flatMap(card=>[card.brand,card.name,...card.plans.flatMap(plan=>[String(plan.months),...plan.options.flatMap(option=>[String(option.fee),option.fee.toLocaleString('ko-KR'),option.care,option.promo,option.discount].filter(Boolean))])]).join(' ');
+ return {state:s,reply:`요청한 카테고리에 정확히 맞는 상품을 먼저 남기고, 각 브랜드 안에서 등록 할인·혜택과 월요금을 기준으로 골랐어요.\n${detail.join('\n')}\n실제 지원 혜택과 사용 환경 적합성은 상담 시점에 다시 확인해 주세요.`,requestSummary:'추천 이유',cards:recommended,recommendation:true,evidenceIds:['catalog-filter-order','catalog-product-plan'],referenceEvidence:evidence,suggestions:[]};
+}
 function contextualProductReply(s,query,catalog){
  const all=cardsFor(catalog,{...s.filters,term:null,excludedTerms:[]});
  const card=all.find(item=>item.code===query.code);
@@ -397,7 +407,7 @@ export function respond(previous, input, catalog, context = {}) {
   } else if(intent==='schedule'&&!faqQuestion&&!parsed.changed&&!isInstallationTiming(text)) {
     out=base('상담 연락을 받을 시점이 궁금하신가요, 아니면 제품 설치 날짜가 궁금하신가요?','일정 문의 확인',{needsReview:true,suggestions:[]});
   } else if(asksReason(text)&&!['human','complaint','cancel'].includes(intent)) {
-    out=!s.filters.category?base('먼저 어떤 상품이 필요한지 알려주세요. 조건에 맞는 상품을 찾은 뒤 표시 기준을 설명해 드릴게요.','상품 조건 확인',{needsReview:true}):base('입력하신 '+[s.filters.category,s.filters.brand,s.filters.brands?.join(' · '),s.filters.term&&s.filters.term+'개월 약정',s.filters.budget&&'예산',s.filters.care&&'관리 방식'].filter(Boolean).join(' · ')+' 조건으로 찾았어요. '+orderDescription(s)+'\n개인별 적합도를 평가한 추천 순위는 아니에요. 실제 사용 환경에 맞는지는 제품 사양과 관리 조건을 함께 확인해야 합니다.','상품 표시 기준',{evidenceIds:['catalog-filter-order']});
+    out=recommendationReasonReply(s,catalog,text)||(!s.filters.category?base('먼저 어떤 상품이 필요한지 알려주세요. 조건에 맞는 상품을 찾은 뒤 표시 기준을 설명해 드릴게요.','상품 조건 확인',{needsReview:true}):base('입력하신 '+[s.filters.category,s.filters.brand,s.filters.brands?.join(' · '),s.filters.term&&s.filters.term+'개월 약정',s.filters.budget&&'예산',s.filters.care&&'관리 방식'].filter(Boolean).join(' · ')+' 조건으로 찾았어요. '+orderDescription(s)+'\n개인별 적합도를 평가한 추천 순위는 아니에요. 실제 사용 환경에 맞는지는 제품 사양과 관리 조건을 함께 확인해야 합니다.','상품 표시 기준',{evidenceIds:['catalog-filter-order']}));
   } else if (intent==='human' || intent==='complaint') {
     out = base((intent==='complaint'?'불편하셨겠어요. 어떤 제품을 고를지보다 겪으신 불편을 먼저 확인해야겠네요.\n':'담당자와 직접 상담하고 싶으시군요.\n')+handoffReply(context), intent==='human'?'담당자 상담 요청':'불편 사항 상담', {handoff:true,suggestions:[]});
   } else if (intent==='cancel') {
