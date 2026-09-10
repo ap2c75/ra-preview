@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="viewport" content="width=device-width,initial-scale=1"><title>소문 · 상담 접수함</title><link rel="stylesheet" href="./style.css"></head>
+<body><header><a href="../">소문<span>·</span></a><div><strong>상담 접수함</strong><small id="identity">로그인 전</small></div><button id="logout" hidden>접속 종료</button></header>
+<main>
+ <section id="login" class="panel login"><p class="eyebrow">PARTNER DESK</p><h1>배정된 상담을 확인하세요.</h1><p>총판별 접수함은 서로 분리됩니다. 사업자명과 본사에서 발급한 접속키를 입력해 주세요.</p><form id="login-form"><label>사업자명<input name="businessName" autocomplete="organization" required></label><label>접속키<input name="accessKey" type="password" autocomplete="current-password" required></label><p id="login-error" class="error" role="alert"></p><button class="primary">접수함 열기</button></form></section>
+ <section id="desk" hidden>
+  <div class="toolbar"><div><p class="eyebrow">CONSULTATION INBOX</p><h1>상담 접수 현황</h1></div><div class="controls"><label>상태<select id="filter"><option value="">전체</option><option value="queued">확인 대기</option><option value="received">접수 확인</option><option value="consulting">상담 중</option><option value="completed">상담 완료</option></select></label><button id="refresh">새로고침</button><button id="export">CSV 내려받기</button></div></div>
+  <p id="status" class="status" role="status"></p><div id="summary" class="summary"></div><div id="leads" class="lead-list"></div>
+  <section id="admin" class="admin" hidden><h2>운영 관리</h2><div class="admin-grid"><div><h3>총판 접속키 발급</h3><label>제휴 총판<select id="partner"></select></label><button id="issue-key">새 접속키 발급</button><pre id="issued-key" hidden></pre></div><div><h3>최근 30일 익명 대화 통계</h3><div id="quality">불러오는 중</div></div></div></section>
+ </section>
+</main><dialog id="events-dialog"><div class="dialog-head"><h2>처리 이력</h2><button id="close-events">닫기 ×</button></div><div id="events"></div></dialog><script type="module" src="./app.mjs?v=ops-20260911-1"></script></body></html>

@@ -1,0 +1,6 @@
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve(new URL('../..',import.meta.url).pathname.replace(/^\/(?:([A-Za-z]):)/,'$1:')),port=Number(process.env.PORT)||8787;
+const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png'};
+http.createServer((request,response)=>{try{const url=new URL(request.url,'http://localhost'),relative=decodeURIComponent(url.pathname).replace(/^\/ra-preview\/?/,'').replace(/^\/+/,''),candidate=path.resolve(root,relative||'index.html');if(!candidate.startsWith(root+path.sep))throw Error();let file=candidate;if(fs.statSync(file).isDirectory())file=path.join(file,'index.html');response.writeHead(200,{'content-type':types[path.extname(file)]||'application/octet-stream','cache-control':'no-store'});fs.createReadStream(file).pipe(response);}catch{response.writeHead(404,{'content-type':'text/plain; charset=utf-8'});response.end('Not found');}}).listen(port,'127.0.0.1',()=>console.log(`preview ready http://127.0.0.1:${port}/ra-preview/chatbot/`));

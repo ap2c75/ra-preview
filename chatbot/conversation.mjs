@@ -44,7 +44,7 @@ export function cardsFor(catalog, f) {
       return [{ months: t.m, min: Math.min(...fees), max: Math.max(...fees),
         options: options.map(o => ({ fee: o.discountedFee ?? o.fee, baseFee: o.fee,
           care: /방문|자가|셀프/.test(o.careType || '') ? o.careType : '관리 방식 확인 필요', rawCare: o.careType, cycle: o.careCycle,
-          condition: o.condition, note: o.note, promo: o.promo, discount: o.discountText,
+          condition: o.condition, note: o.note, promo: o.publicBenefit||o.promo, discount: o.discountText, supportAmount:o.publicSupportAmount||0,benefitVersion:o.benefitVersion||null,
           totalMonths: o.totalMonths, sourceRow: o.sourceRow ?? null })) }];
     });
     return plans.length ? [{ code: p.code, name: p.name, brand: catalogBrand(p.brand), plans }] : [];
@@ -60,6 +60,7 @@ function publicRecommendationValue(card,category){
     minFee=Math.min(minFee,option.fee);
     if(Number.isFinite(option.baseFee))maxDiscount=Math.max(maxDiscount,option.baseFee-option.fee);
     if(option.promo||option.discount)benefitSignals+=1;
+    if(Number.isFinite(option.supportAmount))maxDiscount=Math.max(maxDiscount,option.supportAmount);
   }
   return {maxDiscount,benefitSignals,categoryMatch:categoryNameMatch(card,category)?1:0,minFee};
 }
@@ -360,6 +361,14 @@ function respondCatalog(previous, input, catalog) {
 export function respond(previous, input, catalog, context = {}) {
   const selectedBefore=previous?.selected||[];
   const raw = String(input.text || '').trim().slice(0,500);
+  const compact=raw.replace(/\s+/g,'');
+  const receiptCancellation=/(?:상담|신청|접수)(?:을|를|은|는)?(?:취소|철회|삭제)|(?:접수|개인정보)(?:를|은|는)?지워/.test(compact);
+  const conversationEnding=/^(?:(?:됐어요|됐습니다|괜찮아요)[,.]?)*(?:그만할게요|그만할래요|종료할게요|끝낼게요|다음에할게요|나중에할게요)[.!?~]*$/.test(compact)||/^(?:됐어요|됐습니다|괜찮아요)[.!?~]*$/.test(compact);
+  if(!input.action&&receiptCancellation){
+    if(context.hasReceipt)return {state:structuredClone(previous||initialState()),reply:'접수 삭제는 되돌릴 수 없어 접수 관리 화면에서 한 번 더 확인받습니다. 지금 접수 관리 화면을 열어드릴게요.',requestSummary:'상담 접수 삭제 요청',intent:'receipt-delete',outcome:'actionable',manageReceipt:true,suggestions:[]};
+    return {state:structuredClone(previous||initialState()),reply:'현재 저장된 상담 접수가 없어 삭제할 정보가 없습니다. 상품 상담은 여기서 마칠게요.',requestSummary:'상담 신청 취소',intent:'conversation-end',outcome:'resolved',endConversation:true,suggestions:[]};
+  }
+  if(!input.action&&conversationEnding)return {state:structuredClone(previous||initialState()),reply:context.hasReceipt?'대화는 여기서 마칠게요. 저장된 상담 접수는 유지됩니다. 삭제를 원하시면 “접수 정보 삭제”라고 말씀해 주세요.':'알겠습니다. 상담은 여기서 마칠게요. 필요하실 때 다시 열어 주세요.',requestSummary:'상담 종료',intent:'conversation-end',outcome:'resolved',endConversation:true,suggestions:[]};
   let text = raw;
   const safety = mask(text,{profile:'storage'});
   if (safety.kinds.length) return respondCatalog(previous,input,catalog);

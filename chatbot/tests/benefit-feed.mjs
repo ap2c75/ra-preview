@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {applyBenefitFeed,validateBenefitFeed} from '../benefit-feed.mjs';
+const feed={format:'somun-public-benefits-v1',status:'reviewed',version:'2026-09-10-v1',validFrom:'2026-09-10T00:00:00+09:00',validUntil:'2026-09-20T00:00:00+09:00',reviewedBy:'브로씨앤씨 운영담당',entries:[{productCode:'p1',type:'cash_support',publicLabel:'설치 확인 후 고객 혜택 10만원',amountWon:100000,conditions:'신규 설치 및 정상 개통',sourceRef:'혜택원장 2026-09-10 1행',verifiedAt:'2026-09-10T09:00:00+09:00'}]};
+validateBenefitFeed(feed,Date.parse('2026-09-11T00:00:00+09:00'));
+const products=applyBenefitFeed([{code:'p1',terms:[{m:36,options:[{fee:20000}]}]},{code:'p2',terms:[]}],feed);
+assert.equal(products[0].terms[0].options[0].publicSupportAmount,100000);
+assert.equal(products[1].code,'p2');
+assert.throws(()=>validateBenefitFeed({...feed,entries:[{...feed.entries[0],commission:50000}]},Date.parse('2026-09-11T00:00:00+09:00')),/PRIVATE_COMMISSION_BLOCKED/);
+assert.throws(()=>validateBenefitFeed({...feed,status:'draft'},Date.parse('2026-09-11T00:00:00+09:00')),/NOT_ACTIVE/);
+console.log('benefit feed: 5 assertions passed');

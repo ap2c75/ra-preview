@@ -1,0 +1,5 @@
+{
+  "apiBase": "",
+  "configured": false,
+  "note": "Cloudflare Worker 배포 후 apiBase와 configured를 갱신합니다."
+}

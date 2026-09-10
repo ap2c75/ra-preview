@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+const base=process.env.SOMUN_TEST_API||'http://127.0.0.1:8791',adminKey=process.env.SOMUN_TEST_ADMIN||'local-admin-test-key';
+async function call(path,{method='GET',body,token}={}){const response=await fetch(base+path,{method,headers:{...(body?{'content-type':'application/json'}:{}),...(token?{authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});const value=await response.json().catch(()=>null);if(!response.ok)throw new Error(value?.error||response.status);return value;}
+const status=await call('/api/status');assert.equal(status.available,true);assert.equal(status.notice.partners.length,2);
+const consent={collectionUse:true,thirdParty:true,over14:true,policyVersion:status.notice.version,partnerRegistryVersion:status.notice.partnerRegistryVersion};
+const first=await call('/api/intakes',{method:'POST',body:{fields:{name:'테스트 고객',phone:'010-0000-0001',address:'설치 주소 미정'},consent,selectedProducts:['test-product-1'],unresolved:[],sourceUrl:'http://127.0.0.1/test'}});assert.equal(first.receipt.delivery,'queued');
+const second=await call('/api/intakes',{method:'POST',body:{fields:{name:'테스트 고객이',phone:'010-0000-0002',address:'서울특별시 중구 세종대로 110'},consent,selectedProducts:[],unresolved:['support-warranty'],sourceUrl:'http://127.0.0.1/test'}});
+const resumed=await call('/api/session',{token:first.sessionToken});assert.equal(resumed.receipt.id,first.receipt.id);
+const admin=await call('/api/ops/login',{method:'POST',body:{businessName:'브로씨앤씨',accessKey:adminKey}});assert.equal(admin.role,'admin');
+const partners=(await call('/api/ops/partners',{token:admin.token})).partners;assert.equal(partners.length,2);
+const keys=[];for(const partner of partners)keys.push(await call('/api/admin/partners/'+partner.id+'/access-key',{method:'POST',body:{},token:admin.token}));
+const partnerA=await call('/api/ops/login',{method:'POST',body:{businessName:keys[0].businessName,accessKey:keys[0].accessKey}}),partnerB=await call('/api/ops/login',{method:'POST',body:{businessName:keys[1].businessName,accessKey:keys[1].accessKey}});
+const aLeads=(await call('/api/ops/leads',{token:partnerA.token})).leads,bLeads=(await call('/api/ops/leads',{token:partnerB.token})).leads,aIds=new Set(aLeads.map(v=>v.id)),bIds=new Set(bLeads.map(v=>v.id));
+assert.equal([...aIds].some(id=>bIds.has(id)),false);assert.equal(aIds.has(first.receipt.id)||bIds.has(first.receipt.id),true);assert.equal(aIds.has(second.receipt.id)||bIds.has(second.receipt.id),true);
+const firstOwner=aIds.has(first.receipt.id)?partnerA:partnerB,firstOther=aIds.has(first.receipt.id)?partnerB:partnerA;
+await call('/api/ops/leads/'+first.receipt.id,{method:'PATCH',body:{status:'received'},token:firstOwner.token});await assert.rejects(()=>call('/api/ops/leads/'+first.receipt.id+'/events',{token:firstOther.token}),/NOT_FOUND/);
+const secondCurrent=aIds.has(second.receipt.id)?partners[0]:partners[1],secondTarget=partners.find(partner=>partner.id!==secondCurrent.id);await call('/api/ops/leads/'+second.receipt.id,{method:'PATCH',body:{partnerId:secondTarget.id},token:admin.token});const assignmentEvents=(await call('/api/ops/leads/'+second.receipt.id+'/events',{token:admin.token})).events;assert.equal(assignmentEvents.some(event=>event.event_type==='assigned'),true);
+await call('/api/quality',{method:'POST',body:{outcome:'responded',intent:'recommendation',selectedCount:1}});await assert.rejects(()=>call('/api/quality',{method:'POST',body:{outcome:'responded',intent:'recommendation',selectedCount:1,userText:'원문'}}),/UNSAFE_EVENT/);
+const recovery=await call('/api/intakes/'+first.receipt.id+'/recovery-code',{method:'POST',body:{},token:first.sessionToken});assert.match(recovery.code,/^lead_.+\./);const recovered=await call('/api/recover',{method:'POST',body:{code:recovery.code}});assert.equal(recovered.receipt.id,first.receipt.id);
+const deleted=await call('/api/intakes/'+first.receipt.id,{method:'DELETE',token:recovered.sessionToken});assert.equal(deleted.deletionConfirmed,true);
+const remaining=(await call('/api/ops/leads',{token:admin.token})).leads;assert.equal(remaining.some(lead=>lead.id===first.receipt.id),false);assert.equal(remaining.some(lead=>lead.id===second.receipt.id),true);
+console.log('local integration: status, encrypted intake, tenant isolation, assignment, workflow, quality, recovery and deletion passed');

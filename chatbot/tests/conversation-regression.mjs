@@ -208,6 +208,20 @@ assert.equal(changedCategory.state.filters.category,'비데');
 assert.deepEqual(changedCategory.state.selected,[]);
 assert.deepEqual(changedCategory.state.recommendedCodes,[]);
 
+const oneStepCorrection=send(recommended.state,'아니 정수기 말고 공기청정기 추천해줘');
+assert.equal(oneStepCorrection.state.filters.category,'공기청정기');
+assert.equal(oneStepCorrection.cards.length,3);
+const politeEnd=respond(recommended.state,{text:'됐어요 그만할게요'},catalog,{...context,hasReceipt:false});
+assert.equal(politeEnd.intent,'conversation-end');
+assert.equal(politeEnd.endConversation,true);
+assert.doesNotMatch(politeEnd.reply,/해지|위약금/);
+const cancelSaved=respond(recommended.state,{text:'상담 신청 취소할게요'},catalog,{...context,hasReceipt:true});
+assert.equal(cancelSaved.manageReceipt,true);
+assert.match(cancelSaved.reply,/접수 관리 화면/);
+const cancelUnsaved=respond(recommended.state,{text:'상담 신청 취소할게요'},catalog,{...context,hasReceipt:false});
+assert.equal(cancelUnsaved.endConversation,true);
+assert.match(cancelUnsaved.reply,/저장된 상담 접수가 없어/);
+
 const quality=createQualityRecorder();
 quality.add({reason:'의도 오인식',userText:'제 번호는 010-1234-5678이고 정수기 추천',assistantText:'알겠습니다.',context:{filters:['정수기'],awaiting:'brand',selectedCount:0}});
 const qualityText=quality.exportText();
@@ -255,5 +269,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 55 scenarios / 151 assertions passed');
+console.log('conversation regression: 59 scenarios / 163 assertions passed');
 
