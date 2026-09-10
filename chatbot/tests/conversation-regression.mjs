@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {initialState,respond} from '../conversation.mjs';
+import {createQualityRecorder} from '../quality-recorder.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('../api/catalog.json',import.meta.url),'utf8')).products;
 const context={catalogAvailable:true};
 const send=(state,text)=>respond(state,{text},catalog,context);
@@ -73,5 +74,14 @@ assert.equal(changedCategory.state.filters.category,'비데');
 assert.deepEqual(changedCategory.state.selected,[]);
 assert.deepEqual(changedCategory.state.recommendedCodes,[]);
 
-console.log('conversation regression: 16 scenarios passed');
+const quality=createQualityRecorder();
+quality.add({reason:'의도 오인식',userText:'제 번호는 010-1234-5678이고 정수기 추천',assistantText:'알겠습니다.',context:{filters:['정수기'],awaiting:'brand',selectedCount:0}});
+const qualityText=quality.exportText();
+assert.doesNotMatch(qualityText,/010-1234-5678/);
+assert.match(qualityText,/\[전화번호\]/);
+assert.match(qualityText,/의도 오인식/);
+quality.clear();
+assert.equal(quality.all().length,0);
+
+console.log('conversation regression: 17 scenarios / 40 assertions passed');
 

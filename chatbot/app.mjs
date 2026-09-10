@@ -5,6 +5,7 @@ import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
 import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-2';
+import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
 
 let siteData=null;
 fetch('/ra-preview/chatbot/site-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1')siteData=d;}).catch(()=>{siteData=null;});
@@ -17,6 +18,8 @@ let SAMPLE_PRODUCTS=[],catalogMetadata={status:'idle'};
 const $ = q => document.querySelector(q);
 const el = (tag, text, className) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (className) n.className = className; return n; };
 let state = initialState(), busy = false, dialogEpoch = 0, offer = null, receipt = null;
+const qualityRecorder=createQualityRecorder();
+let latestUserText='';
 const money = n => Number(n).toLocaleString('ko-KR') + '원';
 const emptyContent = $('#results').cloneNode(true);
 let visibleCards = 0, recommendationView = false;
@@ -201,12 +204,29 @@ function showEmpty() {
 function button(label, action, className = '') {
   const b = el('button', label, className); b.type = 'button'; b.addEventListener('click', action); return b;
 }
+function qualityContext(){return {filters:filterLabels(state.filters),awaiting:state.awaiting,selectedCount:state.selected.length};}
+function appendMessageFeedback(row,assistantText,userText){
+  if(!userText||entryMode==='waiting')return;
+  const details=el('details',null,'message-feedback'),summary=el('summary','답변 개선');details.append(summary);
+  const choices=el('div',null,'message-feedback-choices');
+  for(const [reason,label] of QUALITY_REASONS){
+    choices.append(button(label,()=>{
+      qualityRecorder.add({reason:label,userText,assistantText,context:qualityContext()});
+      details.replaceChildren(el('span','개선 항목에 담았습니다.','message-feedback-done'));
+      renderActions();
+    }));
+  }
+  details.append(choices);row.append(details);
+}
 function say(text, speaker = 'assistant') {
   const log = $('#messages'), row = el('div', null, speaker === 'user' ? 'message user-message' : 'message');
   row.append(el('span', speaker === 'user' ? '나' : '소문 상담', 'message-meta'), el('div', text, 'message-text'));
+  if(speaker==='user')latestUserText=text;
+  else{appendMessageFeedback(row,text,latestUserText);latestUserText='';}
   log.append(row);
   while (log.childElementCount > 24) log.firstElementChild.remove();
   log.scrollTop = log.scrollHeight;
+  return row;
 }
 function renderFilters() {
   const box = $('#filters'); box.replaceChildren();
@@ -301,7 +321,15 @@ function renderActions(out = {}) {
   if (state.filters.budget) actions.append(button('예산 해제', () => run({text:'예산 해제'})));
   if (state.selected.length) actions.append(button('담은 상품으로 상담 이어가기', () => {run({action:'consultSelection'});setPanel('chat');}, 'primary'));
   if (state.selected.length>=2) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
+  const qualityCount=qualityRecorder.all().length;
+  if(qualityCount)actions.append(button('개선 기록 복사 ('+qualityCount+')',copyQualityRecords,'quality-export'));
   // Receipt management lives in the status bar; do not repeat intake in every turn.
+}
+async function copyQualityRecords(){
+  const text=qualityRecorder.exportText();
+  try{await navigator.clipboard.writeText(text);say('개선 기록을 복사했습니다. 담당자에게 전달하면 회귀검사에 반영할 수 있어요.');}
+  catch{say('브라우저가 복사를 허용하지 않았어요. 주소창의 사이트 권한에서 클립보드를 허용한 뒤 다시 시도해 주세요.');}
+  renderActions();
 }
 function run(input) {
   if(entryMode==='waiting'){openConsent();return;}
