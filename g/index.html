@@ -325,6 +325,12 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
 
   var $ = function (id) { return document.getElementById(id); };
   var won = function (n) { return Number(n).toLocaleString('ko-KR'); };
+  /* 🔴 제품명에 브랜드가 이미 있는 시트가 있다 — 또 붙이면 두 번 나온다 */
+  function flatN(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9가-힣]/g,''); }
+  function fullName(brand, name){
+    return (brand && flatN(name).indexOf(flatN(brand)) < 0) ? brand + ' ' + name : String(name||'');
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -414,7 +420,7 @@ img.thumb{width:40px;height:40px;border-radius:9px;object-fit:contain;background
         (p.img ? '<span class="ph"><img src="' + esc(p.img) + '" alt="" loading="lazy" decoding="async"></span>'
                : '<span class="ph none" aria-hidden="true">' + esc(p.sub.slice(0, 2)) + '</span>') +
         '<span class="bd">' +
-          '<span class="nm">' + esc(p.name) + '</span>' +
+          '<span class="nm">' + esc(fullName(p.brand, p.name)) + '</span>' +
           '<span class="cat">' + esc(p.brand) + ' · ' + esc(p.sub) + '</span>' +
           '<span class="fee">월 <b>' + won(p.low) + '원</b>부터' +
             (p.high > p.low ? ' <i>~ ' + won(p.high) + '원</i>' : '') + '</span>' +
