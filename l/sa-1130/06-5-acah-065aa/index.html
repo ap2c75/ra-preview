@@ -363,6 +363,10 @@ figure.shot{margin:0 0 18px;padding:22px;display:flex;flex-direction:column;alig
 figure.shot img{width:min(340px,74%);height:auto;object-fit:contain}
 figure.shot figcaption{font-size:12.5px;color:var(--muted,#64748b);text-align:center}
 
+/* 접수 실패 안내 — 🔴 실패했는데 아무 말이 없으면 손님은 접수된 줄 안다 */
+.sendfail{margin:10px 0 0;padding:11px 13px;border-radius:10px;background:#fdeee7;
+  border:1px solid #f2cdbb;color:#9a3412;font-size:13px;line-height:1.6}
+
 </style>
 </head>
 <body>
@@ -608,12 +612,41 @@ figure.shot figcaption{font-size:12.5px;color:var(--muted,#64748b);text-align:ce
   var codeEl = document.querySelector('input[name=partner_code]');
   var CODE = codeEl ? codeEl.value : "";
 
+  /* ── 보내기 ────────────────────────────────────────────────────
+     🔴 예전엔 `mode:"no-cors"` 였다. 그러면 응답이 **불투명**해서 서버가 거절해도
+        fetch 가 성공으로 끝난다 — 손님 화면엔 「접수됐습니다」가 뜨고, 실제로는 아무것도
+        안 들어가 있다. 손님은 오지 않을 전화를 기다린다. 상담 폼에서 제일 나쁜 실패다.
+     🔑 Content-Type 을 text/plain 으로 두면 사전 요청(preflight)이 안 붙는다.
+        그래서 `mode:"cors"` 로 두어도 Apps Script 가 받고, **응답을 읽을 수 있다.**
+        (application/json 으로 바꾸면 preflight 가 붙고 Apps Script 는 그걸 못 받는다.) */
   function post(payload) {
-    if (!LIVE) return Promise.resolve();
+    if (!LIVE) return Promise.resolve({ ok: true, offline: true });
     return fetch(ENDPOINT, {
-      method: "POST", mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
+    }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function (j) {
+      /* 🔴 서버가 「안 받았다」고 하면 실패로 다룬다. 200 이라고 성공이 아니다. */
+      if (!j || j.ok !== true) throw new Error((j && j.why) || "거절됨");
+      return j;
+    });
+  }
+
+  /* 방문 기록은 실패해도 손님에게 알리지 않는다 — 손님이 할 수 있는 일이 없다.
+     🔴 상담신청은 반대다. 반드시 알린다. */
+  function ping(payload) { return post(payload).catch(function () {}); }
+
+  /* 🔴 상담신청은 손님이 이름·번호를 적어 넣은 것이다. 한 번 끊겼다고 버리지 않는다 —
+        네트워크가 순간 끊긴 경우가 흔하다. 다만 **두 번까지만**. 계속 재시도하면
+        같은 사람이 여러 번 쌓인다. */
+  function sendLead(payload) {
+    return post(payload).catch(function (err) {
+      /* 서버가 「모르는 총판코드」처럼 명확히 거절한 것은 다시 보내도 같다 */
+      if (/거절됨|형식|동의|모르는/.test(String(err && err.message))) throw err;
+      return new Promise(function (r) { setTimeout(r, 1200); }).then(function () { return post(payload); });
     });
   }
 
@@ -800,7 +833,7 @@ figure.shot figcaption{font-size:12.5px;color:var(--muted,#64748b);text-align:ce
   renderAll();
 
   /* ── 방문 기록 1회 ────────────────────────────────────────────── */
-  try { post({ type: "view", partner_code: CODE, ts: new Date().toISOString(), referrer: document.referrer || "" }); } catch (e) {}
+  try { ping({ type: "view", partner_code: CODE, ts: new Date().toISOString(), referrer: document.referrer || "" }); } catch (e) {}
 
   /* ── 선택 변수 — 값이 비면 줄 자체를 지운다 ─────────────────────
      🔴 생성기가 빈 문자열로 치환하면 " · " 구분자만 남는다. 40장에 그대로 나간다.
@@ -861,10 +894,26 @@ figure.shot figcaption{font-size:12.5px;color:var(--muted,#64748b);text-align:ce
     if (c2) payload.consent_3rd = c2.checked;
 
     function done() { f.style.display = "none"; ok.classList.add("on"); ok.scrollIntoView({ block: "center" }); }
+
+    /* 🔴 실패했는데 「접수됐습니다」를 띄우지 않는다. 손님이 다음에 뭘 해야 하는지 말한다 —
+          다시 시도하거나 전화하거나. 아무 말 없이 버튼만 되돌리면 손님은 눌린 줄 안다. */
+    function failed(why) {
+      sb.classList.remove("loading"); sb.disabled = false; sbt.textContent = "다시 보내기";
+      var box = document.getElementById("sendfail");
+      if (!box) {
+        box = document.createElement("p");
+        box.id = "sendfail";
+        box.className = "sendfail";
+        sb.parentNode.insertBefore(box, sb.nextSibling);
+      }
+      var tel = document.querySelector('a[href^="tel:"]');
+      box.textContent = "접수가 되지 않았습니다. 다시 눌러 주시고, 그래도 안 되면 "
+        + (tel ? tel.textContent.trim() + " 로 " : "") + "전화 주십시오.";
+      if (why) box.setAttribute("data-why", why);
+    }
+
     if (!LIVE) { setTimeout(done, 400); return; }
-    post(payload).then(done).catch(function () {
-      sb.classList.remove("loading"); sb.disabled = false; sbt.textContent = "다시 시도하기";
-    });
+    sendLead(payload).then(done).catch(function (err) { failed(err && err.message); });
   });
 })();
 
