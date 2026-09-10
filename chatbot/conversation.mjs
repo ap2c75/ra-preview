@@ -1,7 +1,7 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
 import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-4';
+import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-5';
 import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
@@ -123,6 +123,27 @@ function contextualComparisonReply(s,query,catalog){
  }
  const intro=query.criterion==='care'?'등록된 관리 방식을 비교했어요.':query.criterion==='benefit'?'등록된 혜택 문구를 비교했어요.':query.criterion==='term'?'확인 가능한 약정 기간을 비교했어요.':'같은 약정끼리 등록된 월요금 범위를 비교했어요.';
  return {state:s,reply:`${intro}\n${lines.join('\n')}\n상품 카드에서 세부 조건을 확인하고, 원하는 상품 하나만 남겨 상담을 이어갈 수 있어요.`,requestSummary:'상품 비교',cards,comparison:true,evidenceIds:['catalog-product-plan'],referenceEvidence:evidence,suggestions:[]};
+}
+function contextualDecisionReply(s,query,catalog){
+ const all=cardsFor(catalog,s.filters),cards=query.codes.map(code=>all.find(card=>card.code===code)).filter(Boolean);
+ if(cards.length!==query.codes.length)return {state:s,reply:'조건이 바뀌어 결정할 상품을 다시 찾지 못했어요. 현재 상품 목록에서 다시 선택해 주세요.',requestSummary:'결정 상품 다시 확인',needsReview:true,suggestions:[]};
+ let card=query.code?cards.find(item=>item.code===query.code):null,basis='비교 화면에서 고르신';
+ if(query.criterion==='price'){
+  const common=(query.requestedMonths?[query.requestedMonths]:cards[0].plans.map(plan=>plan.months)).filter(months=>cards.every(item=>item.plans.some(plan=>plan.months===months)));
+  if(!common.length)return {state:s,reply:query.requestedMonths?`${query.requestedMonths}개월 요금이 두 상품에 모두 등록되어 있지 않아 낮은 쪽을 정할 수 없어요. 다른 약정을 말씀해 주세요.`:'두 상품에 공통으로 등록된 약정이 없어 월요금을 같은 기준으로 비교할 수 없어요. 상품 번호를 직접 골라주세요.',requestSummary:'비교 기준 확인',needsReview:true,cards,comparison:true,suggestions:[]};
+  const winners=common.map(months=>{const plans=cards.map(item=>item.plans.find(plan=>plan.months===months)),min=Math.min(...plans.map(plan=>plan.min)),indexes=plans.map((plan,index)=>plan.min===min?index:null).filter(index=>index!==null);return indexes.length===1?indexes[0]:null;});
+  if(winners.some(index=>index===null)||new Set(winners).size!==1)return {state:s,reply:'약정 기간에 따라 낮은 상품이 달라지거나 같은 요금이 있어 자동으로 하나를 정하기 어려워요. 약정 기간이나 상품 번호를 말씀해 주세요.',requestSummary:'비교 기준 확인',needsReview:true,cards,comparison:true,suggestions:common.map(months=>months+'개월').slice(0,3)};
+  card=cards[winners[0]];basis=`공통 ${common.join('·')}개월의 등록 월요금 하한에서 더 낮게 확인된`;
+ }
+ if(query.criterion==='visit'||query.criterion==='self'){
+  const pattern=query.criterion==='visit'?/방문/:/자가|셀프/,matched=cards.filter(item=>careLabels(item).some(value=>pattern.test(value)));
+  if(matched.length!==1)return {state:s,reply:matched.length?'해당 관리 방식이 가능한 상품이 여러 개예요. 상품 번호를 하나 골라주세요.':'비교 중인 상품에서 해당 관리 방식이 확인되지 않아요. 다른 관리 방식이나 상품 번호를 말씀해 주세요.',requestSummary:'관리 방식 선택 확인',needsReview:true,cards,comparison:true,suggestions:[]};
+  card=matched[0];basis=`등록 자료에서 ${query.criterion==='visit'?'방문관리':'자가관리'} 옵션이 확인된`;
+ }
+ if(!card)return {state:s,reply:'선택할 상품을 확인하지 못했어요. 비교 상품 번호를 다시 말씀해 주세요.',requestSummary:'상품 선택 확인',needsReview:true,cards,comparison:true,suggestions:[]};
+ const position=query.codes.indexOf(card.code)+1,evidence=[card.brand,card.name,...card.plans.flatMap(plan=>[String(plan.months),...plan.options.flatMap(option=>[String(option.fee),option.fee.toLocaleString('ko-KR'),option.care].filter(Boolean))])].join(' ');
+ s.selected=[card.code];s.view='list';s.focusCode=card.code;
+ return {state:s,reply:`${basis} ${position}번 ${card.brand} · ${card.name} 하나로 정리했어요. 이 상품 기준으로 상담을 이어갈게요. 월요금·약정·관리 방식 중 더 궁금한 점을 말씀해 주세요.`,requestSummary:'비교 후 상품 결정',cards:[card],evidenceIds:['catalog-product-plan'],referenceEvidence:evidence,suggestions:[]};
 }
 // Structured state and presentation summaries only. Never persist raw messages.
 function guidance(s, catalog) {
@@ -322,18 +343,19 @@ export function respond(previous, input, catalog, context = {}) {
   }
   if(/정수기|공기청정기|비데|냉장고|세탁기|매트리스|에어컨/.test(raw)&&previous?.siteInternet){previous=structuredClone(previous);delete previous.siteInternet;}
   text=normalizeText(raw);
-  const comparisonResult=!input.action?referenceComparison(text,{visibleCodes:previous?.visibleCodes||[],selectedCodes:previous?.selected||[],view:previous?.view||'list'}):null;
-  const referenceQuestionResult=!input.action&&!comparisonResult?referenceQuestion(text,{visibleCodes:previous?.visibleCodes||[],focusCode:previous?.focusCode||null,selectedCodes:previous?.selected||[]}):null;
+  const decisionResult=!input.action?referenceDecision(text,{visibleCodes:previous?.visibleCodes||[],selectedCodes:previous?.selected||[],view:previous?.view||'list'}):null;
+  const comparisonResult=!input.action&&!decisionResult?referenceComparison(text,{visibleCodes:previous?.visibleCodes||[],selectedCodes:previous?.selected||[],view:previous?.view||'list'}):null;
+  const referenceQuestionResult=!input.action&&!comparisonResult&&!decisionResult?referenceQuestion(text,{visibleCodes:previous?.visibleCodes||[],focusCode:previous?.focusCode||null,selectedCodes:previous?.selected||[]}):null;
   if(referenceQuestionResult)referenceQuestionResult.text=text;
-  const faqQuestion=!input.action&&!referenceQuestionResult&&!comparisonResult?rentalFaqReply(text):null;
-  const parsed=(input.action||faqQuestion||referenceQuestionResult||comparisonResult)?{state:structuredClone(previous||initialState()),patch:{},changed:false}:interpret(text,previous||initialState());
+  const faqQuestion=!input.action&&!referenceQuestionResult&&!comparisonResult&&!decisionResult?rentalFaqReply(text):null;
+  const parsed=(input.action||faqQuestion||referenceQuestionResult||comparisonResult||decisionResult)?{state:structuredClone(previous||initialState()),patch:{},changed:false}:interpret(text,previous||initialState());
   const s=parsed.state;
   const browsing=input.action?{}:browseRequest(text);
   if(browsing.clarification)parsed.clarification=browsing.clarification;
   if(browsing.sort&&!parsed.clarification){s.sort=browsing.sort;s.offset=0;parsed.changed=true;parsed.sortChanged=true;}
   if(parsed.changed)s.view='list';
   if(browsing.action)input={...input,action:browsing.action};
-  const ref=input.action||referenceQuestionResult||comparisonResult?null:referenceAction(text,previous?.visibleCodes||[]);
+  const ref=input.action||referenceQuestionResult||comparisonResult||decisionResult?null:referenceAction(text,previous?.visibleCodes||[]);
   const referenceConflict=ref?.action&&(parsed.sortChanged||JSON.stringify(s.filters)!==JSON.stringify((previous||initialState()).filters));
   if(referenceConflict)parsed.clarification='상품 조건·순서 변경과 번호 선택은 나누어 진행해 주세요. 먼저 바꿀 조건을 확인할까요?';
   if(parsed.clarification){Object.assign(s,structuredClone(previous||initialState()));parsed.changed=false;}
@@ -343,11 +365,13 @@ export function respond(previous, input, catalog, context = {}) {
 
   let out;
   const base = (reply, summary, extra={}) => ({state:s,reply,requestSummary:summary,...extra});
-  if(context.catalogAvailable===false&&(comparisonResult?.codes||referenceQuestionResult?.code)) {
+  if(context.catalogAvailable===false&&(decisionResult?.code||decisionResult?.criterion||comparisonResult?.codes||referenceQuestionResult?.code)) {
     out=base('상품 자료를 확인하지 못해 지금은 해당 상품을 비교하거나 요금을 안내할 수 없어요. 상품 자료 다시 불러오기를 눌러 주세요.','상품 자료 확인 필요',{catalogUnavailable:true,needsReview:true,suggestions:[]});
-  } else if(parsed.clarification||ref?.clarification||referenceQuestionResult?.clarification||comparisonResult?.clarification) {
-    out=base(parsed.clarification||ref?.clarification||referenceQuestionResult?.clarification||comparisonResult.clarification,'입력 조건 확인',{needsReview:true,suggestions:[]});
+  } else if(parsed.clarification||ref?.clarification||referenceQuestionResult?.clarification||comparisonResult?.clarification||decisionResult?.clarification) {
+    out=base(parsed.clarification||ref?.clarification||referenceQuestionResult?.clarification||comparisonResult?.clarification||decisionResult.clarification,'입력 조건 확인',{needsReview:true,suggestions:[]});
     out.requestSummary='입력 조건 확인';
+  } else if(decisionResult?.code||decisionResult?.criterion) {
+    out=contextualDecisionReply(s,decisionResult,catalog);
   } else if(comparisonResult?.codes) {
     out=contextualComparisonReply(s,comparisonResult,catalog);
   } else if(referenceQuestionResult?.code) {

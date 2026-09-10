@@ -101,6 +101,24 @@ assert.match(ambiguousComparison.reply,/비교할 상품 두 개를 번호로/);
 const unavailableComparison=respond(recommended.state,{text:'1번이랑 2번 비교해줘'},catalog,{catalogAvailable:false});
 assert.equal(unavailableComparison.catalogUnavailable,true);
 assert.match(unavailableComparison.reply,/상품 자료를 확인하지 못해/);
+const explicitDecision=send(directComparison.state,'그럼 1번으로 상담할게요');
+assert.deepEqual(explicitDecision.state.selected,[directComparison.cards[0].code]);
+assert.equal(explicitDecision.state.view,'list');
+assert.equal(explicitDecision.cards.length,1);
+assert.match(explicitDecision.reply,new RegExp(directComparison.cards[0].name));
+const priceDecision=send(directComparison.state,'그럼 싼 걸로 할게요');
+assert.equal(priceDecision.state.selected[0],directComparison.cards[0].code);
+assert.match(priceDecision.reply,/등록 월요금 하한에서 더 낮게/);
+assert.equal(priceDecision.cards.length,1);
+const careDecision=send(directComparison.state,'방문관리 되는 걸로 할게요');
+assert.equal(careDecision.state.selected[0],directComparison.cards[1].code);
+assert.match(careDecision.reply,/방문관리 옵션이 확인된/);
+const ambiguousDecision=send(directComparison.state,'그럼 이걸로 할게요');
+assert.equal(ambiguousDecision.needsReview,true);
+assert.match(ambiguousDecision.reply,/어느 상품인지 번호로/);
+const invalidDecision=send(directComparison.state,'3번으로 상담할게요');
+assert.equal(invalidDecision.needsReview,true);
+assert.match(invalidDecision.reply,/현재 비교 중인 상품에 해당 번호가 없어요/);
 
 const typo=send(initialState(),'정슈기 추천해줘');
 assert.equal(typo.state.filters.category,'정수기');
@@ -158,5 +176,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 35 scenarios / 88 assertions passed');
+console.log('conversation regression: 40 scenarios / 101 assertions passed');
 

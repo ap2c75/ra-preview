@@ -91,6 +91,22 @@ export function referenceAction(text,visibleCodes=[]) {
  return {action:'select',code:visibleCodes[n-1],selectionMode:/빼|제외/.test(tail)?'remove':'add'};
 }
 const ordinalValue=raw=>({첫:1,한:1,두:2,둘:2,세:3,셋:3,네:4,넷:4}[raw]??Number(raw));
+export function referenceDecision(text,{visibleCodes=[],selectedCodes=[],view='list'}={}) {
+ if(view!=='compare'||selectedCodes.length<2)return null;
+ const decisionCue=/(?:으로|걸로).{0,10}(?:할게|하자|해줘|선택|상담|진행)|(?:선택|상담|진행).{0,8}(?:할게|하자|해줘)|정했/.test(text);
+ if(!decisionCue)return null;
+ const pool=visibleCodes.length>=2?visibleCodes:selectedCodes;
+ const ordinal=[...text.matchAll(/(첫|한|두|둘|세|셋|네|넷|\d+)\s*(?:번째|번)(?:\s*(?:상품|제품))?/g)].at(-1);
+ if(ordinal){
+  const n=ordinalValue(ordinal[1]);
+  if(!pool[n-1])return {clarification:'현재 비교 중인 상품에 해당 번호가 없어요. 1번부터 비교 상품 번호를 다시 확인해 주세요.'};
+  return {code:pool[n-1],codes:[...pool]};
+ }
+ const requestedMonths=Number(text.match(/(\d+)\s*개월/)?.[1])||null;
+ const criterion=/방문\s*관리/.test(text)?'visit':/자가\s*관리|셀프\s*관리/.test(text)?'self':/싼|싸|저렴|낮은|가격|요금/.test(text)?'price':null;
+ if(!criterion)return {clarification:'어느 상품인지 번호로 말씀해 주세요. 예: “1번으로 상담할게요.”'};
+ return {criterion,requestedMonths,codes:[...pool]};
+}
 export function referenceComparison(text,{visibleCodes=[],selectedCodes=[],view='list'}={}) {
  const cue=/비교|차이|다르|달라|(?:둘|셋)\s*중|어느\s*(?:게|것)|뭐가\s*(?:더)?\s*(?:싼|싸|저렴|낮)|더\s*(?:싼|싸|저렴|낮)/.test(text);
  if(!cue)return null;
