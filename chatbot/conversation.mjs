@@ -1,8 +1,8 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
 import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-1';
-import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-1';
+import {normalizeText,interpret,referenceAction,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-2';
+import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
 const UNKNOWN=TOPICS.map(f=>({id:f.id,match:f.match,what:f.what,fact:f}));
