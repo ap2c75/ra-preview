@@ -4,6 +4,7 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
+import {noticeIssues} from '/ra-preview/chatbot/privacy.mjs?v=consent-policy-20260910-1';
 import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-11';
 import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
 import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
@@ -26,7 +27,7 @@ const money = n => Number(n).toLocaleString('ko-KR') + '원';
 const emptyContent = $('#results').cloneNode(true);
 let visibleCards = 0, recommendationView = false;
 
-let entryMode = 'waiting', serviceMode='preview';
+let entryMode = 'waiting', serviceMode='preview', serviceStatus={available:false,mode:'preview',notice:null};
 let nextCatalogRetry=0;
 const catalogLoader=createCatalogLoader({onChange:catalogChanged});
 function catalogReady(){return catalogLoader.checkExpiry().status==='ready';}
@@ -47,7 +48,7 @@ function catalogChanged(value){
  const cards=comparison?state.selected.map(code=>all.find(c=>c.code===code)):pageData(all,state).cards;state.visibleCodes=cards.map(c=>c.code);renderCards(cards,comparison);renderBrowse();renderActions();
 }
 
-function applyServiceMode(status){serviceMode=status.mode||'preview';if(['internal','test'].includes(serviceMode)){$('.preview').textContent=serviceMode==='internal'?'내부 검증':'기능 테스트';}}
+function applyServiceMode(status){serviceStatus=status&&typeof status==='object'?status:serviceStatus;serviceMode=serviceStatus.mode||'preview';if(['internal','test'].includes(serviceMode)){$('.preview').textContent=serviceMode==='internal'?'내부 검증':'기능 테스트';}}
 let receiptCheck={phase:'idle',checkedAt:null},receiptRequest=null,receiptGeneration=0;
 function setReceipt(value){receipt=value;receiptGeneration++;receiptRequest=null;receiptCheck={phase:value?.status==='stored'?'fresh':'idle',checkedAt:value?.status==='stored'?Date.now():null};}
 function receiptCheckText(){
@@ -406,6 +407,28 @@ function checkbox(label, id) {
 async function openConsent(){
  const body=$('#consent-body');body.replaceChildren();$('#consent-title').textContent='개인정보 수집·이용 안내';setEntryStep('consent');
  body.append(el('p','원활한 상담을 위해 고객님의 정보 확인부터 진행하겠습니다. 아래 안내를 확인해 주세요.'));
+ const operationalRequested=serviceStatus.available===true;
+ const operational=operationalRequested&&noticeIssues(serviceStatus.notice).length===0;
+ if(operationalRequested&&!operational){
+  body.append(el('p','필수 개인정보 고지와 제휴 총판 명단이 확정되지 않아 현재 상담 접수를 열지 않았습니다. 상품 정보는 계속 살펴볼 수 있습니다.','banner'));
+  body.append(button('안내 닫기',closeConsent,'primary'));
+  if(!$('#consent-dialog').open)$('#consent-dialog').showModal();
+  return;
+ }
+ if(operational){
+  const n=serviceStatus.notice;appendNotice(body,n);
+  const collection=checkbox('[필수] 개인정보 수집·이용 안내를 확인하고 동의합니다.','agree-required');
+  const transfer=n.transfer?checkbox('[필수] 개인정보 제3자 제공 안내를 확인하고 동의합니다.','agree-third-party'):null;
+  const age=checkbox('만 14세 이상입니다.','age-check');
+  const next=button('동의하고 고객정보 입력',()=>{
+   if(collection.input.checked&&(!transfer||transfer.input.checked)&&age.input.checked)renderLead({required:true,collectionUse:true,thirdParty:!!transfer,over14:true,policyVersion:n.version});
+  },'primary');next.disabled=true;
+  const update=()=>{next.disabled=!collection.input.checked||!!transfer&&!transfer.input.checked||!age.input.checked;};
+  collection.input.addEventListener('change',update);transfer?.input.addEventListener('change',update);age.input.addEventListener('change',update);
+  body.append(collection.wrap);if(transfer)body.append(transfer.wrap);body.append(age.wrap,next);
+  if(!$('#consent-dialog').open)$('#consent-dialog').showModal();
+  return;
+ }
  body.append(el('p','고객사 검토용 사이트입니다. 입력 항목과 상담 흐름을 테스트하며, 실제 상담 접수·서버 저장·총판 전달은 하지 않습니다. 가상 이름과 테스트 연락처를 사용해 주세요.','banner'));
  const dl=el('dl',null,'notice');
  const controller=el('dd','브로씨앤씨 및 제휴총판');
