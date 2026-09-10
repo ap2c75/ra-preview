@@ -80,9 +80,29 @@ function setEntryStep(step) {
     if (n.dataset.step === step) n.setAttribute('aria-current','step'); else n.removeAttribute('aria-current');
   });
 }
-function initializeEntry(){
- state=initialState();finishEntry('browse');$('#messages').replaceChildren();
- say('안녕하세요, 소문입니다. 고객사 검토용 상담창입니다. 상품·요금 질문과 주소 검색을 테스트하실 수 있어요. 이 사이트는 이름·연락처를 받거나 상담을 저장하지 않습니다.');
+function initializeEntry() {
+  entryMode = 'waiting'; renderReceiptState(); state = initialState(); visibleCards = 0; renderBrowse(); $('#product-feedback').hidden=true;
+  $('.workspace').dataset.entry = 'waiting';
+  $('.page-heading h1').textContent = '고객정보 확인부터 시작하겠습니다.';
+  $('.page-note').lastChild.textContent = ' 고지·동의 후 고객정보를 입력합니다';
+  $('#query').value = ''; $('#query').disabled = true; $('#composer button').disabled = true;
+  $('#messages').replaceChildren();
+  $('#filters').textContent = '고객정보 확인 전';
+  $('.discovery-heading .eyebrow').textContent='CONSULTATION GUIDE';
+  $('#results-title').textContent = '상담 진행 안내'; $('#result-count').textContent = '고객정보 먼저';
+  $('#mobile-count').textContent = '0';
+  const overview=el('div',null,'entry-overview');
+  overview.append(el('p','상담 시작 전','eyebrow'),el('h3','고객정보를 확인한 뒤\n상담을 이어가겠습니다.'),el('p','아래 순서로 진행해 주세요. 입력하신 개인정보는 대화창에 표시하지 않습니다.'));
+  const list=el('ol',null,'entry-step-list');
+  for(const [title,description] of [['개인정보 고지·동의','수집 항목과 이용 목적, 보유기간을 먼저 확인합니다.'],['고객정보 입력','동의한 항목만 입력하고 내용을 확인합니다.'],['렌탈 상담 시작','정보 접수 후 원하시는 상품과 조건을 상담합니다.']]) {
+    const li=el('li');li.append(el('strong',title),el('p',description));list.append(li);
+  }
+  overview.append(list); $('#results').replaceChildren(overview);
+  $('#actions').replaceChildren(button('고객정보 확인하기',openConsent,'primary'));
+  $('.privacy-hint').textContent='개인정보 안내에 동의한 후 입력해 주세요.';
+  setPanel('chat'); setEntryStep('consent');
+  openConsent();
+  say('안녕하세요, 소문입니다.\n원활한 상담을 위해 고객님의 정보 확인부터 진행하겠습니다.\n\n먼저 개인정보 수집·이용 안내를 확인해 주세요.');
 }
 function finishEntry(mode, interest = null, resumed = false) {
   if(mode==='saved' && receipt?.status!=='stored') return;
@@ -97,6 +117,7 @@ function finishEntry(mode, interest = null, resumed = false) {
   setEntryStep('consultation'); renderFilters(); showEmpty(); renderActions(); setPanel('chat');
   if(mode==='saved') say(resumed?'이 브라우저에서 접수한 상담을 확인했습니다.\n고객정보를 다시 입력하지 않고 상담을 이어가실 수 있습니다.':'상담에 필요한 정보를 접수했습니다.\n이제 원하시는 상품과 조건을 살펴보겠습니다.');
   else if(mode==='preview') say('여기부터는 고정된 예시로 보는 상담 화면입니다. 실제 고객정보는 입력받거나 저장하지 않았습니다.\n\n정보 입력이 완료되면 이 단계에서 상품 상담을 시작합니다.');
+  else if(mode==='review'){say('고객정보 확인을 마쳤습니다. 이제 원하시는 상품과 조건을 알려주세요. 검토용 입력값은 서버에 저장하지 않고 입력 화면에서 지웠습니다.');$('.page-note').lastChild.textContent=' 고객정보 확인 완료 · 검토용';}
   else say('고객정보 입력 없이 일반 상품 정보만 살펴보실 수 있어요.');
   if(interest && interest!=='기타') run({text:interest});
   $('#query').focus();
@@ -260,8 +281,8 @@ function renderCards(cards, comparison = false) {
 }
 function renderActions(out = {}) {
   const actions = $('#actions'); actions.replaceChildren();
-  if(entryMode==='waiting'){actions.append(button('고객정보 확인하기',openConsent,'primary'),button('기존 접수 불러오기',showRecovery,'secondary'));return;}
-  actions.append(button('주소 입력 테스트',openConsent,'secondary'));
+  if(entryMode==='waiting'){actions.append(button('고객정보 확인하기',openConsent,'primary'));return;}
+
   if(out.handoff) {
     actions.append(button(receipt?.status==='stored'?'상담 접수 상태 확인':'외부 검토 안내',()=>say('현재 외부 검토 사이트에서는 실제 상담 접수가 지원되지 않습니다. 상품 질문과 주소 입력을 테스트해 주세요.'),'primary'));
     if(state.filters.category) actions.append(button('상품 상담 이어가기',()=>run({action:'resume'})));
@@ -349,10 +370,16 @@ function checkbox(label, id) {
   wrap.append(input, el('span',label)); return {wrap,input};
 }
 async function openConsent(){
- const body=$('#consent-body');body.replaceChildren();$('#consent-title').textContent='주소 입력 동작 테스트';
- body.append(el('p','주소 검색 결과가 아래 입력칸에 자동 반영되는지 확인해 주세요. 이 입력값은 상담 DB에 저장하거나 총판에 전달하지 않습니다. 검색어는 주소 검색 서비스로 전송됩니다. 공개된 건물 주소로 테스트해 주세요.'));
- const form=el('form'),label=el('label','설치 주소','form-field'),input=el('input');input.name='address';label.append(input);form.append(label);mountAddressPicker(form,input);
- form.addEventListener('submit',e=>e.preventDefault());body.append(form,button('테스트 닫기',closeConsent,'secondary'));
+ const body=$('#consent-body');body.replaceChildren();$('#consent-title').textContent='개인정보 수집·이용 안내';setEntryStep('consent');
+ body.append(el('p','원활한 상담을 위해 고객님의 정보 확인부터 진행하겠습니다. 아래 안내를 확인해 주세요.'));
+ body.append(el('p','고객사 검토용 사이트입니다. 입력 항목과 상담 흐름을 테스트하며, 실제 상담 접수·서버 저장·총판 전달은 하지 않습니다. 가상 이름과 테스트 연락처를 사용해 주세요.','banner'));
+ const dl=el('dl',null,'notice');
+ for(const [k,v] of [['서비스 운영 주체','브로씨앤씨'],['입력 항목','이름, 연락처, 설치 주소 또는 설치 주소 미정'],['이용 목적','고객정보 확인 및 렌탈 상담 화면 흐름 검토'],['보관 및 전달','입력값은 현재 입력 화면에서만 처리합니다. 상담 시작·창 닫기·새로고침 시 지우며 서버 저장, 총판 제공, 광고 활용은 하지 않습니다.'],['주소 검색','주소 검색어는 카카오 우편번호 서비스로 전송됩니다. 공개된 건물 주소로 테스트해 주세요.'],['동의 거부','동의하지 않으면 고객정보 입력 단계로 진행하지 않습니다. 창을 닫을 수 있습니다.']])dl.append(el('dt',k),el('dd',v));
+ body.append(dl);
+ const agree=checkbox('[필수] 위 개인정보 입력·이용 안내를 확인하고 동의합니다.','agree-required'),age=checkbox('만 14세 이상입니다.','age-check');
+ const next=button('동의하고 고객정보 입력',()=>{if(agree.input.checked&&age.input.checked)renderLead({required:true,over14:true});},'primary');next.disabled=true;
+ const update=()=>{next.disabled=!agree.input.checked||!age.input.checked;};agree.input.addEventListener('change',update);age.input.addEventListener('change',update);
+ body.append(agree.wrap,age.wrap,next);
  if(!$('#consent-dialog').open)$('#consent-dialog').showModal();
 }
 function closeConsent() {
@@ -366,7 +393,7 @@ function renderLead(choices) {
   setEntryStep('information'); $('#consent-title').textContent='고객정보 확인';
   const body = $('#consent-body'); body.replaceChildren();
   const testing=offer?.testOnly===true;
-  body.append(el('p','상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 정보 접수가 완료되면 상담을 시작합니다.'));
+  body.append(el('p','상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 정보 확인이 완료되면 상담을 시작합니다. 검토용 입력값은 서버에 저장하지 않습니다.'));
   const form = el('form'); form.autocomplete = 'off';
   const fields = [
     ['name','이름',null], ['phone','연락처',null],
@@ -384,21 +411,13 @@ function renderLead(choices) {
   if (state.selected.length || state.unresolved.length) body.append(el('p','고른 상품과 추가 확인 항목은 화면에 유지됩니다. 이번 접수에는 위에서 고지한 항목만 저장합니다.', 'banner'));
   const error = el('p',null,'form-error'); error.setAttribute('role','alert');
   const submit = el('button','정보 확인 후 상담 시작','primary'); submit.type = 'submit'; form.append(error, submit);
-  form.addEventListener('submit', async event => {
-    event.preventDefault(); if (busy || !offer) return;
-    busy = true; submit.disabled = true; submit.textContent = '저장 중…'; $('#close-consent').disabled = true; error.textContent = '';
-    try {
-      const fields = Object.fromEntries(new FormData(form));
-      fields.address=addressPicker.value();
-      setReceipt(await api('intake',{token:offer.token,hash:offer.hash,choices,fields}));
-      form.reset(); finishEntry('saved');
-    } catch (e) {
-      error.textContent = e.message==='TEST_DATA_REQUIRED'?'테스트 정보 채우기 버튼의 가상 이름·번호를 사용해 주세요.':/INVALID_(NAME|PHONE|FIELD|ADDRESS)/.test(e.message)
-        ? '이름·연락처·설치 주소를 확인해 주세요.'
-        : /TOKEN|NOTICE|CONSENT|RETRY_CONFLICT/.test(e.message)
-        ? '동의 확인 시간이 만료되었거나 고지 내용이 바뀌었습니다. 창을 닫고 상담 신청 안내부터 다시 진행해 주세요.'
-        : '저장을 확인하지 못했습니다. 입력 내용은 화면에 유지됩니다. 다시 시도하면 중복 접수를 확인합니다.';
-    } finally { busy = false; submit.disabled = false; submit.textContent = '정보 확인 후 상담 시작'; $('#close-consent').disabled = false; }
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if(!choices.required||!choices.over14)return;
+    const name=form.elements.name.value.trim(),phone=form.elements.phone.value.replace(/\D/g,'');
+    if(name.length<2||!/^01[016789]\d{7,8}$/.test(phone)){error.textContent='이름을 두 글자 이상 입력하고 연락처를 확인해 주세요.';return;}
+    if(!addressPicker.value()){error.textContent='주소를 검색하거나 설치 주소 미정을 선택해 주세요.';return;}
+    form.reset();finishEntry('review');
   });
   if(testing){body.append(el('p','테스트고객A와 010-0000-0001 같은 가상 정보로 접수 기능을 시험해 주세요.','banner'));body.append(button('테스트 정보 채우기',()=>{form.elements.name.value='테스트고객A';form.elements.phone.value='010-0000-0001';form.elements.address.value='가상시 테스트로 123, 시험동 101호';},'secondary'));}
   body.append(form); form.querySelector('input').focus();
