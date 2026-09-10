@@ -1,7 +1,7 @@
 import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
 import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
 import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {normalizeText,interpret,referenceAction,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-2';
+import {normalizeText,interpret,referenceAction,referenceQuestion,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-3';
 import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
 import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
 import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
@@ -11,7 +11,7 @@ import { toCategory } from '/ra-preview/chatbot/taxonomy.mjs';
 import { mask } from '/ra-preview/chatbot/detect.mjs';
 
 const norm = v => String(v ?? '').replace(/\s+/g, '').toLowerCase();
-export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [], recommendedCodes: [], reprompt: null });
+export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [], recommendedCodes: [], focusCode: null, reprompt: null });
 export const filterLabels = f => [f.category, f.model && `모델 ${f.model}`, f.brand, f.brands?.join(' · '), ...(f.excludedBrands||[]).map(b=>b+' 제외'), f.excludeIce&&'얼음 제외', ...(f.excludedTerms||[]).map(n=>n+'개월 제외'), ...(f.excludedCare||[]).map(v=>(v==='visit'?'방문관리':'자가관리')+' 제외'), f.maker, f.term && `${f.term}개월`, f.feature === 'ice' && '얼음', f.care === 'visit' && '방문관리', f.care === 'self' && '자가관리', f.budget && `월 ${f.budget.toLocaleString('ko-KR')}원 이하`].filter(Boolean);
 function eligibleOptions(t, f) {
   return (t.options || [{ fee: t.fee }]).filter(o => {
@@ -66,6 +66,43 @@ function recommendationsByBrand(all,limit=3,excludedCodes=[]){
     const ranked=cards.map(card=>({card,value:publicRecommendationValue(card)})).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||a.value.minFee-b.value.minFee||a.card.name.localeCompare(b.card.name,'ko'));
     return {brand,card:ranked[0].card,value:ranked[0].value,count:cards.length};
   }).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||b.count-a.count||a.value.minFee-b.value.minFee||a.brand.localeCompare(b.brand,'ko')).slice(0,limit).map(item=>item.card);
+}
+const feeLabel=plan=>plan.min===plan.max?`${plan.min.toLocaleString('ko-KR')}원`:`${plan.min.toLocaleString('ko-KR')}~${plan.max.toLocaleString('ko-KR')}원`;
+function contextualProductReply(s,query,catalog){
+ const all=cardsFor(catalog,{...s.filters,term:null,excludedTerms:[]});
+ const card=all.find(item=>item.code===query.code);
+ if(!card)return {state:s,reply:'조건이 바뀌어 해당 상품 정보를 다시 찾지 못했어요. 현재 상품 목록에서 번호를 다시 말씀해 주세요.',requestSummary:'상품 다시 확인',needsReview:true,suggestions:[]};
+ s.focusCode=card.code;
+ const label=`${card.brand} · ${card.name}`;
+ const plans=query.requestedMonths?card.plans.filter(plan=>plan.months===query.requestedMonths):card.plans;
+ const evidence=card.plans.flatMap(plan=>[String(plan.months),...plan.options.flatMap(option=>[String(option.fee),option.fee.toLocaleString('ko-KR')])]).join(' ');
+ if(query.requestedMonths&&!plans.length){
+  const terms=card.plans.map(plan=>`${plan.months}개월`).join(' · ');
+  return {state:s,reply:`${label}은 현재 ${query.requestedMonths}개월 요금이 등록되어 있지 않아요. 확인 가능한 약정은 ${terms}이에요.`,requestSummary:'상품 약정 문의',needsReview:true,referenceEvidence:evidence,suggestions:[]};
+ }
+ if(query.topic==='price'||(query.topic==='term'&&query.requestedMonths)){
+  const fees=plans.map(plan=>`${plan.months}개월 월 ${feeLabel(plan)}`).join(' · ');
+  return {state:s,reply:`${label}은 등록된 요금 기준으로 ${fees}이에요. 관리 방식과 적용 조건에 따라 달라질 수 있어요.`,requestSummary:'상품 월요금 문의',evidenceIds:['catalog-product-plan'],referenceEvidence:evidence,suggestions:[]};
+ }
+ if(query.topic==='term'){
+  const terms=card.plans.map(plan=>`${plan.months}개월`).join(' · ');
+  return {state:s,reply:`${label}에서 확인 가능한 약정은 ${terms}이에요. 기간별 월요금은 상품 카드에서 함께 비교할 수 있어요.`,requestSummary:'상품 약정 문의',evidenceIds:['catalog-product-plan'],referenceEvidence:evidence,suggestions:[]};
+ }
+ if(query.topic==='care'){
+  const options=plans.flatMap(plan=>plan.options.map(option=>option.care));
+  const known=[...new Set(options.filter(value=>value!=='관리 방식 확인 필요'))];
+  const unknown=options.includes('관리 방식 확인 필요');
+  const askedVisit=/방문\s*관리/.test(query.text||'');
+  const askedSelf=/자가\s*관리|셀프\s*관리/.test(query.text||'');
+  let detail;
+  if(!known.length)detail='현재 등록 자료에는 관리 방식이 없어 확인이 필요해요.';
+  else if(askedVisit)detail=known.some(value=>/방문/.test(value))?'방문관리 옵션이 등록되어 있어요.':'현재 등록된 옵션에는 방문관리가 확인되지 않아요. '+known.join(' · ')+'만 확인돼요.';
+  else if(askedSelf)detail=known.some(value=>/자가|셀프/.test(value))?'자가관리 옵션이 등록되어 있어요.':'현재 등록된 옵션에는 자가관리가 확인되지 않아요. '+known.join(' · ')+'만 확인돼요.';
+  else detail=`등록된 관리 방식은 ${known.join(' · ')}${unknown?'이며, 일부 옵션은 관리 방식 확인이 필요해요.':'이에요.'}`;
+  return {state:s,reply:`${label}은 ${detail}`,requestSummary:'상품 관리 방식 문의',needsReview:unknown&&!known.length,evidenceIds:known.length?['catalog-product-plan']:undefined,referenceEvidence:evidence+' '+known.join(' '),suggestions:[]};
+ }
+ const benefits=[...new Set(plans.flatMap(plan=>plan.options.flatMap(option=>[option.promo,option.discount]).filter(Boolean)))];
+ return {state:s,reply:benefits.length?`${label}에 등록된 혜택은 ${benefits.slice(0,3).join(' · ')}이에요. 실제 적용 여부는 상담 시점에 확인해 주세요.`:`${label}은 현재 자료에 별도 혜택 문구가 등록되어 있지 않아요. 실제 적용 혜택은 상담 시점에 확인이 필요해요.`,requestSummary:'상품 혜택 문의',needsReview:!benefits.length,evidenceIds:benefits.length?['catalog-product-plan']:undefined,referenceEvidence:evidence+' '+benefits.join(' '),suggestions:[]};
 }
 // Structured state and presentation summaries only. Never persist raw messages.
 function guidance(s, catalog) {
@@ -265,15 +302,17 @@ export function respond(previous, input, catalog, context = {}) {
   }
   if(/정수기|공기청정기|비데|냉장고|세탁기|매트리스|에어컨/.test(raw)&&previous?.siteInternet){previous=structuredClone(previous);delete previous.siteInternet;}
   text=normalizeText(raw);
-  const faqQuestion=!input.action?rentalFaqReply(text):null;
-  const parsed=(input.action||faqQuestion)?{state:structuredClone(previous||initialState()),patch:{},changed:false}:interpret(text,previous||initialState());
+  const referenceQuestionResult=!input.action?referenceQuestion(text,{visibleCodes:previous?.visibleCodes||[],focusCode:previous?.focusCode||null,selectedCodes:previous?.selected||[]}):null;
+  if(referenceQuestionResult)referenceQuestionResult.text=text;
+  const faqQuestion=!input.action&&!referenceQuestionResult?rentalFaqReply(text):null;
+  const parsed=(input.action||faqQuestion||referenceQuestionResult)?{state:structuredClone(previous||initialState()),patch:{},changed:false}:interpret(text,previous||initialState());
   const s=parsed.state;
   const browsing=input.action?{}:browseRequest(text);
   if(browsing.clarification)parsed.clarification=browsing.clarification;
   if(browsing.sort&&!parsed.clarification){s.sort=browsing.sort;s.offset=0;parsed.changed=true;parsed.sortChanged=true;}
   if(parsed.changed)s.view='list';
   if(browsing.action)input={...input,action:browsing.action};
-  const ref=input.action?null:referenceAction(text,previous?.visibleCodes||[]);
+  const ref=input.action||referenceQuestionResult?null:referenceAction(text,previous?.visibleCodes||[]);
   const referenceConflict=ref?.action&&(parsed.sortChanged||JSON.stringify(s.filters)!==JSON.stringify((previous||initialState()).filters));
   if(referenceConflict)parsed.clarification='상품 조건·순서 변경과 번호 선택은 나누어 진행해 주세요. 먼저 바꿀 조건을 확인할까요?';
   if(parsed.clarification){Object.assign(s,structuredClone(previous||initialState()));parsed.changed=false;}
@@ -283,9 +322,11 @@ export function respond(previous, input, catalog, context = {}) {
 
   let out;
   const base = (reply, summary, extra={}) => ({state:s,reply,requestSummary:summary,...extra});
-  if(parsed.clarification||ref?.clarification) {
-    out=base(parsed.clarification||ref.clarification,'입력 조건 확인',{needsReview:true,suggestions:[]});
+  if(parsed.clarification||ref?.clarification||referenceQuestionResult?.clarification) {
+    out=base(parsed.clarification||ref?.clarification||referenceQuestionResult.clarification,'입력 조건 확인',{needsReview:true,suggestions:[]});
     out.requestSummary='입력 조건 확인';
+  } else if(referenceQuestionResult?.code) {
+    out=contextualProductReply(s,referenceQuestionResult,catalog);
   } else if(intent==='schedule'&&!faqQuestion&&!parsed.changed&&!isInstallationTiming(text)) {
     out=base('상담 연락을 받을 시점이 궁금하신가요, 아니면 제품 설치 날짜가 궁금하신가요?','일정 문의 확인',{needsReview:true,suggestions:[]});
   } else if(asksReason(text)&&!['human','complaint','cancel'].includes(intent)) {
@@ -344,7 +385,7 @@ export function respond(previous, input, catalog, context = {}) {
   // Price evidence is scoped to the current filters, never the entire catalog.
   const valid = cardsFor(catalog,out.state.filters);
   const evidence = valid.flatMap(c=>c.plans.flatMap(p=>[String(p.months),...p.options.flatMap(o=>[String(o.fee),o.fee.toLocaleString('ko-KR')])])).join(' ');
-  const violations = inspectReply(out.reply,{intent,evidence:evidence+' '+(out.knowledgeEvidence||''),candidateCount:valid.length});
+  const violations = inspectReply(out.reply,{intent,evidence:evidence+' '+(out.referenceEvidence||'')+' '+(out.knowledgeEvidence||''),candidateCount:valid.length});
   const invalidCards = out.cards?.some(c=>!valid.some(v=>v.code===c.code && JSON.stringify(v)===JSON.stringify(c)));
   if (violations.length || invalidCards) {
     if (out.outcome==='responded') out.state.quality.responded--;
@@ -352,6 +393,8 @@ export function respond(previous, input, catalog, context = {}) {
     delete out.cards;delete out.sources;delete out.knowledgeEvidence;
     out.state.quality.blocked++;
   }
+  if(context.catalogAvailable!==false&&out.state.focusCode&&!valid.some(card=>card.code===out.state.focusCode))out.state.focusCode=null;
   if(out.cards)out.state.visibleCodes=out.cards.map(c=>c.code);
+  delete out.referenceEvidence;
   return out;
 }

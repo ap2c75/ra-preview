@@ -4,7 +4,7 @@ import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
 import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
 import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-4';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260910-5';
 import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
 import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
 

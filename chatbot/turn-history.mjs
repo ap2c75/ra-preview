@@ -1,4 +1,5 @@
-const STATE_KEYS=['filters','selected','unresolved','offset','sort','view','preferences','awaiting','visibleCodes','recommendedCodes','reprompt'];
+const STATE_KEYS=['filters','selected','unresolved','offset','sort','view','preferences','awaiting','visibleCodes','recommendedCodes','focusCode','reprompt'];
+const MEANINGFUL_CHANGE_KEYS=STATE_KEYS.filter(key=>key!=='focusCode');
 
 export function stateSnapshot(state={}){
   return Object.fromEntries(STATE_KEYS.map(key=>[key,structuredClone(state[key])]).filter(([,value])=>value!==undefined));
@@ -13,7 +14,8 @@ export function createTurnHistory({limit=10}={}){
   return {
     checkpoint(before,after){
       const previous=stateSnapshot(before),next=stateSnapshot(after);
-      if(JSON.stringify(previous)===JSON.stringify(next))return false;
+      const meaningful=state=>Object.fromEntries(MEANINGFUL_CHANGE_KEYS.map(key=>[key,state[key]]).filter(([,value])=>value!==undefined));
+      if(JSON.stringify(meaningful(previous))===JSON.stringify(meaningful(next)))return false;
       stack=[...stack,previous].slice(-limit);return true;
     },
     undo(current){

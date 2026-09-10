@@ -66,6 +66,23 @@ assert.equal(secondOrdinal.state.selected[0],recommended.cards[1].code);
 const correctedOrdinal=send(recommended.state,'첫 번째 말고 두 번째로 상담할게요');
 assert.equal(correctedOrdinal.state.selected[0],recommended.cards[1].code);
 
+const secondPrice=send(recommended.state,'두 번째는 얼마예요?');
+assert.equal(secondPrice.state.focusCode,recommended.cards[1].code);
+assert.match(secondPrice.reply,new RegExp(recommended.cards[1].name));
+assert.match(secondPrice.reply,/36개월 월 16,900~18,900원/);
+const focusedTerm=send(secondPrice.state,'60개월이면요?');
+assert.equal(focusedTerm.state.focusCode,recommended.cards[1].code);
+assert.match(focusedTerm.reply,/60개월 월 12,900~14,900원/);
+const focusedCare=send(focusedTerm.state,'그건 방문관리 돼요?');
+assert.equal(focusedCare.state.focusCode,recommended.cards[1].code);
+assert.match(focusedCare.reply,/방문관리 옵션이 등록되어 있어요/);
+const ambiguousReference=send(recommended.state,'그건 얼마예요?');
+assert.match(ambiguousReference.reply,/어떤 상품인지 번호로/);
+assert.equal(ambiguousReference.needsReview,true);
+const benefitReference=send(recommended.state,'세 번째 혜택은 뭐예요?');
+assert.equal(benefitReference.state.focusCode,recommended.cards[2].code);
+assert.match(benefitReference.reply,/등록된 혜택|별도 혜택 문구/);
+
 const typo=send(initialState(),'정슈기 추천해줘');
 assert.equal(typo.state.filters.category,'정수기');
 assert.equal(typo.cards.length,3);
@@ -109,6 +126,7 @@ assert.equal(isUndoRequest('방금 선택 취소해줘'),true);
 assert.equal(isUndoRequest('이전 조건으로 돌아가자'),true);
 assert.equal(isUndoRequest('정수기 추천해줘'),false);
 const history=createTurnHistory({limit:2});
+assert.equal(history.checkpoint(recommended.state,secondPrice.state),false);
 assert.equal(history.checkpoint(initialState(),category.state),true);
 assert.equal(history.checkpoint(category.state,recommended.state),true);
 const undoRecommendation=history.undo(recommended.state);
@@ -121,5 +139,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 25 scenarios / 63 assertions passed');
+console.log('conversation regression: 30 scenarios / 75 assertions passed');
 

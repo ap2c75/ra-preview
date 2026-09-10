@@ -90,4 +90,23 @@ export function referenceAction(text,visibleCodes=[]) {
  const tail=text.slice((m.index||0)+m[0].length);
  return {action:'select',code:visibleCodes[n-1],selectionMode:/빼|제외/.test(tail)?'remove':'add'};
 }
+const ordinalValue=raw=>({첫:1,한:1,두:2,둘:2,세:3,셋:3,네:4,넷:4}[raw]??Number(raw));
+export function referenceQuestion(text,{visibleCodes=[],focusCode=null,selectedCodes=[]}={}) {
+ const monthlyPrice=/(?:월\s*)?(?:가격|요금|렌탈료)|월\s*얼마/.test(text)||(/얼마/.test(text)&&!/설치비|등록비|배송비|위약금|해지|총\s*납입/.test(text));
+ const topic=monthlyPrice?'price':/방문\s*관리|자가\s*관리|셀프\s*관리|관리\s*(?:방식|돼|되|가능)|케어/.test(text)?'care':/혜택|프로모션|할인|지원금/.test(text)?'benefit':/약정|(?:\d+|몇)\s*개월/.test(text)?'term':null;
+ if(!topic)return null;
+ const ordinal=[...text.matchAll(/(첫|한|두|둘|세|셋|네|넷|\d+)\s*(?:번째|번)(?:\s*(?:상품|제품))?/g)].at(-1);
+ let code=null;
+ if(ordinal){
+  const n=ordinalValue(ordinal[1]);
+  if(!visibleCodes[n-1])return {clarification:'현재 표시된 상품에 해당 번호가 없어요. 상품 목록의 번호를 다시 확인해 주세요.'};
+  code=visibleCodes[n-1];
+ } else if(/(?:그거|그건|그게|이거|이건|이게|저거|저건|아까\s*(?:것|상품|제품))/.test(text)) {
+  code=focusCode||(selectedCodes.length===1?selectedCodes[0]:visibleCodes.length===1?visibleCodes[0]:null);
+  if(!code)return {clarification:'어떤 상품인지 번호로 말씀해 주세요. 예: “두 번째 상품 월요금 알려줘.”'};
+ } else if(focusCode&&/\d+\s*개월\s*(?:이면|은|는|일\s*때|으로는)/.test(text)) code=focusCode;
+ if(!code)return null;
+ const requestedMonths=Number(text.match(/(\d+)\s*개월/)?.[1])||null;
+ return {code,topic,requestedMonths};
+}
 export const asksReason=text=>/왜.*(?:추천|제품|보여)|추천.*(?:이유|근거)|선정.*기준/.test(text);
