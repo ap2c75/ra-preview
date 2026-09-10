@@ -474,10 +474,13 @@ async function openConsent(){
  dl.append(el('dt','수집·이용 주체'),controller);
  for(const [k,v] of [['입력 항목','이름, 연락처, 설치 주소 또는 설치 주소 미정'],['이용 목적','고객정보 확인 및 렌탈 상담 화면 흐름 검토'],['보관 및 전달','입력값은 현재 입력 화면에서만 처리합니다. 상담 시작·창 닫기·새로고침 시 지우며 서버 저장, 총판 제공, 광고 활용은 하지 않습니다.'],['주소 검색','주소 검색어는 카카오 우편번호 서비스로 전송됩니다. 공개된 건물 주소로 테스트해 주세요.'],['동의 거부','동의하지 않으면 고객정보 입력 단계로 진행하지 않습니다. 창을 닫을 수 있습니다.']])dl.append(el('dt',k),el('dd',v));
  body.append(dl);
- const agree=checkbox('[필수] 위 개인정보 입력·이용 안내를 확인하고 동의합니다.','agree-required'),age=checkbox('만 14세 이상입니다.','age-check');
- const next=button('동의하고 고객정보 입력',()=>{if(agree.input.checked&&age.input.checked)renderLead({required:true,over14:true});},'primary');next.disabled=true;
- const update=()=>{next.disabled=!agree.input.checked||!age.input.checked;};agree.input.addEventListener('change',update);age.input.addEventListener('change',update);
- body.append(agree.wrap,age.wrap,next);
+ const transferNotice=el('dl',null,'notice'),recipient=el('dd','제휴 총판');appendPartnerDisclosure(recipient,{partners:partnerRegistry?publicPartnerList(partnerRegistry):[],relationship:'third_party'});
+ for(const [key,value] of [['제공받는 자',recipient],['제공 목적','렌탈 상품 상담, 영업 안내 및 계약 접수'],['제공 항목','이름 · 연락처 · 설치 주소'],['제공받는 자의 보유기간','제공받은 날부터 90일'],['제공 동의 거부','제공에 동의하지 않으면 총판 상담을 신청할 수 없습니다. 상품 탐색은 계속 이용할 수 있습니다.']])transferNotice.append(el('dt',key),value instanceof Node?value:el('dd',value));
+ body.append(el('h3','개인정보 제3자 제공 안내 · 운영 적용 예정'),transferNotice,el('p','현재 검토 사이트의 동의와 입력은 저장되지 않으며 제휴 총판에도 제공되지 않습니다.','banner'));
+ const agree=checkbox('[필수] 위 개인정보 입력·이용 안내를 확인하고 동의합니다.','agree-required'),transfer=checkbox('[필수] 개인정보 제3자 제공 안내를 확인하고 동의합니다.','agree-third-party'),age=checkbox('만 14세 이상입니다.','age-check');
+ const next=button('동의하고 고객정보 입력',()=>{if(agree.input.checked&&transfer.input.checked&&age.input.checked)renderLead({required:true,collectionUse:true,thirdParty:true,over14:true});},'primary');next.disabled=true;
+ const update=()=>{next.disabled=!agree.input.checked||!transfer.input.checked||!age.input.checked;};agree.input.addEventListener('change',update);transfer.input.addEventListener('change',update);age.input.addEventListener('change',update);
+ body.append(agree.wrap,transfer.wrap,age.wrap,next);
  if(!$('#consent-dialog').open)$('#consent-dialog').showModal();
 }
 function closeConsent() {

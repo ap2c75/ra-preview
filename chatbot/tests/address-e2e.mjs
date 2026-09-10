@@ -55,6 +55,7 @@ try{
   await Promise.all([catalogResponse,siteResponse]);
   assert.equal(requested.includes('/ra-preview/chatbot/site-data.json'),false);
   await widget.locator('#agree-required').check();
+  await widget.locator('#agree-third-party').check();
   await widget.locator('#age-check').check();
   await widget.getByRole('button',{name:'동의하고 고객정보 입력'}).click();
 
@@ -81,7 +82,7 @@ try{
   await page.locator('#somun-launcher').click();
   const widget2=page.frameLocator('#somun-widget');
   await widget2.getByRole('button',{name:'고객정보 확인하기'}).click();
-  await widget2.locator('#agree-required').check();await widget2.locator('#age-check').check();
+  await widget2.locator('#agree-required').check();await widget2.locator('#agree-third-party').check();await widget2.locator('#age-check').check();
   await widget2.getByRole('button',{name:'동의하고 고객정보 입력'}).click();
   await widget2.locator('#address-undecided').check();
   assert.equal(await widget2.getByRole('button',{name:'주소 검색'}).isDisabled(),true);
