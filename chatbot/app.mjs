@@ -10,7 +10,7 @@ import { initialState, respond, filterLabels, cardsFor } from './conversation.mj
 import { createQualityRecorder, QUALITY_REASONS } from './quality-recorder.mjs?v=quality-feedback-20260910-1';
 import {createQualityMetrics} from './quality-metrics.mjs?v=quality-metrics-20260910-1';
 import { createTurnHistory, isUndoRequest } from './turn-history.mjs?v=turn-history-20260910-1';
-import { createClientApi } from './client-api.mjs?v=operations-20260911-9';
+import { createClientApi } from './client-api.mjs?v=operations-20260911-10';
 import { applyBenefitFeed, validateBenefitFeed } from './benefit-feed.mjs?v=benefit-feed-20260911-1';
 import { mask } from './detect.mjs';
 
@@ -138,7 +138,7 @@ function finishEntry(mode, interest = null, resumed = false) {
   $('#query').disabled=false; $('#composer button').disabled=false;
   $('.page-heading h1').textContent=mode==='browse'?'상품 정보만 살펴보실 수 있어요.':'이제 렌탈 상담을 이어가겠습니다.';
   $('.page-note').lastChild.textContent=mode==='saved'?' 고객정보 입력 완료':mode==='preview'?' 예시 흐름 · 개인정보 미수집':' 개인정보 없이 일반 상품 안내';
-  $('.privacy-hint').textContent=mode==='preview'?'예시 미리보기 · 실제 개인정보를 입력하거나 저장하지 않습니다.':'이름·연락처는 대화창에 다시 적지 않으셔도 됩니다.';
+  $('.privacy-hint').textContent='답변 분류에 AI를 사용합니다. 이름·연락처·주소는 대화창에 적지 마세요.';
   $('.discovery-heading .eyebrow').textContent='FOR YOUR HOME';
   setEntryStep('consultation'); renderFilters(); showEmpty(); renderActions(); setPanel('chat');
   if(mode==='saved') say(resumed?'이 브라우저에서 접수한 상담을 확인했습니다.\n고객정보를 다시 입력하지 않고 상담을 이어가실 수 있습니다.':'상담에 필요한 정보를 접수했습니다.\n이제 원하시는 상품과 조건을 살펴보겠습니다.');
@@ -357,22 +357,7 @@ function renderActions(out = {}) {
   if (state.selected.length) actions.append(button('담은 상품으로 상담 이어가기', () => {run({action:'consultSelection'});setPanel('chat');}, 'primary'));
   if (state.selected.length>=2) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
   if(turnHistory.count())actions.append(button('방금 조건 되돌리기',()=>run({action:'undo'}),'undo-action'));
-  const qualityCount=qualityRecorder.all().length;
-  if(qualityCount)actions.append(button('개선 기록 복사 ('+qualityCount+')',copyQualityRecords,'quality-export'));
-  const metricCount=qualityMetrics.snapshot().turns;
-  if(metricCount)actions.append(button('익명 품질 통계 복사 ('+metricCount+')',copyQualityMetrics,'quality-export'));
   // Receipt management lives in the status bar; do not repeat intake in every turn.
-}
-async function copyQualityRecords(){
-  const text=qualityRecorder.exportText();
-  try{await navigator.clipboard.writeText(text);say('개선 기록을 복사했습니다. 담당자에게 전달하면 회귀검사에 반영할 수 있어요.');}
-  catch{say('브라우저가 복사를 허용하지 않았어요. 주소창의 사이트 권한에서 클립보드를 허용한 뒤 다시 시도해 주세요.');}
-  renderActions();
-}
-async function copyQualityMetrics(){
-  try{await navigator.clipboard.writeText(qualityMetrics.exportText());say('발화 원문과 고객정보를 제외한 대화 결과 통계를 복사했습니다.');}
-  catch{say('브라우저가 복사를 허용하지 않았어요. 주소창의 사이트 권한에서 클립보드를 허용한 뒤 다시 시도해 주세요.');}
-  renderActions();
 }
 async function run(input) {
   if(entryMode==='waiting'){openConsent();return;}
