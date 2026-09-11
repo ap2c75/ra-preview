@@ -222,6 +222,13 @@ tr[data-detail] td{padding:0 12px 12px}
   color:#1f5f45;border-radius:10px;padding:9px 13px;font-size:12.5px;margin:16px 0 0;
   line-height:1.6}
 .works b{font-weight:700}
+.runlog{margin:12px 0 0;max-height:260px;overflow:auto;background:#0f1a24;color:#d7e3ec;border-radius:10px;
+  padding:12px 14px;font:12px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+.runlog.live{border-left:4px solid var(--accent)}
+.runlog.ok{border-left:4px solid var(--green)}
+.runlog.bad{border-left:4px solid #c0392b}
+.runlog[hidden]{display:none!important}
+.go:disabled{opacity:.55;cursor:progress}
 .pager[hidden]{display:none!important}
 .pager button:disabled{opacity:.4;cursor:default}
 
@@ -903,10 +910,43 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
     ta.addEventListener('input', tick); tick();
   });
 
-  /* 문구는 빌더가 data-run 에 넣는다 — 오늘 실제 실행분이 있을 때와 표본일 때가 다르다 (QA 09-11: 실행분이 있는데 「시안」이라 했다) */
-  var run = $('[data-run]');
+  /* 🔑 「오늘 콘텐츠 자동 만들기」 — 실행 서버(dapuryeo/server.mjs)가 뒤에 있으면 **진짜로 돈다**:
+        수집 → AI 사실추출·문장 → 4중 검증 → 카드 렌더 → 화면 다시 그리기. 진행 로그를 그대로 보여주고 끝나면 새로 그린다.
+        정적 Pages 처럼 서버가 없으면 그 사실을 말한다(data-run 문구). 손 이사 09-11: "실행되게 해줘야지" */
+  var run = $('[data-run]'), runlog = $('[data-runlog]');
+  function showLog(lines, step, done, ok) {
+    if (!runlog) return;
+    runlog.hidden = false;
+    runlog.textContent = (step ? '● ' + step + (done ? '' : ' …') + '\n' : '') + lines.join('\n');
+    runlog.scrollTop = runlog.scrollHeight;
+    runlog.className = 'runlog' + (done ? (ok ? ' ok' : ' bad') : ' live');
+  }
+  function follow() {
+    var from = 0, lines = [];
+    run.disabled = true; run.textContent = '만드는 중…';
+    (function poll() {
+      fetch('/api/job?from=' + from, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (j.lines && j.lines.length) { lines = lines.concat(j.lines); from = j.total; }
+        showLog(lines, j.step, j.done, j.ok);
+        if (!j.done) return setTimeout(poll, 1500);
+        run.disabled = false; run.textContent = '오늘 콘텐츠 자동 만들기';
+        if (j.ok) { toast('완료 — 새 결과로 화면을 다시 그립니다'); setTimeout(function () { location.reload(); }, 1400); }
+        else toast('실행이 실패했습니다 — 로그를 보십시오', true);
+      }).catch(function () { setTimeout(poll, 2500); });
+    })();
+  }
   if (run) run.addEventListener('click', function () {
-    toast(run.getAttribute('data-run') || '시안이라 실제 생성·게시는 하지 않습니다 — 아래 글이 그 결과 자리입니다');
+    fetch('/api/status', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (st) {
+        if (!st || !st.live) { toast(run.getAttribute('data-run') || '시안이라 실제 생성·게시는 하지 않습니다 — 아래 글이 그 결과 자리입니다'); return; }
+        if (st.running) { toast('이미 실행 중입니다 — 진행 로그를 보여드립니다'); follow(); return; }
+        if (st.cooldownLeftSec > 0) { toast('방금 돌렸습니다 — ' + Math.ceil(st.cooldownLeftSec / 60) + '분 뒤 다시 누를 수 있습니다'); return; }
+        fetch('/api/run', { method: 'POST' }).then(function (r) { return r.json(); }).then(function (j) {
+          if (j.error) { toast(j.error, true); return; }
+          toast('시작 — 수집부터 렌더까지 30초쯤 걸립니다');
+          follow();
+        }).catch(function () { toast('서버에 닿지 못했습니다', true); });
+      });
   });
 
   /* ── 9. 후킹자판기 ──────────────────────────────────────── */
