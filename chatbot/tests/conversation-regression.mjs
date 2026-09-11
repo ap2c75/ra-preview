@@ -36,6 +36,14 @@ const contactAccepted=respond(contactPrompt.state,{text:'네, 연락 주세요'}
 assert.equal(contactAccepted.handoff,true);
 assert.equal(contactAccepted.outcome,'handoff');
 assert.equal(contactAccepted.state.awaiting,null);
+const progressQuestion=respond(contactPrompt.state,{text:'진행하려면 어떻게 해야하나요?'},catalog,{...context,hasReceipt:true});
+assert.equal(progressQuestion.state.awaiting,'contactPermission');
+assert.match(progressQuestion.reply,/그럼 자세한 내용은 상담을 통해 안내해 드리겠습니다/);
+assert.ok(progressQuestion.suggestions.includes('네, 연락 주세요'));
+const explicitProceed=respond(contactPrompt.state,{text:'제품 다 봤어요. 이제 상담 진행할게요'},catalog,{...context,hasReceipt:true});
+assert.equal(explicitProceed.handoff,true);
+assert.equal(explicitProceed.state.awaiting,null);
+assert.match(explicitProceed.reply,/그럼 자세한 내용은 상담을 통해 안내해 드리겠습니다/);
 const contactDeclined=respond(contactPrompt.state,{text:'아니요, 상품을 더 볼게요'},catalog,context);
 assert.equal(contactDeclined.resume,true);
 const naturalConsult=respond(selectedForContact.state,{text:'상담으로 자세한 내용 듣고 싶어요'},catalog,context);

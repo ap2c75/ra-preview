@@ -6,11 +6,11 @@ import {mountAddressPicker} from './address-picker.mjs';
 import {activeEntries} from './knowledge.mjs';
 import {noticeIssues} from './privacy.mjs?v=consent-policy-20260910-1';
 import {publicPartnerList,validatePartnerRegistry} from './partner-registry.mjs?v=partner-registry-20260910-1';
-import { initialState, respond, filterLabels, cardsFor } from './conversation.mjs?v=conversation-repair-20260911-4';
+import { initialState, respond, filterLabels, cardsFor } from './conversation.mjs?v=conversation-repair-20260911-5';
 import { createQualityRecorder, QUALITY_REASONS } from './quality-recorder.mjs?v=quality-feedback-20260910-1';
 import {createQualityMetrics} from './quality-metrics.mjs?v=quality-metrics-20260910-1';
 import { createTurnHistory, isUndoRequest } from './turn-history.mjs?v=turn-history-20260910-1';
-import { createClientApi } from './client-api.mjs?v=operations-20260911-10';
+import { createClientApi } from './client-api.mjs?v=operations-20260911-11';
 import { applyBenefitFeed, validateBenefitFeed } from './benefit-feed.mjs?v=benefit-feed-20260911-1';
 import { mask } from './detect.mjs';
 

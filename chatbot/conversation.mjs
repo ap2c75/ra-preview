@@ -223,10 +223,12 @@ function respondCatalog(previous, input, catalog, context={}) {
   }
   if(s.awaiting==='contactPermission'){
     const answer=text.replace(/[\s,.!?~]+/g,'');
-    const agreed=/^(?:네|예|응|좋아요|좋습니다|괜찮아요|네연락주세요|연락주세요|연락줘|동의해요|그래요)$/.test(answer);
+    const agreed=/^(?:네|예|응|좋아요|좋습니다|괜찮아요|네연락주세요|연락주세요|연락줘|동의해요|그래요|진행할게요|진행해주세요|신청할게요|신청해주세요|상담진행할게요|상담진행해주세요)$/.test(answer)||/(?:다봤|다보|모두봤|전부봤).{0,16}(?:진행|신청)|(?:상담)?(?:진행|신청)(?:할게요|해주세요|하겠습니다|원해요)$/.test(answer);
     const declined=/^(?:아니요|아니|싫어요|괜찮습니다|연락말아주세요|연락하지마세요|아니요상품을더볼게요|상품을더볼게요|상품더볼게요|상품을더보겠습니다)$/.test(answer);
-    if(agreed){s.awaiting=null;requestSummary='상담사 연락 동의';const reply=context.hasReceipt?'네, 상담사 연락 요청으로 확인했습니다. 담당자가 접수 내용을 확인한 뒤 저장해주신 연락처로 연락드리겠습니다.':'네, 연락 동의 단계까지 확인했습니다. 운영 환경에서는 상담사가 배정된 뒤 저장된 연락처로 연락드립니다.';return result(reply,{handoff:true,intent:'contact-permission',outcome:'resolved'});}
+    const progressAsked=/(?:진행|신청|상담).{0,16}(?:어떻게|방법|뭘|무엇)|(?:어떻게|뭘|무엇).{0,16}(?:진행|신청|상담)/.test(answer);
+    if(agreed){s.awaiting=null;requestSummary='상담사 연락 동의';const reply=context.hasReceipt?'그럼 자세한 내용은 상담을 통해 안내해 드리겠습니다.\n담당자가 접수 내용을 확인한 뒤 저장해주신 연락처로 연락드리겠습니다.':'그럼 자세한 내용은 상담을 통해 안내해 드리겠습니다.\n연락 동의 단계까지 확인했습니다. 운영 환경에서는 상담사가 배정된 뒤 저장된 연락처로 연락드립니다.';return result(reply,{handoff:true,intent:'contact-permission',outcome:'handoff'});}
     if(declined){s.awaiting=null;requestSummary='상담사 연락 보류';const all=cardsFor(catalog,s.filters),cards=s.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);return result('알겠습니다. 상담사 연락은 진행하지 않고 상품을 더 살펴볼게요.',{cards,resume:true,intent:'contact-permission',outcome:'resolved'});}
+    if(progressAsked){requestSummary='상담 진행 방법 안내';return result('그럼 자세한 내용은 상담을 통해 안내해 드리겠습니다.\n상담 진행을 원하시면 아래 ‘네, 연락 주세요’를 선택해 주세요. 상담사 배정 후 저장해주신 연락처로 연락드리겠습니다.',{suggestions:['네, 연락 주세요','아니요, 상품을 더 볼게요'],intent:'contact-permission',outcome:'actionable'});}
   }
   if (input.action === 'reset' || /^(처음으로|조건 초기화)$/.test(text)) return {state:initialState(),reply:'새로 찾아볼게요. 어떤 제품이 필요하세요?',requestSummary:'조건 새로 고르기',cards:[],suggestions:['정수기','공기청정기','비데']};
   if(input.catalogUnavailable&&(['select','compare','resume','more','previous','first','sort'].includes(input.action)||String(input.action||'').startsWith('repair')||input.parsed?.changed||/추천|상품|제품|보여|찾아/.test(text)))return result('상품 자료를 확인하지 못해 지금은 상품과 요금을 안내할 수 없어요. 입력한 조건은 유지됩니다. 상품 자료 다시 불러오기를 눌러 주세요.',{catalogUnavailable:true,needsReview:true,requestSummary:filterLabels(s.filters).join(' · ')||'상품 자료 확인 필요'});
@@ -388,6 +390,7 @@ export function respond(previous, input, catalog, context = {}) {
     return {state:structuredClone(previous||initialState()),reply:'현재 저장된 상담 접수가 없어 삭제할 정보가 없습니다. 상품 상담은 여기서 마칠게요.',requestSummary:'상담 신청 취소',intent:'conversation-end',outcome:'resolved',endConversation:true,suggestions:[]};
   }
   if(!input.action&&conversationEnding)return {state:structuredClone(previous||initialState()),reply:context.hasReceipt?'대화는 여기서 마칠게요. 저장된 상담 접수는 유지됩니다. 삭제를 원하시면 “접수 정보 삭제”라고 말씀해 주세요.':'알겠습니다. 상담은 여기서 마칠게요. 필요하실 때 다시 열어 주세요.',requestSummary:'상담 종료',intent:'conversation-end',outcome:'resolved',endConversation:true,suggestions:[]};
+  if(!input.action&&previous?.awaiting==='contactPermission')return respondCatalog(previous,input,catalog,context);
   let text = !input.action&&input.ai?.normalizedText&&['consultation','catalog','faq'].includes(input.ai.route)?String(input.ai.normalizedText).slice(0,200):raw;
   const safety = mask(text,{profile:'storage'});
   if (safety.kinds.length) return respondCatalog(previous,input,catalog,context);
