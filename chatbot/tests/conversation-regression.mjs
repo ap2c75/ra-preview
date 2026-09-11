@@ -23,6 +23,23 @@ assert.equal(new Set(direct.cards.map(card=>card.brand)).size,3);
 assert.ok(direct.cards.every(card=>/정수기|이온수기/.test(card.name)));
 assert.ok(direct.cards.every(card=>!/조리수기/.test(card.name)));
 
+const selectedForContact=respond(direct.state,{action:'select',code:direct.cards[0].code,selectionMode:'add'},catalog,context);
+assert.equal(selectedForContact.state.selected.length,1);
+const contactPrompt=respond(selectedForContact.state,{action:'consultSelection'},catalog,context);
+assert.equal(contactPrompt.cards.length,1);
+assert.match(contactPrompt.reply,/월 [\d,]+(?:~[\d,]+)?원/);
+assert.match(contactPrompt.reply,/\d+개월/);
+assert.match(contactPrompt.reply,/상담사 배정 후 저장해주신 연락처로 연락드려도 괜찮으실까요/);
+assert.equal(contactPrompt.state.awaiting,'contactPermission');
+assert.ok(contactPrompt.suggestions.includes('네, 연락 주세요'));
+const contactAccepted=respond(contactPrompt.state,{text:'네, 연락 주세요'},catalog,{...context,hasReceipt:true});
+assert.equal(contactAccepted.handoff,true);
+assert.equal(contactAccepted.outcome,'handoff');
+assert.equal(contactAccepted.state.awaiting,null);
+const contactDeclined=respond(contactPrompt.state,{text:'아니요, 상품을 더 볼게요'},catalog,context);
+assert.equal(contactDeclined.resume,true);
+assert.match(contactDeclined.reply,/연락은 진행하지 않고/);
+
 const airRecommendation=send(initialState(),'공기청정기 추천해주세요');
 assert.equal(airRecommendation.cards.length,3);
 assert.equal(new Set(airRecommendation.cards.map(card=>card.brand)).size,3);
@@ -269,5 +286,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 59 scenarios / 163 assertions passed');
+console.log('conversation regression: 62 scenarios / 175 assertions passed');
 

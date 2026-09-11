@@ -77,6 +77,16 @@ try{
   await widget.locator('#query').waitFor({state:'visible'});
   assert.equal(await widget.locator('#query').isEnabled(),true);
   assert.match(await widget.locator('#messages').innerText(),/고객정보 확인을 마쳤습니다/);
+  await widget.locator('#query').fill('정수기 추천해줘');
+  await widget.locator('#composer button').click();
+  await widget.locator('button[data-panel="products"]').click();
+  await widget.locator('.pick').first().click();
+  await widget.locator('#continue-selection').click();
+  const contactPrompt=await widget.locator('#messages').innerText();
+  assert.match(contactPrompt,/월 [\d,]+(?:~[\d,]+)?원/);
+  assert.match(contactPrompt,/상담사 배정 후 저장해주신 연락처로 연락드려도 괜찮으실까요/);
+  await widget.getByRole('button',{name:'네, 연락 주세요'}).click();
+  assert.match(await widget.locator('#messages').innerText(),/연락 동의 단계까지 확인했습니다/);
 
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('#somun-launcher').click();

@@ -6,7 +6,7 @@ import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
 import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
 import {noticeIssues} from '/ra-preview/chatbot/privacy.mjs?v=consent-policy-20260910-1';
 import {publicPartnerList,validatePartnerRegistry} from '/ra-preview/chatbot/partner-registry.mjs?v=partner-registry-20260910-1';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260911-1';
+import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260911-2';
 import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
 import {createQualityMetrics} from '/ra-preview/chatbot/quality-metrics.mjs?v=quality-metrics-20260910-1';
 import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
@@ -334,6 +334,10 @@ function renderActions(out = {}) {
   for (const name of promptChoices) {
     const choice = button(name, () => run({text:name}), state.filters.category === name ? 'choice-active' : '');
     choice.setAttribute('aria-pressed', String(state.filters.category === name)); actions.append(choice);
+  }
+  if(state.awaiting==='contactPermission'){
+    if(visibleCards)actions.append(button('선택 상품 확인',()=>setPanel('products'),'results-toggle'));
+    return;
   }
   if(siteData&&!state.filters.category&&!out.siteSources){actions.append(button('인터넷·TV 요금 보기',()=>run({text:'인터넷 요금 알려줘'})),button('사이트 상품 찾기',()=>run({text:'사이트 상품 종류 알려줘'})));}
   if (visibleCards) actions.append(button('상품 ' + visibleCards + '개 보기', () => setPanel('products'), 'results-toggle'));

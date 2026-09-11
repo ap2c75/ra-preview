@@ -75,6 +75,10 @@ function recommendationsByBrand(all,limit=3,excludedCodes=[],category=null){
   }).sort((a,b)=>b.value.maxDiscount-a.value.maxDiscount||b.value.benefitSignals-a.value.benefitSignals||b.value.categoryMatch-a.value.categoryMatch||b.count-a.count||a.value.minFee-b.value.minFee||a.brand.localeCompare(b.brand,'ko')).slice(0,limit).map(item=>item.card);
 }
 const feeLabel=plan=>plan.min===plan.max?`${plan.min.toLocaleString('ko-KR')}원`:`${plan.min.toLocaleString('ko-KR')}~${plan.max.toLocaleString('ko-KR')}원`;
+function selectedConditionLine(card,index,total){
+ const plan=[...card.plans].sort((a,b)=>a.min-b.min||a.months-b.months)[0],care=careLabels(card).join(' · ')||'관리 방식 확인 필요',benefit=benefitLabels(card)[0]||'상담 시 확인';
+ return `${total>1?`${index+1}. `:''}${card.brand} · ${card.name}\n월 ${feeLabel(plan)} · ${plan.months}개월 · ${care} · 혜택 ${benefit}`;
+}
 function recommendationReasonReply(s,catalog,text){
  const all=cardsFor(catalog,s.filters),recommended=(s.recommendedCodes||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
  if(!recommended.length)return null;
@@ -190,7 +194,7 @@ function noResultRecovery(s,catalog){
  const detail=viable.map(item=>`${item.label}을 풀면 ${item.count.toLocaleString('ko-KR')}개`).join(', ');
  return {reply:`현재 조건을 모두 만족하는 상품은 없어요. ${detail}를 확인할 수 있어요. 어느 조건을 넓힐까요?`,suggestions:viable.map(item=>item.suggestion)};
 }
-function respondCatalog(previous, input, catalog) {
+function respondCatalog(previous, input, catalog, context={}) {
   const s = structuredClone(previous || initialState());
   s.preferences ||= {}; s.awaiting ??= null;
   const text = String(input.text || '').trim().slice(0, 500);
@@ -210,6 +214,13 @@ function respondCatalog(previous, input, catalog) {
     else if(recommended.length)display={cards:recommended,total:recommended.length,page:1,pages:1,start:1,end:recommended.length,previous:false,more:false,recommendation:true};
     else if(restored.filters.category||restored.filters.model)display=pageData(all,restored);
     return {state:restored,reply:'바로 전 조건으로 되돌렸어요. 여기서 다시 이어갈게요.',requestSummary:null,...display};
+  }
+  if(s.awaiting==='contactPermission'){
+    const answer=text.replace(/[\s,.!?~]+/g,'');
+    const agreed=/^(?:네|예|응|좋아요|좋습니다|괜찮아요|네연락주세요|연락주세요|연락줘|동의해요|그래요)$/.test(answer);
+    const declined=/^(?:아니요|아니|싫어요|괜찮습니다|연락말아주세요|연락하지마세요|아니요상품을더볼게요|상품을더볼게요|상품더볼게요|상품을더보겠습니다)$/.test(answer);
+    if(agreed){s.awaiting=null;requestSummary='상담사 연락 동의';const reply=context.hasReceipt?'네, 상담사 연락 요청으로 확인했습니다. 담당자가 접수 내용을 확인한 뒤 저장해주신 연락처로 연락드리겠습니다.':'네, 연락 동의 단계까지 확인했습니다. 운영 환경에서는 상담사가 배정된 뒤 저장된 연락처로 연락드립니다.';return result(reply,{handoff:true,intent:'contact-permission',outcome:'resolved'});}
+    if(declined){s.awaiting=null;requestSummary='상담사 연락 보류';const all=cardsFor(catalog,s.filters),cards=s.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);return result('알겠습니다. 상담사 연락은 진행하지 않고 상품을 더 살펴볼게요.',{cards,resume:true,intent:'contact-permission',outcome:'resolved'});}
   }
   if (input.action === 'reset' || /^(처음으로|조건 초기화)$/.test(text)) return {state:initialState(),reply:'새로 찾아볼게요. 어떤 제품이 필요하세요?',requestSummary:'조건 새로 고르기',cards:[],suggestions:['정수기','공기청정기','비데']};
   if(input.catalogUnavailable&&(['select','compare','resume','more','previous','first','sort'].includes(input.action)||String(input.action||'').startsWith('repair')||input.parsed?.changed||/추천|상품|제품|보여|찾아/.test(text)))return result('상품 자료를 확인하지 못해 지금은 상품과 요금을 안내할 수 없어요. 입력한 조건은 유지됩니다. 상품 자료 다시 불러오기를 눌러 주세요.',{catalogUnavailable:true,needsReview:true,requestSummary:filterLabels(s.filters).join(' · ')||'상품 자료 확인 필요'});
@@ -265,8 +276,9 @@ function respondCatalog(previous, input, catalog) {
     const all=cardsFor(catalog,s.filters),cards=s.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
     requestSummary='담은 상품으로 상담 이어가기';s.view='list';
     if(!cards.length)return result('상담할 상품을 하나 담아주세요.',pageData(all,s));
-    const names=cards.map(card=>card.brand+' '+card.name).join(' · ');
-    return result(names+' 기준으로 상담을 이어갈게요. 월요금, 약정, 관리 방식이나 혜택 중 궁금한 점을 편하게 말씀해 주세요.',{cards});
+    s.awaiting='contactPermission';
+    const conditions=cards.map((card,index)=>selectedConditionLine(card,index,cards.length)).join('\n\n');
+    return result(`담으신 상품의 등록 조건을 정리해드릴게요.\n${conditions}\n\n자세한 내용은 상담을 통해 진행드리도록 하겠습니다.\n상담사 배정 후 저장해주신 연락처로 연락드려도 괜찮으실까요?`,{cards,suggestions:['네, 연락 주세요','아니요, 상품을 더 볼게요'],intent:'contact-permission',outcome:'actionable'});
   }
   if (input.action === 'apply' || /상담.*(신청|연결)|사람.*상담/.test(text)) {
     requestSummary = '상담 신청 안내';
@@ -371,7 +383,7 @@ export function respond(previous, input, catalog, context = {}) {
   if(!input.action&&conversationEnding)return {state:structuredClone(previous||initialState()),reply:context.hasReceipt?'대화는 여기서 마칠게요. 저장된 상담 접수는 유지됩니다. 삭제를 원하시면 “접수 정보 삭제”라고 말씀해 주세요.':'알겠습니다. 상담은 여기서 마칠게요. 필요하실 때 다시 열어 주세요.',requestSummary:'상담 종료',intent:'conversation-end',outcome:'resolved',endConversation:true,suggestions:[]};
   let text = raw;
   const safety = mask(text,{profile:'storage'});
-  if (safety.kinds.length) return respondCatalog(previous,input,catalog);
+  if (safety.kinds.length) return respondCatalog(previous,input,catalog,context);
   const site= !input.action?siteReferenceReply(previous||initialState(),normalizeText(raw),context.siteData,context.now??Date.now()):null;
   if(site){
     const violations=inspectReply(site.reply,{evidence:site.siteEvidence||'',candidateCount:0});
@@ -433,7 +445,7 @@ export function respond(previous, input, catalog, context = {}) {
     if (!out&&fact) out = base(fact.id==='total-vs-monthly'
       ? '총 납입금액은 월 렌탈료에 약정 개월을 곱한 값과 다를 수 있어요. 선납·면제 개월·프로모션 조건을 함께 확인해야 합니다.'
       : '약정이 끝나면 소유권이 넘어오는 상품과 그렇지 않은 상품이 있어요. 고르신 상품의 계약 조건에서 소유권 이전 여부를 확인해야 합니다.',fact.title,{resume:true,evidenceIds:[fact.id]});
-    else if(!out) out = respondCatalog(previous,input,catalog);
+    else if(!out) out = respondCatalog(previous,input,catalog,context);
   }
   if (!input.action && !parsed.changed && !out.requestSummary && ['place','schedule','eligibility','howto'].includes(intent)) {
     const guidance = {
