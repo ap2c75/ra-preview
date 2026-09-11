@@ -1,4 +1,4 @@
-import {categoryFromText} from '/ra-preview/chatbot/taxonomy.mjs';
+import {categoryFromText} from './taxonomy.mjs';
 const BRANDS = {
   '코웨이': ['코웨이', 'coway'],
   '삼성': ['삼성', '삼성전자'],

@@ -1,34 +1,35 @@
 const widgetMode=location.pathname.endsWith('/widget.html');if(widgetMode)document.body.classList.add('is-widget');
-import {validSort,pageData,minimumOption,orderDescription} from '/ra-preview/chatbot/browse.mjs';
-import {createCatalogLoader} from '/ra-preview/chatbot/catalog-loader.mjs';
-import {bindPhoneInput} from '/ra-preview/chatbot/phone-input.mjs';
-import {mountAddressPicker} from '/ra-preview/chatbot/address-picker.mjs';
-import {activeEntries} from '/ra-preview/chatbot/knowledge.mjs';
-import {noticeIssues} from '/ra-preview/chatbot/privacy.mjs?v=consent-policy-20260910-1';
-import {publicPartnerList,validatePartnerRegistry} from '/ra-preview/chatbot/partner-registry.mjs?v=partner-registry-20260910-1';
-import { initialState, respond, filterLabels, cardsFor } from '/ra-preview/chatbot/conversation.mjs?v=conversation-repair-20260911-2';
-import { createQualityRecorder, QUALITY_REASONS } from '/ra-preview/chatbot/quality-recorder.mjs?v=quality-feedback-20260910-1';
-import {createQualityMetrics} from '/ra-preview/chatbot/quality-metrics.mjs?v=quality-metrics-20260910-1';
-import { createTurnHistory, isUndoRequest } from '/ra-preview/chatbot/turn-history.mjs?v=turn-history-20260910-1';
-import { createClientApi } from '/ra-preview/chatbot/client-api.mjs?v=operations-20260911-1';
-import { applyBenefitFeed, validateBenefitFeed } from '/ra-preview/chatbot/benefit-feed.mjs?v=benefit-feed-20260911-1';
+import {validSort,pageData,minimumOption,orderDescription} from './browse.mjs';
+import {createCatalogLoader} from './catalog-loader.mjs';
+import {bindPhoneInput} from './phone-input.mjs';
+import {mountAddressPicker} from './address-picker.mjs';
+import {activeEntries} from './knowledge.mjs';
+import {noticeIssues} from './privacy.mjs?v=consent-policy-20260910-1';
+import {publicPartnerList,validatePartnerRegistry} from './partner-registry.mjs?v=partner-registry-20260910-1';
+import { initialState, respond, filterLabels, cardsFor } from './conversation.mjs?v=conversation-repair-20260911-4';
+import { createQualityRecorder, QUALITY_REASONS } from './quality-recorder.mjs?v=quality-feedback-20260910-1';
+import {createQualityMetrics} from './quality-metrics.mjs?v=quality-metrics-20260910-1';
+import { createTurnHistory, isUndoRequest } from './turn-history.mjs?v=turn-history-20260910-1';
+import { createClientApi } from './client-api.mjs?v=operations-20260911-8';
+import { applyBenefitFeed, validateBenefitFeed } from './benefit-feed.mjs?v=benefit-feed-20260911-1';
+import { mask } from './detect.mjs';
 
 let siteData=null,siteDataRequest=null,consultationDataPrimed=false;
 let partnerRegistry=null,partnerRegistryRequest=null;
 async function loadPartnerRegistry(){
  if(partnerRegistry)return partnerRegistry;if(partnerRegistryRequest)return partnerRegistryRequest;
- partnerRegistryRequest=fetch('/ra-preview/chatbot/api/partner-registry.json',{cache:'default'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{validatePartnerRegistry(data,{allowDraft:true});partnerRegistry=data;return data;}).catch(()=>null).finally(()=>{partnerRegistryRequest=null;});
+ partnerRegistryRequest=fetch('./api/partner-registry.json',{cache:'default'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{validatePartnerRegistry(data,{allowDraft:true});partnerRegistry=data;return data;}).catch(()=>null).finally(()=>{partnerRegistryRequest=null;});
  return partnerRegistryRequest;
 }
 async function loadSiteData(){
  if(siteData)return siteData;
  if(siteDataRequest)return siteDataRequest;
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
- siteDataRequest=fetch('/ra-preview/chatbot/site-data-core.json',{cache:'default',signal:controller.signal}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1'&&Array.isArray(d.carriers)&&Array.isArray(d.products))siteData=d;return siteData;}).catch(()=>null).finally(()=>{clearTimeout(timer);siteDataRequest=null;});
+ siteDataRequest=fetch('./site-data-core.json',{cache:'default',signal:controller.signal}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.format==='somun-site-v1'&&Array.isArray(d.carriers)&&Array.isArray(d.products))siteData=d;return siteData;}).catch(()=>null).finally(()=>{clearTimeout(timer);siteDataRequest=null;});
  return siteDataRequest;
 }
 let knowledgeEntries=[],knowledgeRequest=0;
-async function refreshKnowledge(){const request=++knowledgeRequest,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const r=await fetch('/ra-preview/chatbot/api/knowledge.json',{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error();const data=await r.json();if(request===knowledgeRequest)knowledgeEntries=activeEntries(data.entries);}catch{if(request===knowledgeRequest)knowledgeEntries=[];}finally{clearTimeout(timer);}}
+async function refreshKnowledge(){const request=++knowledgeRequest,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const r=await fetch('./api/knowledge.json',{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error();const data=await r.json();if(request===knowledgeRequest)knowledgeEntries=activeEntries(data.entries);}catch{if(request===knowledgeRequest)knowledgeEntries=[];}finally{clearTimeout(timer);}}
 
 window.addEventListener('focus',refreshKnowledge);
 setInterval(()=>{if(!document.hidden)refreshKnowledge();},5*60000);
@@ -41,6 +42,8 @@ const qualityMetrics=createQualityMetrics({storage:localStorage});
 const turnHistory=createTurnHistory();
 const clientApi=createClientApi();
 let latestUserText='';
+const RESPONSE_DELAY_MS=new URLSearchParams(location.search).get('qa')==='fast'?0:3000;
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const money = n => Number(n).toLocaleString('ko-KR') + '원';
 const emptyContent = $('#results').cloneNode(true);
 let visibleCards = 0, recommendationView = false;
@@ -241,6 +244,9 @@ function appendMessageFeedback(row,assistantText,userText){
   }
   details.append(choices);row.append(details);
 }
+function showTyping(){
+ const log=$('#messages'),row=el('div',null,'message typing-message');row.setAttribute('role','status');row.setAttribute('aria-label','소문 상담 답변 작성 중');row.append(el('span','소문 상담','message-meta'),el('div','답변 작성 중','message-text'));log.append(row);log.scrollTop=log.scrollHeight;return ()=>row.remove();
+}
 function say(text, speaker = 'assistant') {
   const log = $('#messages'), row = el('div', null, speaker === 'user' ? 'message user-message' : 'message');
   row.append(el('span', speaker === 'user' ? '나' : '소문 상담', 'message-meta'), el('div', text, 'message-text'));
@@ -344,8 +350,10 @@ function renderActions(out = {}) {
   if (out.resume) actions.append(button('앞서 고른 상품 다시 보기', () => run({action:'resume'})));
   if (out.previous) actions.append(button('이전 상품', () => run({action:'previous'})));
   if (out.more) actions.append(button('다음 상품', () => run({action:'more'})));
+  if(out.contactUpdate){actions.append(button('상담 연락처 변경',showContactUpdate,'primary'));return;}
   if (state.filters.category && !state.preferences?.brandAny && !promptChoices.includes('브랜드 상관없어요')) actions.append(button('브랜드 전체', () => run({text:'모든 브랜드'})));
   if (state.filters.budget) actions.append(button('예산 해제', () => run({text:'예산 해제'})));
+  if (state.filters.category && !state.selected.length) actions.append(button('상담으로 자세히 알아보기', () => run({text:'상담으로 자세한 내용 듣고 싶어요'}), 'primary'));
   if (state.selected.length) actions.append(button('담은 상품으로 상담 이어가기', () => {run({action:'consultSelection'});setPanel('chat');}, 'primary'));
   if (state.selected.length>=2) actions.append(button('선택한 ' + state.selected.length + '개 비교', () => run({action:'compare'})));
   if(turnHistory.count())actions.append(button('방금 조건 되돌리기',()=>run({action:'undo'}),'undo-action'));
@@ -366,33 +374,43 @@ async function copyQualityMetrics(){
   catch{say('브라우저가 복사를 허용하지 않았어요. 주소창의 사이트 권한에서 클립보드를 허용한 뒤 다시 시도해 주세요.');}
   renderActions();
 }
-function run(input) {
+async function run(input) {
   if(entryMode==='waiting'){openConsent();return;}
-  const available=catalogReady();
-  const before=structuredClone(state),undoRequested=input.action==='undo'||isUndoRequest(input.text);
-  if(undoRequested){const restored=turnHistory.undo(state);input={...input,action:'undo',restoreState:restored.state,undoAvailable:restored.restored};}
-  const out = respond(state, input, SAMPLE_PRODUCTS, {entryMode,catalogAvailable:available, internalOnly:serviceMode==='internal', knowledgeEntries, siteData, hasReceipt:receipt?.status==='stored',receiptFreshness:receiptCheck.phase,delivery:receipt?.delivery});
-  if(!undoRequested)turnHistory.checkpoint(before,out.state);
-  // Echo the customer's words only in the current DOM; intent labels stay internal.
-  if (typeof input.text==='string' && input.text.trim()) say(input.text, 'user');
-  else if (out.requestSummary) say(out.requestSummary, 'user');
-  state = out.state; renderFilters(); say(out.reply);
-  if(out.manageReceipt&&receipt?.status==='stored')showReceipt();
-  if(typeof input.text==='string'&&input.text.trim()){
-    const metric={outcome:out.outcome||'responded',intent:out.intent||'unknown',selectedCount:state.selected.length};
-    qualityMetrics.observe(metric);api('quality',metric).catch(()=>{});
+  if(busy)return;
+  busy=true;$('.workspace').dataset.responding='true';$('#query').disabled=true;$('#composer button').disabled=true;
+  const originalText=typeof input.text==='string'?input.text.trim():'';
+  if(originalText)say(originalText,'user');
+  const stopTyping=showTyping(),wait=delay(RESPONSE_DELAY_MS);let keepComposerDisabled=false;
+  try{
+    const available=catalogReady();
+    const before=structuredClone(state),undoRequested=input.action==='undo'||isUndoRequest(input.text);
+    if(undoRequested){const restored=turnHistory.undo(state);input={...input,action:'undo',restoreState:restored.state,undoAvailable:restored.restored};}
+    let ai=null;
+    if(originalText&&!mask(originalText,{profile:'storage'}).kinds.length){
+      try{ai=await api('chat',{text:originalText,state:{category:state.filters.category||null,brand:state.filters.brand||null,term:state.filters.term||null,selectedCount:state.selected.length,awaiting:state.awaiting||null}});}catch{}
+    }
+    if(originalText)await wait;
+    const out=respond(state,{...input,ai},SAMPLE_PRODUCTS,{entryMode,catalogAvailable:available,internalOnly:serviceMode==='internal',knowledgeEntries,siteData,hasReceipt:receipt?.status==='stored',receiptFreshness:receiptCheck.phase,delivery:receipt?.delivery});
+    stopTyping();
+    if(!undoRequested)turnHistory.checkpoint(before,out.state);
+    if(!originalText&&out.requestSummary)say(out.requestSummary,'user');
+    state=out.state;renderFilters();say(out.reply);
+    if(out.manageReceipt&&receipt?.status==='stored')showReceipt();
+    if(originalText){const metric={outcome:out.outcome||'responded',intent:out.intent||'unknown',selectedCount:state.selected.length};qualityMetrics.observe(metric);api('quality',metric).catch(()=>{});}
+    if(out.siteSources?.length){const box=el('div',null,'answer-sources');for(const source of out.siteSources){const a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';const row=el('p');row.append(a);box.append(row);}$('#messages').lastElementChild.append(box);}
+    if(out.sources?.length){const box=el('details',null,'answer-sources');box.append(el('summary','확인한 안내 근거'));for(const source of out.sources){const row=el('p'),a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';row.append(a,el('small',source.topic+' · '+source.scope+' · 적용 종료 '+new Date(source.validUntil).toLocaleDateString('ko-KR')));box.append(row);}$('#messages').lastElementChild.append(box);}
+    if('cards' in out){const scroll=$('#results').scrollTop;recommendationView=!!out.recommendation;renderCards(out.cards,out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
+    if(!available)showCatalogUnavailable();
+    renderBrowse();renderActions(out);
+    if(out.endConversation){keepComposerDisabled=true;$('#query').disabled=true;$('#composer button').disabled=true;$('#actions').replaceChildren(button('상담 다시 시작',()=>finishEntry(receipt?.status==='stored'?'saved':'review'),'primary'));}
+    $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'상담할 상품은 최대 3개까지 담을 수 있어요. 상품 하나를 빼고 다시 선택해 주세요.':'';
+    if(out.comparison||['sort','previous','first','more'].includes(input.action))setPanel('products');
+    if(input.action==='reset'||input.action==='consultSelection')setPanel('chat');
+    if(out.consent)openConsent();
+  }finally{
+    stopTyping();busy=false;delete $('.workspace').dataset.responding;
+    if(!keepComposerDisabled&&entryMode!=='waiting'){$('#query').disabled=false;$('#composer button').disabled=false;}
   }
-  if(out.siteSources?.length){const box=el('div',null,'answer-sources');for(const source of out.siteSources){const a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';const row=el('p');row.append(a);box.append(row);}$('#messages').lastElementChild.append(box);}
-  if(out.sources?.length){const box=el('details',null,'answer-sources');box.append(el('summary','확인한 안내 근거'));for(const source of out.sources){const row=el('p'),a=el('a',source.label);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';row.append(a,el('small',source.topic+' · '+source.scope+' · 적용 종료 '+new Date(source.validUntil).toLocaleDateString('ko-KR')));box.append(row);}$('#messages').lastElementChild.append(box);}
-  // Customer messages remain in this page only, not storage, analytics or external/model APIs.
-  if ('cards' in out) {const scroll=$('#results').scrollTop;recommendationView=!!out.recommendation;renderCards(out.cards, out.comparison);$('#results').scrollTop=input.action==='select'?scroll:0;}
-  if(!available)showCatalogUnavailable();
-  renderBrowse(); renderActions(out);
-  if(out.endConversation){$('#query').disabled=true;$('#composer button').disabled=true;$('#actions').replaceChildren(button('상담 다시 시작',()=>finishEntry(receipt?.status==='stored'?'saved':'review'),'primary'));}
-  $('#product-feedback').hidden=!out.selectionLimit;$('#product-feedback').textContent=out.selectionLimit?'상담할 상품은 최대 3개까지 담을 수 있어요. 상품 하나를 빼고 다시 선택해 주세요.':'';
-  if (out.comparison || ['sort','previous','first','more'].includes(input.action)) setPanel('products');
-  if (input.action === 'reset' || input.action === 'consultSelection') setPanel('chat');
-  if (out.consent) openConsent();
 }
 async function api(path,body){
  try{return await clientApi.api(path,body);}
@@ -494,6 +512,13 @@ function closeConsent() {
   setEntryStep(entryMode==='waiting'?'consent':'consultation');
   api('cancel', {}).catch(() => {});
 }
+function showContactUpdate(){
+ const dialog=$('#consent-dialog'),body=$('#consent-body');$('#consent-title').textContent='상담 연락처 변경';body.replaceChildren(el('p','새 연락처는 대화창에 남기지 않고 이 화면에서만 입력해 주세요.'));
+ const form=el('form'),label=el('label','새 연락처','form-field'),input=el('input');input.type='tel';input.inputMode='tel';input.placeholder='010-1234-5678';input.required=true;bindPhoneInput(input);label.append(input);
+ const error=el('p',null,'form-error'),submit=el('button','연락처 변경','primary');submit.type='submit';form.append(label,error,submit);body.append(form);
+ form.addEventListener('submit',async event=>{event.preventDefault();const phone=input.value.replace(/\D/g,'');if(!/^01[016789]\d{7,8}$/.test(phone)){error.textContent='연락처를 확인해 주세요.';return;}submit.disabled=true;try{if(receipt?.status==='stored')await api('update-contact',{id:receipt.id,phone});input.value='';closeConsent();say('상담받으실 연락처를 변경했습니다. 이후 상담사는 변경한 번호로 연락드립니다.');}catch{error.textContent='연락처를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요.';}finally{submit.disabled=false;}});
+ if(!dialog.open)dialog.showModal();input.focus();
+}
 function renderLead(choices) {
   setEntryStep('information'); $('#consent-title').textContent='고객정보 확인';
   const body = $('#consent-body'); body.replaceChildren();
@@ -565,7 +590,7 @@ window.addEventListener('pageshow',event=>{if(event.persisted){setReceipt(null);
 
 $('#retry-catalog').addEventListener('click',()=>catalogLoader.refresh());
 refreshKnowledge();
-async function loadBenefits(){if(benefitRequest)return benefitRequest;benefitRequest=fetch('/ra-preview/chatbot/api/benefits.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{validateBenefitFeed(data);benefitFeed=data;if(catalogMetadata.status==='ready')catalogChanged(catalogMetadata);return data;}).catch(()=>null).finally(()=>{benefitRequest=null;});return benefitRequest;}
+async function loadBenefits(){if(benefitRequest)return benefitRequest;benefitRequest=fetch('./api/benefits.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{validateBenefitFeed(data);benefitFeed=data;if(catalogMetadata.status==='ready')catalogChanged(catalogMetadata);return data;}).catch(()=>null).finally(()=>{benefitRequest=null;});return benefitRequest;}
 function primeConsultationData(){if(consultationDataPrimed)return;consultationDataPrimed=true;loadSiteData();loadPartnerRegistry();loadBenefits();catalogLoader.refresh();}
 function maybeRefreshCatalog(force=false){if(!consultationDataPrimed)return;const value=catalogLoader.checkExpiry();if(value.status!=='loading'&&(value.status!=='ready'?(force||Date.now()>=nextCatalogRetry):Date.now()-value.checkedAt>=300000))catalogLoader.refresh();}
 window.addEventListener('online',()=>maybeRefreshCatalog(true));window.addEventListener('focus',()=>maybeRefreshCatalog());document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeRefreshCatalog();});setInterval(()=>{catalogLoader.checkExpiry();if(!document.hidden)maybeRefreshCatalog();},1000);

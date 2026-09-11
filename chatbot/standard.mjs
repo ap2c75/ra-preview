@@ -16,7 +16,7 @@
  *    근거검증(숫자 대조)만으로는 **문장의 태도**를 못 막는다.
  */
 
-import { RULES_DOC as DOC } from '/ra-preview/chatbot/standard/rules-data.mjs';
+import { RULES_DOC as DOC } from './standard/rules-data.mjs';
 
 export const STANDARD_VERSION = { version: DOC.version, updated: DOC.updated };
 export const RULES = DOC.rules;

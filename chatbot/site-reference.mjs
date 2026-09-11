@@ -1,6 +1,6 @@
-import {interpret,normalizeText} from '/ra-preview/chatbot/language.mjs';
-import {browseRequest} from '/ra-preview/chatbot/browse.mjs';
-import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
+import {interpret,normalizeText} from './language.mjs';
+import {browseRequest} from './browse.mjs';
+import {rentalFaqReply} from './rental-faq.mjs';
 // Site snapshots are reference data, never an approval or live quote.
 const BASE='https://rentalagit-preview.pages.dev';
 const fmt=n=>Number.isFinite(n)?n.toLocaleString('ko-KR')+'원':'확인 필요';

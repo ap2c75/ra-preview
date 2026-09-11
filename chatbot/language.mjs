@@ -1,4 +1,4 @@
-import {findBrand,findMaker,findCategory} from '/ra-preview/chatbot/catalog-language.mjs';
+import {findBrand,findMaker,findCategory} from './catalog-language.mjs';
 const digits={영:0,일:1,이:2,삼:3,사:4,오:5,육:6,칠:7,팔:8,구:9,한:1,두:2,세:3,네:4,다섯:5,여섯:6};
 function numberOf(raw) {
  const t=raw.replace(/[\s,]/g,''); if (/^\d+(?:\.\d+)?$/.test(t)) return Number(t);

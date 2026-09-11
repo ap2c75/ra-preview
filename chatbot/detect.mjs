@@ -10,7 +10,7 @@
  *    「LLM 이 문맥 한 조각을 잃는」 정도로 끝난다. 반대로 놓으면 개인정보가 나간다.
  */
 
-import { LEVEL, PLACEHOLDER } from '/ra-preview/chatbot/policy.mjs';
+import { LEVEL, PLACEHOLDER } from './policy.mjs';
 
 /* ── 한국 성씨 (상위) ────────────────────────────────────────────
    전체를 담지 않는다. 못 잡는 이름이 있는 것을 전제로 등급을 MASK 로 둔 것이다. */

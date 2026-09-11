@@ -8,7 +8,7 @@
  *    거기서 하나를 고르는 순간 그건 지어낸 조건이 된다(§청호 S/P/J 등급 미상).
  */
 
-import { withBenefit } from '/ra-preview/chatbot/benefits/query.mjs';
+import { withBenefit } from './query.mjs';
 
 const slug = s => String(s ?? '')
   .toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);

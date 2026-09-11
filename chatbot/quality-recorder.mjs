@@ -1,4 +1,4 @@
-import { mask } from '/ra-preview/chatbot/detect.mjs';
+import { mask } from './detect.mjs';
 
 export const QUALITY_REASONS = [
   ['repeat', '질문 반복'],

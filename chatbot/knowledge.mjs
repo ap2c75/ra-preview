@@ -1,4 +1,4 @@
-import {TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
+import {TOPICS} from './public-topics.mjs';
 const fail=()=>{throw new Error('INVALID_KNOWLEDGE');};
 const keys=(v,expected)=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===expected.length&&Object.keys(v).every(k=>expected.includes(k));
 const clean=(v,max)=>typeof v==='string'&&v.trim().length>0&&v.length<=max&&!/[<>\x00-\x08\x0b-\x1f]|수수료|커미션|리베이트|commission|CRO|비공개/i.test(v);

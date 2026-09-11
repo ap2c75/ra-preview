@@ -29,6 +29,15 @@ export function createClientApi({storage=sessionStorage,fetcher=fetch}={}){
   if(path==='recovery-code')return request('/api/intakes/'+encodeURIComponent(payload.id)+'/recovery-code',{method:'POST',body:{}});
   if(path==='recover')return request('/api/recover',{method:'POST',body:{code:payload.code},auth:false});
   if(path==='quality')return request('/api/quality',{method:'POST',body:payload,auth:false});
+  if(path==='chat'){
+   const config=await runtime(),base=config?.aiBase;
+   if(!config?.aiConfigured||!/^https:\/\//.test(base||''))throw new Error('AI_NOT_CONFIGURED');
+   const response=await fetcher(base.replace(/\/$/,'')+'/api/chat',{method:'POST',headers:{accept:'application/json','content-type':'application/json'},body:JSON.stringify(payload),cache:'no-store',mode:'cors'});
+   const value=(response.headers.get('content-type')||'').includes('application/json')?await response.json():null;
+   if(!response.ok)throw new Error(value?.error||'AI_UNAVAILABLE');
+   return value;
+  }
+  if(path==='update-contact')return request('/api/intakes/'+encodeURIComponent(payload.id)+'/contact',{method:'PATCH',body:{phone:payload.phone}});
   throw new Error('UNKNOWN_API_PATH');
  }
  return {api,runtime,clearSession:()=>setSession('')};

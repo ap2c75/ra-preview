@@ -43,7 +43,7 @@ try{
   await context.route('https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js',route=>route.fulfill({status:200,contentType:'text/javascript',body:fakePostcode}));
   const page=await context.newPage();
   const requested=[];page.on('request',request=>requested.push(new URL(request.url()).pathname));
-  await page.goto(`http://127.0.0.1:${port}/ra-preview/chatbot/`,{waitUntil:'domcontentloaded'});
+  await page.goto(`http://127.0.0.1:${port}/ra-preview/chatbot/?qa=fast`,{waitUntil:'domcontentloaded'});
   await page.locator('#somun-launcher').click();
   const widget=page.frameLocator('#somun-widget');
   await widget.getByRole('button',{name:'고객정보 확인하기'}).waitFor();
@@ -82,11 +82,19 @@ try{
   await widget.locator('button[data-panel="products"]').click();
   await widget.locator('.pick').first().click();
   await widget.locator('#continue-selection').click();
+  await widget.locator('#messages').getByText(/상담사 배정 후 저장해주신 연락처로 연락드려도 괜찮으실까요/).waitFor();
   const contactPrompt=await widget.locator('#messages').innerText();
   assert.match(contactPrompt,/월 [\d,]+(?:~[\d,]+)?원/);
   assert.match(contactPrompt,/상담사 배정 후 저장해주신 연락처로 연락드려도 괜찮으실까요/);
   await widget.getByRole('button',{name:'네, 연락 주세요'}).click();
+  await widget.locator('#messages').getByText(/연락 동의 단계까지 확인했습니다/).waitFor();
   assert.match(await widget.locator('#messages').innerText(),/연락 동의 단계까지 확인했습니다/);
+  await widget.locator('#query').fill('혹시 저장한 전화번호 말고 다른번호로 상담받고 싶으면 어떻게 해야할까요?');
+  await widget.locator('#composer button').click();
+  await widget.getByRole('button',{name:'상담 연락처 변경'}).waitFor();
+  await widget.getByRole('button',{name:'상담 연락처 변경'}).click();
+  assert.equal(await widget.locator('#consent-title').innerText(),'상담 연락처 변경');
+  await widget.locator('#close-consent').click();
 
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('#somun-launcher').click();
@@ -97,7 +105,23 @@ try{
   await widget2.locator('#address-undecided').check();
   assert.equal(await widget2.getByRole('button',{name:'주소 검색'}).isDisabled(),true);
   assert.equal(await widget2.locator('input[name="address"]').isDisabled(),true);
-  console.log('address e2e: popup selection, phone formatting and undecided path passed');
+  const humanPage=await context.newPage();
+  await humanPage.goto(`http://127.0.0.1:${port}/ra-preview/chatbot/`,{waitUntil:'domcontentloaded'});
+  await humanPage.locator('#somun-launcher').click();
+  const humanWidget=humanPage.frameLocator('#somun-widget');
+  await humanWidget.getByRole('button',{name:'고객정보 확인하기'}).click();
+  await humanWidget.locator('#agree-required').check();await humanWidget.locator('#agree-third-party').check();await humanWidget.locator('#age-check').check();
+  await humanWidget.getByRole('button',{name:'동의하고 고객정보 입력'}).click();
+  await humanWidget.locator('input[name="name"]').fill('테스트고객');await humanWidget.locator('input[name="phone"]').fill('01012345678');await humanWidget.locator('#address-undecided').check();
+  await humanWidget.getByRole('button',{name:'정보 확인 후 상담 시작'}).click();
+  await humanWidget.locator('#query').fill('안녕하세요');
+  const started=Date.now();await humanWidget.locator('#composer button').click();
+  await humanWidget.locator('.typing-message').waitFor();
+  assert.match(await humanWidget.locator('.typing-message').innerText(),/답변 작성 중/);
+  await humanWidget.locator('.typing-message').waitFor({state:'detached'});
+  assert.ok(Date.now()-started>=2800,'typing indicator should remain for about 3 seconds');
+  await humanPage.close();
+  console.log('address e2e: popup, contact change, typing delay and undecided path passed');
 }finally{
   await browser?.close();
   await new Promise(resolve=>server.close(resolve));

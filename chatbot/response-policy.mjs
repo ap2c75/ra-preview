@@ -1,18 +1,20 @@
-import {isConsultationTiming} from '/ra-preview/chatbot/knowledge.mjs';
-import { STANDARD } from '/ra-preview/chatbot/vendor/standard-data.mjs';
-import { classify, checkAnswer } from '/ra-preview/chatbot/vendor/respondkit-rules.mjs';
-import { checkStandard } from '/ra-preview/chatbot/standard.mjs';
+import {isConsultationTiming} from './knowledge.mjs';
+import { STANDARD } from './vendor/standard-data.mjs';
+import { classify, checkAnswer } from './vendor/respondkit-rules.mjs';
+import { checkStandard } from './standard.mjs';
 export const intentNames = Object.fromEntries(STANDARD.intents.map(i => [i.id, i.name]));
+const consultationRequest=/(?:상담|문의)(?:으로|을|이|도)?[^\n]{0,24}(?:자세|상세|내용|설명|듣|받|원하|원해|하고\s*싶|문의|연락|진행)|(?:자세|상세|내용)[^\n]{0,18}(?:상담|상담사|담당자)|(?:상담|문의)\s*(?:원해|원합니다|받고\s*싶|하고\s*싶|할래|할게)/;
 // Priority routes handle Korean compounds before weighted keyword classification.
 export function classifyRequest(text) {
   if (/개인정보|동의|정보.*(삭제|보관|수집)|누구세요|로봇|챗봇|인공지능|(사람|상담사|상담원).*(맞|인가|이야|에요|예요)/.test(text)) return null;
   if (isConsultationTiming(text)) return 'consultation-timing';
   if(/얼마나.*기다|언제.*(?:받|와|오)/.test(text))return 'schedule';
+  if (/위약금|해지|환불|청약\s*철회|반품|중도|취소/.test(text)) return 'cancel';
+  if (consultationRequest.test(text)) return 'human';
   if (/(사람|상담사|상담원|담당자).*(말|얘기|이야기|바꿔|연결|통화)|전화\s*주세요/.test(text)) return 'human';
   if (/불만|화가|화나|실망|최악|신고|소비자원|책임|말.*바뀌|아까.*다르/.test(text)) return 'complaint';
-  if (/위약금|해지|환불|청약\s*철회|반품|중도|취소/.test(text)) return 'cancel';
   const intent = classify(STANDARD, text, STANDARD.industries[0]).intent;
-  return intent==='human' && !/사람|상담사|상담원|담당자|통화|전화/.test(text) ? null : intent;
+  return intent==='human' && !/사람|상담사|상담원|담당자|통화|전화/.test(text) && !consultationRequest.test(text) ? null : intent;
 }
 export function handoffReply(){return '현재는 고객사 검토용 사이트로 실제 상담 신청·담당자 연결은 지원하지 않습니다. 상품 질문과 주소 입력 동작을 테스트해 주세요.';}
 // Customer text never enters metrics. Topic IDs and counts only.

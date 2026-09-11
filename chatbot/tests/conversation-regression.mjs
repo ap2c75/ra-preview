@@ -38,6 +38,20 @@ assert.equal(contactAccepted.outcome,'handoff');
 assert.equal(contactAccepted.state.awaiting,null);
 const contactDeclined=respond(contactPrompt.state,{text:'아니요, 상품을 더 볼게요'},catalog,context);
 assert.equal(contactDeclined.resume,true);
+const naturalConsult=respond(selectedForContact.state,{text:'상담으로 자세한 내용 듣고 싶어요'},catalog,context);
+assert.equal(naturalConsult.state.awaiting,'contactPermission');
+assert.match(naturalConsult.reply,/월 [\d,]+(?:~[\d,]+)?원/);
+assert.match(naturalConsult.reply,/저장해주신 연락처로 연락드려도 괜찮으실까요/);
+const contactChange=respond(category.state,{text:'혹시 저장한 전화번호 말고 다른번호로 상담받고 싶으면 어떻게 해야할까요?'},catalog,context);
+assert.equal(contactChange.contactUpdate,true);
+assert.equal(contactChange.intent,'contact-change');
+assert.match(contactChange.reply,/대화창에 적지 마시고/);
+const aiContactChange=respond(category.state,{text:'번호를 새로 쓰고 싶어요',ai:{route:'contact_change',normalizedText:'연락처 변경'}},catalog,context);
+assert.equal(aiContactChange.contactUpdate,true);
+const consultWithoutSelection=respond(category.state,{text:'전화 상담을 받고 싶어요'},catalog,context);
+assert.equal(consultWithoutSelection.state.awaiting,'contactPermission');
+const consultNeedsInformation=respond(category.state,{text:'상담으로 자세히 듣고 싶습니다'},catalog,{...context,entryMode:'browse'});
+assert.equal(consultNeedsInformation.consent,true);
 assert.match(contactDeclined.reply,/연락은 진행하지 않고/);
 
 const airRecommendation=send(initialState(),'공기청정기 추천해주세요');
@@ -286,5 +300,5 @@ assert.match(undoResult.reply,/바로 전 조건으로/);
 const noUndo=respond(initialState(),{action:'undo',restoreState:initialState(),undoAvailable:false},catalog,context);
 assert.match(noUndo.reply,/되돌릴 조건 변경이 없어요/);
 
-console.log('conversation regression: 62 scenarios / 175 assertions passed');
+console.log('conversation regression: 67 scenarios / 187 assertions passed');
 

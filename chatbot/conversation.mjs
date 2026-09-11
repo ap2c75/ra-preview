@@ -1,14 +1,14 @@
-import {siteReferenceReply} from '/ra-preview/chatbot/site-reference.mjs';
-import {rentalFaqReply} from '/ra-preview/chatbot/rental-faq.mjs';
-import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from '/ra-preview/chatbot/browse.mjs?v=conversation-repair-20260910-1';
-import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from '/ra-preview/chatbot/language.mjs?v=conversation-repair-20260910-8';
-import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from '/ra-preview/chatbot/response-policy.mjs?v=conversation-repair-20260910-2';
-import {GENERAL_FACTS as FACTS,TOPICS} from '/ra-preview/chatbot/public-topics.mjs';
-import {knowledgeReply,matchingTopics,isInstallationTiming} from '/ra-preview/chatbot/knowledge.mjs';
+import {siteReferenceReply} from './site-reference.mjs';
+import {rentalFaqReply} from './rental-faq.mjs';
+import {PAGE_SIZE,SORTS,validSort,pageData,orderDescription,browseRequest} from './browse.mjs?v=conversation-repair-20260910-1';
+import {normalizeText,interpret,referenceAction,referenceQuestion,referenceComparison,referenceDecision,asksReason} from './language.mjs?v=conversation-repair-20260910-8';
+import { classifyRequest, handoffReply, trackOutcome, inspectReply, SAFE_REPLY } from './response-policy.mjs?v=conversation-repair-20260910-2';
+import {GENERAL_FACTS as FACTS,TOPICS} from './public-topics.mjs';
+import {knowledgeReply,matchingTopics,isInstallationTiming} from './knowledge.mjs';
 const UNKNOWN=TOPICS.map(f=>({id:f.id,match:f.match,what:f.what,fact:f}));
 const withParticle=(word,a,b)=>{const s=String(word).trim(),n=s.charCodeAt(s.length-1);return s+(n>=0xac00&&n<=0xd7a3&&(n-0xac00)%28!==0?a:b);};
-import { toCategory } from '/ra-preview/chatbot/taxonomy.mjs';
-import { mask } from '/ra-preview/chatbot/detect.mjs';
+import { toCategory } from './taxonomy.mjs';
+import { mask } from './detect.mjs';
 
 const norm = v => String(v ?? '').replace(/\s+/g, '').toLowerCase();
 export const initialState = () => ({ filters: {}, selected: [], unresolved: [], offset: 0, sort: 'default', view: 'list', preferences: {}, awaiting: null, visibleCodes: [], recommendedCodes: [], focusCode: null, reprompt: null });
@@ -78,6 +78,12 @@ const feeLabel=plan=>plan.min===plan.max?`${plan.min.toLocaleString('ko-KR')}원
 function selectedConditionLine(card,index,total){
  const plan=[...card.plans].sort((a,b)=>a.min-b.min||a.months-b.months)[0],care=careLabels(card).join(' · ')||'관리 방식 확인 필요',benefit=benefitLabels(card)[0]||'상담 시 확인';
  return `${total>1?`${index+1}. `:''}${card.brand} · ${card.name}\n월 ${feeLabel(plan)} · ${plan.months}개월 · ${care} · 혜택 ${benefit}`;
+}
+function contactPermissionTransition(s,catalog,{includeConditions=true}={}){
+ const all=cardsFor(catalog,s.filters),cards=s.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
+ s.awaiting='contactPermission';s.view='list';
+ const conditions=includeConditions&&cards.length?`담으신 상품의 등록 조건을 먼저 정리해드릴게요.\n${cards.map((card,index)=>selectedConditionLine(card,index,cards.length)).join("\n\n")}\n\n`:'';
+ return {state:s,reply:`${conditions}자세한 내용은 상담을 통해 진행드리도록 하겠습니다.\n상담사 배정 후 저장해주신 연락처로 연락드려도 괜찮으실까요?`,requestSummary:'상담사 연락 동의 확인',...(cards.length?{cards}:{}),suggestions:['네, 연락 주세요','아니요, 상품을 더 볼게요'],intent:'contact-permission',outcome:'actionable'};
 }
 function recommendationReasonReply(s,catalog,text){
  const all=cardsFor(catalog,s.filters),recommended=(s.recommendedCodes||[]).map(code=>all.find(card=>card.code===code)).filter(Boolean);
@@ -276,9 +282,7 @@ function respondCatalog(previous, input, catalog, context={}) {
     const all=cardsFor(catalog,s.filters),cards=s.selected.map(code=>all.find(card=>card.code===code)).filter(Boolean);
     requestSummary='담은 상품으로 상담 이어가기';s.view='list';
     if(!cards.length)return result('상담할 상품을 하나 담아주세요.',pageData(all,s));
-    s.awaiting='contactPermission';
-    const conditions=cards.map((card,index)=>selectedConditionLine(card,index,cards.length)).join('\n\n');
-    return result(`담으신 상품의 등록 조건을 정리해드릴게요.\n${conditions}\n\n자세한 내용은 상담을 통해 진행드리도록 하겠습니다.\n상담사 배정 후 저장해주신 연락처로 연락드려도 괜찮으실까요?`,{cards,suggestions:['네, 연락 주세요','아니요, 상품을 더 볼게요'],intent:'contact-permission',outcome:'actionable'});
+    return contactPermissionTransition(s,catalog);
   }
   if (input.action === 'apply' || /상담.*(신청|연결)|사람.*상담/.test(text)) {
     requestSummary = '상담 신청 안내';
@@ -375,13 +379,16 @@ export function respond(previous, input, catalog, context = {}) {
   const raw = String(input.text || '').trim().slice(0,500);
   const compact=raw.replace(/\s+/g,'');
   const receiptCancellation=/(?:상담|신청|접수)(?:을|를|은|는)?(?:취소|철회|삭제)|(?:접수|개인정보)(?:를|은|는)?지워/.test(compact);
+  const contactChangeRequest=/(?:저장|등록|입력)(?:한|해둔|했던)?[^\n]{0,12}(?:전화번호|연락처)[^\n]{0,24}(?:말고|대신|다른|바꾸|변경|수정)|(?:전화번호|연락처)[^\n]{0,18}(?:바꾸|변경|수정|다른\s*번호)/;
   const conversationEnding=/^(?:(?:됐어요|됐습니다|괜찮아요)[,.]?)*(?:그만할게요|그만할래요|종료할게요|끝낼게요|다음에할게요|나중에할게요)[.!?~]*$/.test(compact)||/^(?:됐어요|됐습니다|괜찮아요)[.!?~]*$/.test(compact);
+  if(!input.action&&contactChangeRequest.test(raw))return {state:structuredClone(previous||initialState()),reply:'네, 상담받으실 연락처를 변경할 수 있어요. 새 번호는 대화창에 적지 마시고 아래 연락처 변경 화면에서 입력해 주세요.',requestSummary:'상담 연락처 변경',intent:'contact-change',outcome:'actionable',contactUpdate:true,suggestions:[]};
+  if(!input.action&&input.ai?.route==='contact_change')return {state:structuredClone(previous||initialState()),reply:'네, 상담받으실 연락처를 변경할 수 있어요. 새 번호는 대화창에 적지 마시고 아래 연락처 변경 화면에서 입력해 주세요.',requestSummary:'상담 연락처 변경',intent:'contact-change',outcome:'actionable',contactUpdate:true,suggestions:[]};
   if(!input.action&&receiptCancellation){
     if(context.hasReceipt)return {state:structuredClone(previous||initialState()),reply:'접수 삭제는 되돌릴 수 없어 접수 관리 화면에서 한 번 더 확인받습니다. 지금 접수 관리 화면을 열어드릴게요.',requestSummary:'상담 접수 삭제 요청',intent:'receipt-delete',outcome:'actionable',manageReceipt:true,suggestions:[]};
     return {state:structuredClone(previous||initialState()),reply:'현재 저장된 상담 접수가 없어 삭제할 정보가 없습니다. 상품 상담은 여기서 마칠게요.',requestSummary:'상담 신청 취소',intent:'conversation-end',outcome:'resolved',endConversation:true,suggestions:[]};
   }
   if(!input.action&&conversationEnding)return {state:structuredClone(previous||initialState()),reply:context.hasReceipt?'대화는 여기서 마칠게요. 저장된 상담 접수는 유지됩니다. 삭제를 원하시면 “접수 정보 삭제”라고 말씀해 주세요.':'알겠습니다. 상담은 여기서 마칠게요. 필요하실 때 다시 열어 주세요.',requestSummary:'상담 종료',intent:'conversation-end',outcome:'resolved',endConversation:true,suggestions:[]};
-  let text = raw;
+  let text = !input.action&&input.ai?.normalizedText&&['consultation','catalog','faq'].includes(input.ai.route)?String(input.ai.normalizedText).slice(0,200):raw;
   const safety = mask(text,{profile:'storage'});
   if (safety.kinds.length) return respondCatalog(previous,input,catalog,context);
   const site= !input.action?siteReferenceReply(previous||initialState(),normalizeText(raw),context.siteData,context.now??Date.now()):null;
@@ -430,8 +437,11 @@ export function respond(previous, input, catalog, context = {}) {
     out=base('상담 연락을 받을 시점이 궁금하신가요, 아니면 제품 설치 날짜가 궁금하신가요?','일정 문의 확인',{needsReview:true,suggestions:[]});
   } else if(asksReason(text)&&!['human','complaint','cancel'].includes(intent)) {
     out=recommendationReasonReply(s,catalog,text)||(!s.filters.category?base('먼저 어떤 상품이 필요한지 알려주세요. 조건에 맞는 상품을 찾은 뒤 표시 기준을 설명해 드릴게요.','상품 조건 확인',{needsReview:true}):base('입력하신 '+[s.filters.category,s.filters.brand,s.filters.brands?.join(' · '),s.filters.term&&s.filters.term+'개월 약정',s.filters.budget&&'예산',s.filters.care&&'관리 방식'].filter(Boolean).join(' · ')+' 조건으로 찾았어요. '+orderDescription(s)+'\n개인별 적합도를 평가한 추천 순위는 아니에요. 실제 사용 환경에 맞는지는 제품 사양과 관리 조건을 함께 확인해야 합니다.','상품 표시 기준',{evidenceIds:['catalog-filter-order']}));
-  } else if (intent==='human' || intent==='complaint') {
-    out = base((intent==='complaint'?'불편하셨겠어요. 어떤 제품을 고를지보다 겪으신 불편을 먼저 확인해야겠네요.\n':'담당자와 직접 상담하고 싶으시군요.\n')+handoffReply(context), intent==='human'?'담당자 상담 요청':'불편 사항 상담', {handoff:true,suggestions:[]});
+  } else if (intent==='human' || input.ai?.route==='consultation') {
+    if(context.entryMode==='browse')out=base('상담사 연결을 위해 먼저 고객정보 확인이 필요합니다. 어떤 정보를 받는지 안내해 드릴게요.','상담 신청 안내',{consent:true,suggestions:[]});
+    else out=contactPermissionTransition(s,catalog);
+  } else if (intent==='complaint') {
+    out = base('불편하셨겠어요. 어떤 제품을 고를지보다 겪으신 불편을 먼저 확인해야겠네요.\n'+handoffReply(context), '불편 사항 상담', {handoff:true,suggestions:[]});
   } else if (intent==='cancel') {
     out = base('해지·환불은 선택하신 상품의 계약 조건을 함께 확인해야 해요.\n약정 기간, 이용한 기간, 위약금 기준, 신청 방법을 확인해 주세요. 지금 자료만으로 금액이나 처리 가능 여부를 확정할 수는 없어요.', '해지·환불 조건 문의', {resume:true,needsReview:true});
     s.unresolved=[...new Set([...s.unresolved,'해지·환불 조건'])];
