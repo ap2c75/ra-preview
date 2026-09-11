@@ -160,7 +160,7 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
 .rowbtn:hover{background:var(--line2)}
 
 /* ── 표본 띠 · 고친 곳 ── */
-.sample{display:flex;align-items:center;gap:8px;background:var(--warn-bg);
+.sample{display:block;line-height:1.55;background:var(--warn-bg);
   border:1px solid var(--warn-line);color:var(--warn-ink);border-radius:10px;
   padding:9px 12px;font-size:12px;margin-top:12px;line-height:1.55}
 .sample b{font-weight:700}
@@ -914,9 +914,10 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
     ta.addEventListener('input', tick); tick();
   });
 
+  /* 문구는 빌더가 data-run 에 넣는다 — 오늘 실제 실행분이 있을 때와 표본일 때가 다르다 (QA 09-11: 실행분이 있는데 「시안」이라 했다) */
   var run = $('[data-run]');
   if (run) run.addEventListener('click', function () {
-    toast('시안이라 실제 생성·게시는 하지 않습니다 — 아래 글이 그 결과 자리입니다');
+    toast(run.getAttribute('data-run') || '시안이라 실제 생성·게시는 하지 않습니다 — 아래 글이 그 결과 자리입니다');
   });
 
   /* ── 9. 후킹자판기 ──────────────────────────────────────── */

@@ -160,7 +160,7 @@ td.num{font-variant-numeric:tabular-nums;color:var(--ink2)}
 .rowbtn:hover{background:var(--line2)}
 
 /* ── 표본 띠 · 고친 곳 ── */
-.sample{display:flex;align-items:center;gap:8px;background:var(--warn-bg);
+.sample{display:block;line-height:1.55;background:var(--warn-bg);
   border:1px solid var(--warn-line);color:var(--warn-ink);border-radius:10px;
   padding:9px 12px;font-size:12px;margin-top:12px;line-height:1.55}
 .sample b{font-weight:700}
@@ -542,7 +542,7 @@ details.more .filters{border:0;padding:12px 0 0;margin:0;background:transparent}
           <div class="filters" style="margin-top:12px">
             <div class="f"><label>이미지 준비 방식</label><select><option>이미지 없이 (비용 0)</option><option>AI 새 이미지 · Gemini 3.6 Flash (저렴)</option><option>AI 새 이미지 · Gemini 3 Pro Image (고비용)</option><option>보관함 이미지 재사용</option></select></div>
             <div class="f"><label>이미지 형태</label><select><option>자동 선택</option><option>피드 1:1</option><option>릴스용 세로 9:16</option></select></div>
-            <div class="f"><label>&nbsp;</label><div class="btns"><button class="go" type="button" data-run>오늘 콘텐츠 자동 만들기</button></div></div>
+            <div class="f"><label>&nbsp;</label><div class="btns"><button class="go" type="button" data-run="오늘 06:49 UTC 실행분이 아래에 있습니다 — 이 화면은 정적 카피라 버튼이 직접 돌리지 않습니다. 새로 만들려면 서버에서 run-today 를 돌립니다">오늘 콘텐츠 자동 만들기</button></div></div>
           </div>
           <div class="sample" style="margin-top:12px">🔴 원본은 이미지 선택지가 <code>Gemini 3 Pro Image</code> <b>하나뿐</b>이라 관리자가 싼 모델로 바꿔도 비싼 모델로 고정 호출됐습니다. <b>「이미지 없이」도 없었습니다.</b></div>
         </div>
@@ -1034,9 +1034,10 @@ https://ap2c75.github.io/ra-preview/copy/l/sample01-internet/</textarea><p class
     ta.addEventListener('input', tick); tick();
   });
 
+  /* 문구는 빌더가 data-run 에 넣는다 — 오늘 실제 실행분이 있을 때와 표본일 때가 다르다 (QA 09-11: 실행분이 있는데 「시안」이라 했다) */
   var run = $('[data-run]');
   if (run) run.addEventListener('click', function () {
-    toast('시안이라 실제 생성·게시는 하지 않습니다 — 아래 글이 그 결과 자리입니다');
+    toast(run.getAttribute('data-run') || '시안이라 실제 생성·게시는 하지 않습니다 — 아래 글이 그 결과 자리입니다');
   });
 
   /* ── 9. 후킹자판기 ──────────────────────────────────────── */
