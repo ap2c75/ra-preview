@@ -399,7 +399,7 @@ export function respond(previous, input, catalog, context = {}) {
     return trackOutcome(site,'site-reference',!site.siteEvidence&&!progressed,context);
   }
   if(/정수기|공기청정기|비데|냉장고|세탁기|매트리스|에어컨/.test(raw)&&previous?.siteInternet){previous=structuredClone(previous);delete previous.siteInternet;}
-  text=normalizeText(raw);
+  text=normalizeText(text);
   const decisionResult=!input.action?referenceDecision(text,{visibleCodes:previous?.visibleCodes||[],selectedCodes:previous?.selected||[],view:previous?.view||'list'}):null;
   const comparisonResult=!input.action&&!decisionResult?referenceComparison(text,{visibleCodes:previous?.visibleCodes||[],selectedCodes:previous?.selected||[],view:previous?.view||'list'}):null;
   const referenceQuestionResult=!input.action&&!comparisonResult&&!decisionResult?referenceQuestion(text,{visibleCodes:previous?.visibleCodes||[],focusCode:previous?.focusCode||null,selectedCodes:previous?.selected||[]}):null;

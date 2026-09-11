@@ -10,7 +10,7 @@ import { initialState, respond, filterLabels, cardsFor } from './conversation.mj
 import { createQualityRecorder, QUALITY_REASONS } from './quality-recorder.mjs?v=quality-feedback-20260910-1';
 import {createQualityMetrics} from './quality-metrics.mjs?v=quality-metrics-20260910-1';
 import { createTurnHistory, isUndoRequest } from './turn-history.mjs?v=turn-history-20260910-1';
-import { createClientApi } from './client-api.mjs?v=operations-20260911-8';
+import { createClientApi } from './client-api.mjs?v=operations-20260911-9';
 import { applyBenefitFeed, validateBenefitFeed } from './benefit-feed.mjs?v=benefit-feed-20260911-1';
 import { mask } from './detect.mjs';
 
@@ -523,7 +523,7 @@ function renderLead(choices) {
   setEntryStep('information'); $('#consent-title').textContent='고객정보 확인';
   const body = $('#consent-body'); body.replaceChildren();
   const testing=offer?.testOnly===true;
-  body.append(el('p',serviceMode==='operational'?'상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 접수 후 배정된 제휴 총판이 상담을 이어갑니다.':'상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 검토용 입력값은 서버에 저장하지 않습니다.'));
+  body.append(el('p',serviceMode==='operational'?'상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않으며, 접수 후 배정된 제휴 총판이 상담을 이어갑니다.':'상담에 필요한 고객정보를 입력해 주세요. 입력 내용은 대화창에 표시하지 않습니다.'));
   const form = el('form'); form.autocomplete = 'off';
   const fields = [
     ['name','이름',null], ['phone','연락처',null],

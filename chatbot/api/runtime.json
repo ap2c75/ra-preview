@@ -1,7 +1,7 @@
 {
   "apiBase": "",
   "configured": false,
-  "aiBase": "",
-  "aiConfigured": false,
-  "note": "상담 접수 API와 AI 분류 API를 각각 배포한 뒤 주소와 활성화 상태를 갱신합니다."
+  "aiBase": "https://somun-chatbot-ai.somun-chatbot-ai.workers.dev",
+  "aiConfigured": true,
+  "note": "개발 검토용 AI 분류 Worker가 연결되어 있습니다. 상담 접수 API는 정식 운영 준비 후 별도로 연결합니다."
 }

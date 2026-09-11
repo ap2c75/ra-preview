@@ -26,7 +26,7 @@ export async function classifyWithAI(request,env,fetcher=fetch){
  if(!env.GEMINI_API_KEY)throw new Error('AI_NOT_CONFIGURED');
  const value=cleanAiRequest(request),model=env.GEMINI_MODEL||'gemini-2.5-flash-lite';
  const response=await fetcher(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'x-goog-api-key':env.GEMINI_API_KEY,'content-type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:instruction}]},contents:[{role:'user',parts:[{text:JSON.stringify(value)}]}],generationConfig:{responseMimeType:'application/json',responseJsonSchema:schema,temperature:0,maxOutputTokens:180}}),signal:AbortSignal.timeout(8000)});
- if(!response.ok)throw new Error(response.status===429?'AI_RATE_LIMITED':'AI_UPSTREAM_ERROR');
+ if(!response.ok){const failure=await response.json().catch(()=>({})),reason=String(failure?.error?.status||'UNKNOWN').replace(/[^A-Z0-9_]/gi,'').slice(0,40);throw new Error(response.status===429?'AI_RATE_LIMITED':'AI_UPSTREAM_'+response.status+'_'+reason);}
  const data=await response.json(),text=outputText(data);if(!text)throw new Error('AI_EMPTY_RESPONSE');
  return normalizeAiResult(JSON.parse(text));
 }
