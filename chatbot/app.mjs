@@ -140,7 +140,7 @@ function finishEntry(mode, interest = null, resumed = false) {
   setEntryStep('consultation'); renderFilters(); showEmpty(); renderActions(); setPanel('chat');
   if(mode==='saved') say(resumed?'이 브라우저에서 접수한 상담을 확인했습니다.\n고객정보를 다시 입력하지 않고 상담을 이어가실 수 있습니다.':'상담에 필요한 정보를 접수했습니다.\n이제 원하시는 상품과 조건을 살펴보겠습니다.');
   else if(mode==='preview') say('여기부터는 고정된 예시로 보는 상담 화면입니다. 실제 고객정보는 입력받거나 저장하지 않았습니다.\n\n정보 입력이 완료되면 이 단계에서 상품 상담을 시작합니다.');
-  else if(mode==='review'){say('고객정보 확인을 마쳤습니다. 이제 원하시는 상품과 조건을 알려주세요. 검토용 입력값은 서버에 저장하지 않고 입력 화면에서 지웠습니다.');$('.page-note').lastChild.textContent=' 고객정보 확인 완료 · 검토용';}
+  else if(mode==='review'){say('고객정보 확인을 마쳤습니다. 이제 원하시는 상품과 조건을 알려주세요.');$('.page-note').lastChild.textContent=' 고객정보 확인 완료 · 검토용';}
   else say('고객정보 입력 없이 일반 상품 정보만 살펴보실 수 있어요.');
   if(interest && interest!=='기타') run({text:interest});
   $('#query').focus();
